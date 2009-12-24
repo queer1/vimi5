@@ -9,7 +9,10 @@
 class Config
 {
 public:
-    Config();
+    static void load();
+    static void save();
+
+    static void getCollectionPath();
 
     static QString collectionPath;
     static QStringList movieSuffixes;

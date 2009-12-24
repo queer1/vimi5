@@ -1,17 +1,34 @@
 // Copyright 2009 cwk
 
 #include "config.h"
+#include <QDesktopServices>
+#include <QSettings>
 
 QString Config::collectionPath;
 QStringList Config::movieSuffixes;
 
-Config::Config()
+void Config::load()
 {
-    collectionPath = "/home/w00t/test/";
-    movieSuffixes.clear();
-    movieSuffixes << "*.mpg"
-                  << "*.wmv"
-                  << "*.mkv"
-                  << "*.avi"
-                  << "*.mp4";
+    QSettings settings;
+
+    collectionPath = settings.value("collectionPath", QDesktopServices::storageLocation(QDesktopServices::MoviesLocation)).toString();
+
+    QStringList defaultSuffixes;
+    defaultSuffixes << "*.mpg"
+                    << "*.wmv"
+                    << "*.mkv"
+                    << "*.avi"
+                    << "*.mp4";
+    QStringList settingSuffixes = settings.value("movieSuffixes", defaultSuffixes).toStringList();
+    if (settingSuffixes.length() > 0)
+        movieSuffixes = settingSuffixes;
+    else
+        movieSuffixes = defaultSuffixes;
+}
+
+void Config::save()
+{
+    QSettings settings;
+    settings.setValue("collectionPath", collectionPath);
+    settings.setValue("movieSuffixes", movieSuffixes);
 }

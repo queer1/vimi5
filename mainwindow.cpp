@@ -2,6 +2,7 @@
 
 #include "config.h"
 #include "mainwindow.h"
+#include <QFileDialog>
 #include <QHBoxLayout>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -12,7 +13,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
-    Config config;
+    Config::load();
 
     initializeDatabase();
 
@@ -51,10 +52,16 @@ MainWindow::MainWindow(QWidget *parent) :
     // Set up the menu
     QMenu *fileMenu = new QMenu("&File");
     fileMenu->addAction(QIcon(), "&Rescan...", m_collection, SLOT(rescan()), QKeySequence::Refresh);
+    fileMenu->addAction(QIcon(), "&Set Path to Collection...", this, SLOT(getCollectionPath()));
     fileMenu->addAction(QIcon(), "&Quit", this, SLOT(close()), QKeySequence::Quit);
     menuBar()->addMenu(fileMenu);
 
     m_videoView->resizeColumnToContents(0);
+}
+
+MainWindow::~MainWindow()
+{
+    Config::save();
 }
 
 void MainWindow::initializeDatabase()
@@ -128,4 +135,14 @@ void MainWindow::updateInfoPanel(const QModelIndex &i)
                          m_collection->getTags(videoName),
                          m_collection->getFiles(videoName),
                          m_collection->getPath(videoName));
+}
+
+void MainWindow::getCollectionPath()
+{
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory Containing Collection"),
+                                                    Config::collectionPath,
+                                                    QFileDialog::ShowDirsOnly
+                                                    | QFileDialog::DontResolveSymlinks);
+    if (dir != "")
+        Config::collectionPath = dir;
 }
