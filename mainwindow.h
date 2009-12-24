@@ -27,8 +27,6 @@ private slots:
     void getCollectionPath();
 
 private:
-    void initializeDatabase();
-
     QListView *m_tagView;
     QTreeView *m_videoView;
     QStandardItemModel *m_tagModel;

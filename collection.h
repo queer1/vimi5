@@ -32,6 +32,7 @@ private slots:
 private:
     void scan(QDir directory);
     void addTagToDb(QString video, QString tag);
+    void initializeDatabase();
 
 
     QStringList m_cachedVideoDirectories;

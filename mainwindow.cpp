@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     Config::load();
 
-    initializeDatabase();
+    m_collection = new Collection();
 
     QSplitter *splitter = new QSplitter(this);
     setCentralWidget(splitter);
@@ -34,7 +34,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_videoView->setRootIsDecorated(false);
     splitter->addWidget(m_videoView);
 
-    m_collection = new Collection();
     m_videoModel = new VideoFilterProxyModel;
     m_videoModel->setSourceModel(m_collection);
     m_videoView->setModel(m_videoModel);
@@ -62,40 +61,6 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     Config::save();
-}
-
-void MainWindow::initializeDatabase()
-{
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("vimi.db");
-    if (!db.open()) {
-        QMessageBox::critical(0, tr("Cannot open database"),
-            tr("Unable to establish a database connection.\n"
-               "This example needs SQLite support. Please read "
-               "the Qt SQL driver documentation for information how "
-               "to build it."), QMessageBox::Cancel);
-        return;
-    }
-
-    // Ensure our tables exist (FIXME: not very elegant, this)
-    QSqlQuery query(db);
-    query.exec("create table video (name varchar(20), path varchar(200))");
-    query.exec("create table tag (name varchar(20))");
-    query.exec("create table videoTag (tagId int, videoId int)");
-
-    /* TEST DATA
-
-    query.exec("insert into video values('foo', '/home/w00t/foo')");
-    query.exec("insert into video values('bar', '/home/w00t/bar')");
-
-    query.exec("insert into tag values('hawt')");
-    query.exec("insert into tag values('not')");
-    query.exec("insert into tag values('care')");
-
-    query.exec("insert into videoTag values(1, 2)");
-    query.exec("insert into videoTag values(2, 1)");
-    query.exec("insert into videoTag values(3, 1)");
-    query.exec("insert into videoTag values(3, 2)");*/
 }
 
 void MainWindow::updateTagModel()
