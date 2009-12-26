@@ -16,9 +16,10 @@ public:
     Collection();
 
     void addTag(const QString &video, const QString &tag);
-    QStringList getTags(const QString& videoName);
-    QStringList getFiles(const QString& videoName);
-    QString getPath(const QString &videoName);
+    void removeTag(const QString &video, const QString &tag);
+    static QStringList getTags(const QString& videoName = QString());
+    static QStringList getFiles(const QString& videoName);
+    static QString getPath(const QString &videoName);
 
 signals:
     void updated();
@@ -31,8 +32,10 @@ private slots:
 
 private:
     void scan(QDir directory);
-    void addTagToDb(QString video, QString tag);
-    void initializeDatabase();
+    static void writeTagCache(const QString &video);
+
+    static void addTagToDb(QString video, QString tag);
+    static void initializeDatabase();
 
 
     QStringList m_cachedVideoDirectories;

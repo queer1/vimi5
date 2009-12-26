@@ -1,5 +1,6 @@
 // Copyright 2009 cwk
 
+#include <QByteArray>
 #include <QDebug>
 #include <QMessageBox>
 #include <QSqlQuery>
@@ -89,7 +90,7 @@ void Collection::scan(QDir dir)
             QFile file(dir.filePath("tags.txt"));
             if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 while (!file.atEnd())
-                    addTagToDb(dir.dirName(), QString::fromUtf8(file.readLine())); // One tag per line
+                    addTagToDb(dir.dirName(), QString::fromUtf8(file.readLine().simplified().toLower())); // One tag per line
             }
         }
 
@@ -106,7 +107,8 @@ void Collection::scan(QDir dir)
 
 void Collection::addTagToDb(QString video, QString tag)
 {
-    tag = tag.simplified(); // Removes spaces at end and beginning, and extra in the middle
+    if (getTags(video).contains(tag))
+        return;
 
     qDebug() << "adding tag: " << tag << " to video: " << video;
 
@@ -136,26 +138,57 @@ void Collection::addTagToDb(QString video, QString tag)
         qWarning() << "Unable to add tag '" << tag << "' to video '" << video << "'.";
 }
 
-void Collection::addTag(const QString &video, const QString &tag)
+void Collection::addTag(const QString &video, const QString &rawTag)
 {
+    QString tag = rawTag.simplified().toLower();
+
+    if (getTags(video).contains(tag))
+        return;
+
     addTagToDb(video, tag);
+    writeTagCache(video);
+    reload();
+}
+
+void Collection::removeTag(const QString &video, const QString &tag)
+{
+    if (!getTags(video).contains(tag))
+        return;
 
     QSqlQuery query;
-    query.prepare("SELECT path FROM video WHERE name = :name");
-    query.bindValue(":name", video);
-    query.exec();
-    query.first();
-    QString path = query.value(0).toString();
 
-    QFile file(path + "/tags.txt");
+    query.prepare("DELETE FROM videoTag "
+                  "WHERE videoId = "
+                  "(SELECT rowid FOM video WHERE name = :video) "
+                  "AND tagId = "
+                  "(SELECT rowid FROM tag WHERE name = :tag)");
+    query.bindValue(":video", video);
+    query.bindValue(":tag", tag);
+    query.exec();
+
+    if (getTags(video).size() == 0) // All videos need at least one tag, a bug, unfortunately
+        addTag(video, "video");
+
+    writeTagCache(video);
+    reload();
+}
+
+void Collection::writeTagCache(const QString &video)
+{
+    QString filename = getPath(video) + "/tags.txt";
+    QFile file(filename + ".tmp");
     if (file.open(QIODevice::Append | QIODevice::Text)) {
-        file.write(tag.toUtf8() + "\n");
+        QByteArray data = getTags(video).join("\n").toUtf8() + "\n";
+        if (file.write(data) == data.size()) {
+            QFile::remove(filename);
+            file.rename(filename + ".tmp", filename);
+        }
     }
 }
 
 void Collection::reload()
 {
-    setQuery("SELECT video.name, group_concat(tag.name, ', ') "
+    setQuery("SELECT video.name, group_concat(tag.name, ', ') " // FIXME: doesn't show videos without any tags
                            "FROM video, tag, videoTag "
                            "WHERE videoTag.videoId = video.rowid AND videoTag.tagId = tag.rowid "
                            "GROUP BY videoId");
@@ -163,15 +196,25 @@ void Collection::reload()
 
 QStringList Collection::getTags(const QString &videoName)
 {
+    QStringList tags;
+
+    if (videoName.isEmpty()) {
+        QSqlQuery query;
+        query.exec("SELECT DISTINCT name FROM tag");
+        while (query.next())
+            tags.append(query.value(0).toString());
+
+        return tags;
+    }
+
     QSqlQuery query;
-    query.prepare("SELECT tag.name FROM video, tag, videoTag "
+    query.prepare("SELECT DISTINCT tag.name FROM video, tag, videoTag "
                   "WHERE videoTag.videoId = video.rowid "
                   "AND videoTag.tagId = tag.rowid "
                   "AND video.name = :videoName");
     query.bindValue(":videoName", videoName);
     query.exec();
 
-    QStringList tags;
     while (query.next())
         tags << query.value(0).toString();
 

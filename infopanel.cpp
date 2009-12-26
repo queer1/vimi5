@@ -30,6 +30,8 @@ InfoPanel::InfoPanel(QWidget *parent) :
 
 void InfoPanel::setInfo(const QString &title, const QStringList &tags, const QStringList &files, const QString &path)
 {
+    m_videoName = title;
+
     m_title->setText("<h1>" + title + "</h1>");
 
     // List of tags

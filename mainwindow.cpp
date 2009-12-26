@@ -2,6 +2,8 @@
 
 #include "config.h"
 #include "mainwindow.h"
+#include "tagdialog.h"
+
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QVBoxLayout>
@@ -68,6 +70,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_videoView, SIGNAL(activated(QModelIndex)), this, SLOT(updateInfoPanel(QModelIndex)));
     connect(m_tagFilterEdit, SIGNAL(textChanged(QString)), m_tagFilterModel, SLOT(setFilterFixedString(QString)));
     connect(m_videoFilterEdit, SIGNAL(textChanged(QString)), m_videoModel, SLOT(setFilterFixedString(QString)));
+    connect(m_infoPanel, SIGNAL(editTags()), this, SLOT(editTags()));
 
     // Set up the menu
     QMenu *fileMenu = new QMenu("&File");
@@ -133,3 +136,11 @@ void MainWindow::getCollectionPath()
         Config::collectionPath = dir;
 }
 
+void MainWindow::editTags()
+{
+    TagDialog dialog(m_infoPanel->videoName(), m_collection, this);
+    dialog.show();
+    dialog.raise();
+    dialog.exec();
+    updateTagModel();
+}

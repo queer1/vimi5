@@ -26,6 +26,7 @@ private slots:
     void updateTagModel();
     void updateInfoPanel(const QModelIndex&);
     void getCollectionPath();
+    void editTags();
 
 private:
     QListView *m_tagView;
