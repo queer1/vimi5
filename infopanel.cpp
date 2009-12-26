@@ -6,18 +6,26 @@
 #include <QVBoxLayout>
 
 InfoPanel::InfoPanel(QWidget *parent) :
-    QWidget(parent)
+    QGroupBox(parent)
 {
+    hide();
+
+    setTitle("Info");
+
     m_title = new QLabel("");
     m_tags = new QLabel("");
     m_files = new QLabel("");
+    m_tagEditButton = new QPushButton("Edit tags...");
 
     setLayout(new QVBoxLayout);
     layout()->addWidget(m_title);
     layout()->addWidget(m_tags);
     layout()->addWidget(m_files);
+    layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+    layout()->addWidget(m_tagEditButton);
 
     connect(m_files, SIGNAL(linkActivated(QString)), SLOT(launchFile(QString)));
+    connect(m_tagEditButton, SIGNAL(clicked()), SIGNAL(editTags()));
 }
 
 void InfoPanel::setInfo(const QString &title, const QStringList &tags, const QStringList &files, const QString &path)
@@ -36,6 +44,8 @@ void InfoPanel::setInfo(const QString &title, const QStringList &tags, const QSt
         fileHtml += "<li><a href='" + path + "/" + file + "'>" + file + "</a></li>";
     fileHtml += "</ul>";
     m_files->setText(fileHtml);
+
+    show();
 }
 
 void InfoPanel::launchFile(const QString &file)

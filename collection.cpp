@@ -83,7 +83,6 @@ void Collection::scan(QDir dir)
         query.prepare("INSERT INTO video(name, path) VALUES (:name, :path)");
         query.bindValue(":name", dir.dirName()); // XXX: Stupid assumption, maybe
         query.bindValue(":path", dir.path());
-        qDebug() << query.lastQuery();
         query.exec();
 
         if (dir.exists("tags.txt")) { // There is a tag cache here

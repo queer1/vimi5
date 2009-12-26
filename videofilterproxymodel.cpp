@@ -2,6 +2,8 @@
 
 #include "videofilterproxymodel.h"
 
+#include <QDebug>
+
 VideoFilterProxyModel::VideoFilterProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
 {
@@ -9,12 +11,14 @@ VideoFilterProxyModel::VideoFilterProxyModel(QObject *parent)
 
 bool VideoFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-    QModelIndex index = sourceModel()->index(sourceRow, 1, sourceParent);
+    QString name = sourceModel()->data(sourceModel()->index(sourceRow, 0, sourceParent)).toString();
+    QString tags = sourceModel()->data(sourceModel()->index(sourceRow, 1, sourceParent)).toString();
 
-    QString videoTags = sourceModel()->data(index).toString();
+    if (!m_filter.isEmpty() && !name.contains(m_filter, Qt::CaseInsensitive) && !tags.contains(m_filter, Qt::CaseInsensitive))
+        return false;
 
     foreach (QString tag, m_tagList) {
-        if (!videoTags.contains(tag))
+        if (!tags.contains(tag, Qt::CaseInsensitive))
             return false;
     }
 
@@ -34,4 +38,10 @@ void VideoFilterProxyModel::removeTag(const QString &tag)
 {
     if (m_tagList.removeAll(tag) > 0)
         invalidateFilter();
+}
+
+void VideoFilterProxyModel::setFilterFixedString(const QString &filter)
+{
+    m_filter = filter;
+    invalidateFilter();
 }

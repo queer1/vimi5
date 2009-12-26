@@ -8,6 +8,8 @@
 
 class VideoFilterProxyModel : public QSortFilterProxyModel
 {
+    Q_OBJECT;
+
 public:
     VideoFilterProxyModel(QObject *parent=0);
 
@@ -16,8 +18,12 @@ public:
     void addTag(const QString &tag);
     void removeTag(const QString &tag);
 
+public slots:
+    void setFilterFixedString(const QString &filter);
+
 private:
     QStringList m_tagList;
+    QString m_filter;
 };
 
 #endif // VIDEOFILTERPROXYMODEL_H

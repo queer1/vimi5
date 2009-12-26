@@ -3,7 +3,8 @@
 #include "config.h"
 #include "mainwindow.h"
 #include <QFileDialog>
-#include <QHBoxLayout>
+#include <QGroupBox>
+#include <QVBoxLayout>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSqlQuery>
@@ -20,19 +21,37 @@ MainWindow::MainWindow(QWidget *parent) :
     QSplitter *splitter = new QSplitter(this);
     setCentralWidget(splitter);
 
-    // Set up the tag view
+    // Set up the tag view    
+    QGroupBox *tagContainer = new QGroupBox(splitter);
+    tagContainer->setLayout(new QVBoxLayout);
+    tagContainer->setTitle("Tags");
+    splitter->addWidget(tagContainer);
+
+    m_tagFilterEdit = new QLineEdit(this);
+    tagContainer->layout()->addWidget(m_tagFilterEdit);
+
     m_tagView = new QListView(this);
-    splitter->addWidget(m_tagView);
+    tagContainer->layout()->addWidget(m_tagView);
 
-    m_tagModel = new QStandardItemModel;
+    m_tagModel = new QStandardItemModel(this);
+    m_tagFilterModel = new QSortFilterProxyModel;
+    m_tagFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     updateTagModel();
-    m_tagView->setModel(m_tagModel);
-
+    m_tagFilterModel->setSourceModel(m_tagModel);
+    m_tagView->setModel(m_tagFilterModel);
 
     // Set up the video list view
+    QGroupBox *videoContainer = new QGroupBox(splitter);
+    videoContainer->setLayout(new QVBoxLayout);
+    videoContainer->setTitle("Videos");;
+    splitter->addWidget(videoContainer);
+
+    m_videoFilterEdit = new QLineEdit(this);
+    videoContainer->layout()->addWidget(m_videoFilterEdit);
+
     m_videoView = new QTreeView(this);
     m_videoView->setRootIsDecorated(false);
-    splitter->addWidget(m_videoView);
+    videoContainer->layout()->addWidget(m_videoView);
 
     m_videoModel = new VideoFilterProxyModel;
     m_videoModel->setSourceModel(m_collection);
@@ -44,9 +63,11 @@ MainWindow::MainWindow(QWidget *parent) :
     splitter->addWidget(m_infoPanel);
 
     // Connect signals
-    connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(updateTagFilter(QStandardItem*)));
+    connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(updateVideoFilter(QStandardItem*)));
     connect(m_collection, SIGNAL(updated()), this, SLOT(updateTagModel()));
     connect(m_videoView, SIGNAL(activated(QModelIndex)), this, SLOT(updateInfoPanel(QModelIndex)));
+    connect(m_tagFilterEdit, SIGNAL(textChanged(QString)), m_tagFilterModel, SLOT(setFilterFixedString(QString)));
+    connect(m_videoFilterEdit, SIGNAL(textChanged(QString)), m_videoModel, SLOT(setFilterFixedString(QString)));
 
     // Set up the menu
     QMenu *fileMenu = new QMenu("&File");
@@ -66,7 +87,7 @@ MainWindow::~MainWindow()
 void MainWindow::updateTagModel()
 {
     QSqlQuery query;
-    query.exec("SELECT name FROM tag");
+    query.exec("SELECT DISTINCT name FROM tag");
 
     m_tagModel->clear();
 
@@ -79,7 +100,7 @@ void MainWindow::updateTagModel()
     }
 }
 
-void MainWindow::updateTagFilter(QStandardItem *tag)
+void MainWindow::updateVideoFilter(QStandardItem *tag)
 {
     if (tag->checkState() == Qt::Unchecked) // Deselected tag
         m_videoModel->removeTag(tag->text());
@@ -111,3 +132,4 @@ void MainWindow::getCollectionPath()
     if (dir != "")
         Config::collectionPath = dir;
 }
+
