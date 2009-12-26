@@ -47,7 +47,7 @@ TagDialog::TagDialog(const QString &videoName, Collection *collection, QWidget *
     connect(m_removeButton, SIGNAL(clicked()), this, SLOT(removeTag()));
     connect(m_addButton, SIGNAL(clicked()), this, SLOT(addTag()));
     connect(m_closeButton, SIGNAL(clicked()), this, SLOT(accept()));
-        qDebug() << m_videoName;
+    connect(m_tagEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(addTag()));
 }
 
 void TagDialog::updateModel()

@@ -15,8 +15,12 @@ public:
 
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
 
+    const QStringList &activeTagFilters();
+
     void addTag(const QString &tag);
     void removeTag(const QString &tag);
+
+    void clearTags();
 
 public slots:
     void setFilterFixedString(const QString &filter);

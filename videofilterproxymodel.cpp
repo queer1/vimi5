@@ -45,3 +45,14 @@ void VideoFilterProxyModel::setFilterFixedString(const QString &filter)
     m_filter = filter;
     invalidateFilter();
 }
+
+const QStringList &VideoFilterProxyModel::activeTagFilters()
+{
+    return m_tagList;
+}
+
+void VideoFilterProxyModel::clearTags()
+{
+    m_tagList.clear();
+    invalidateFilter();
+}

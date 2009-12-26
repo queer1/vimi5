@@ -34,9 +34,9 @@ void Collection::initializeDatabase()
 
     // Ensure our tables exist (FIXME: not very elegant, this)
     QSqlQuery query(db);
-    query.exec("create table video (name varchar(20), path varchar(200))");
-    query.exec("create table tag (name varchar(20))");
-    query.exec("create table videoTag (tagId int, videoId int)");
+    query.exec("CREATE TABLE video (name VARCHAR(20) UNIQUE NOT NULL, path VARCHAR(200) UNIQUE NOT NULL)");
+    query.exec("CREATE TABLE tag (name VARCHAR(20) UNIQUE NOT NULL)");
+    query.exec("CREATE TABLE videoTag (tagId INT NOT NULL, videoId INT NOT NULL, UNIQUE(tagId, videoId))");
 
     /* TEST DATA
 
@@ -56,6 +56,7 @@ void Collection::initializeDatabase()
 void Collection::rescan()
 {
     qDebug() << "Rescanning collection ...";
+    emit statusUpdated("Starting scan...");
 
     m_cachedVideoDirectories.clear();
     QSqlQuery query;
@@ -67,6 +68,7 @@ void Collection::rescan()
 
     reload();
     emit updated();
+    emit statusUpdated("Scan finished.");
 }
 
 
@@ -93,6 +95,7 @@ void Collection::scan(QDir dir)
                     addTagToDb(dir.dirName(), QString::fromUtf8(file.readLine().simplified().toLower())); // One tag per line
             }
         }
+        emit statusUpdated("Video added:" + dir.dirName());
 
     }
 
@@ -107,7 +110,7 @@ void Collection::scan(QDir dir)
 
 void Collection::addTagToDb(QString video, QString tag)
 {
-    if (getTags(video).contains(tag))
+    if (tag.isEmpty() || getTags(video).contains(tag))
         return;
 
     qDebug() << "adding tag: " << tag << " to video: " << video;
@@ -116,18 +119,6 @@ void Collection::addTagToDb(QString video, QString tag)
     query.prepare("INSERT INTO tag(name) VALUES(:tag)");
     query.bindValue(":tag", tag);
     if (!query.exec()) qDebug() << "Tag: " << tag << " exists already";
-
-    query.prepare("SELECT * FROM videoTag WHERE videoId = "
-            "(SELECT id FROM video WHERE name = :video) "
-            " AND tagId = "
-            "(select id FROM tag WHERE name = :tag)");
-    query.bindValue(":tag", tag);
-    query.bindValue(":video", video);
-    query.exec();
-    if (query.size() > 0) {
-        qDebug() << "Tried to add existing tag to video again";
-        return;
-    }
 
     query.prepare("INSERT INTO videoTag(videoId, tagId) VALUES("
             "(SELECT rowid FROM video WHERE name = :video),"
@@ -142,7 +133,7 @@ void Collection::addTag(const QString &video, const QString &rawTag)
 {
     QString tag = rawTag.simplified().toLower();
 
-    if (getTags(video).contains(tag))
+    if (tag.isEmpty() || getTags(video).contains(tag))
         return;
 
     addTagToDb(video, tag);

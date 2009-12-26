@@ -12,22 +12,37 @@
 #include <QSqlQuery>
 #include <QSplitter>
 #include <QSqlError>
+#include <QStatusBar>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+
     Config::load();
 
     m_collection = new Collection();
 
-    QSplitter *splitter = new QSplitter(this);
-    setCentralWidget(splitter);
+    // Set up the video list view
+    QGroupBox *videoContainer = new QGroupBox(this);
+    videoContainer->setLayout(new QVBoxLayout(this));
+    videoContainer->setTitle("Videos");;
 
-    // Set up the tag view    
-    QGroupBox *tagContainer = new QGroupBox(splitter);
+    m_videoFilterEdit = new QLineEdit(this);
+    videoContainer->layout()->addWidget(m_videoFilterEdit);
+
+    m_videoView = new QTreeView(this);
+    m_videoView->setRootIsDecorated(false);
+    videoContainer->layout()->addWidget(m_videoView);
+
+    m_videoModel = new VideoFilterProxyModel;
+    m_videoModel->setSourceModel(m_collection);
+    m_videoView->setModel(m_videoModel);
+
+
+    // Set up the tag view
+    QGroupBox *tagContainer = new QGroupBox(this);
     tagContainer->setLayout(new QVBoxLayout);
     tagContainer->setTitle("Tags");
-    splitter->addWidget(tagContainer);
 
     m_tagFilterEdit = new QLineEdit(this);
     tagContainer->layout()->addWidget(m_tagFilterEdit);
@@ -42,31 +57,25 @@ MainWindow::MainWindow(QWidget *parent) :
     m_tagFilterModel->setSourceModel(m_tagModel);
     m_tagView->setModel(m_tagFilterModel);
 
-    // Set up the video list view
-    QGroupBox *videoContainer = new QGroupBox(splitter);
-    videoContainer->setLayout(new QVBoxLayout);
-    videoContainer->setTitle("Videos");;
-    splitter->addWidget(videoContainer);
 
-    m_videoFilterEdit = new QLineEdit(this);
-    videoContainer->layout()->addWidget(m_videoFilterEdit);
-
-    m_videoView = new QTreeView(this);
-    m_videoView->setRootIsDecorated(false);
-    videoContainer->layout()->addWidget(m_videoView);
-
-    m_videoModel = new VideoFilterProxyModel;
-    m_videoModel->setSourceModel(m_collection);
-    m_videoView->setModel(m_videoModel);
 
 
     // Set up the info panel
     m_infoPanel = new InfoPanel(this);
+
+    // Set a splitter as main widget in the window
+    QSplitter *splitter = new QSplitter(this);
+    setCentralWidget(splitter);
+
+    // Add the widgets to the window
+    splitter->addWidget(tagContainer);
+    splitter->addWidget(videoContainer);
     splitter->addWidget(m_infoPanel);
 
     // Connect signals
     connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(updateVideoFilter(QStandardItem*)));
     connect(m_collection, SIGNAL(updated()), this, SLOT(updateTagModel()));
+    connect(m_collection, SIGNAL(statusUpdated(QString)), statusBar(), SLOT(showMessage(QString)));
     connect(m_videoView, SIGNAL(activated(QModelIndex)), this, SLOT(updateInfoPanel(QModelIndex)));
     connect(m_tagFilterEdit, SIGNAL(textChanged(QString)), m_tagFilterModel, SLOT(setFilterFixedString(QString)));
     connect(m_videoFilterEdit, SIGNAL(textChanged(QString)), m_videoModel, SLOT(setFilterFixedString(QString)));
@@ -80,6 +89,8 @@ MainWindow::MainWindow(QWidget *parent) :
     menuBar()->addMenu(fileMenu);
 
     m_videoView->resizeColumnToContents(0);
+
+    statusBar()->showMessage(tr("Ready."));
 }
 
 MainWindow::~MainWindow()
@@ -94,11 +105,22 @@ void MainWindow::updateTagModel()
 
     m_tagModel->clear();
 
+    QStringList activeTags = m_videoModel->activeTagFilters();
+    m_videoModel->clearTags();
+
     QStandardItem *tag;
+    QString tagName;
     while (query.next()) {
-        tag = new QStandardItem(query.value(0).toString());
+        tagName = query.value(0).toString();
+        tag = new QStandardItem(tagName);
         tag->setCheckable(true);
-        tag->setCheckState(Qt::Unchecked);
+
+        if (activeTags.contains(tagName)) {
+            tag->setCheckState(Qt::Checked);
+            m_videoModel->addTag(tagName);
+        } else
+            tag->setCheckState(Qt::Unchecked);
+
         m_tagModel->appendRow(tag);
     }
 }

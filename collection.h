@@ -23,6 +23,7 @@ public:
 
 signals:
     void updated();
+    void statusUpdated(const QString &text);
 
 public slots:
     void rescan();
