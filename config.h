@@ -16,6 +16,7 @@ public:
 
     static QString collectionPath;
     static QStringList movieSuffixes;
+    static float maxCoverSize;
 };
 
 #endif // CONFIG_H

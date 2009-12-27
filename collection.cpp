@@ -19,6 +19,26 @@ Collection::Collection()
     connect(this, SIGNAL(updated()), SLOT(reload()));
 }
 
+QVariant Collection::data(const QModelIndex &item, int role) const
+{
+    if (role == Qt::DecorationRole && item.column() == 0) {
+        QSqlQuery query;
+        query.exec("SELECT video.name, group_concat(tag.name, ', ') "
+                               "FROM video, tag, videoTag "
+                               "WHERE videoTag.videoId = video.rowid AND videoTag.tagId = tag.rowid "
+                               "GROUP BY videoId ORDER BY video.name");
+        query.seek(item.row());
+        QPixmap cover = getCover(query.value(0).toString());
+        if (!cover.isNull() && qMax(cover.height(), cover.width()) > Config::maxCoverSize) {
+            float factor = 1;
+            factor = Config::maxCoverSize / qMax(cover.height(), cover.width());
+            return cover.scaled(cover.width() * factor, cover.height() * factor);
+        } else
+            return cover;
+    } else
+        return QSqlQueryModel::data(item, role);
+}
+
 void Collection::initializeDatabase()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -182,7 +202,7 @@ void Collection::reload()
     setQuery("SELECT video.name, group_concat(tag.name, ', ') " // FIXME: doesn't show videos without any tags
                            "FROM video, tag, videoTag "
                            "WHERE videoTag.videoId = video.rowid AND videoTag.tagId = tag.rowid "
-                           "GROUP BY videoId");
+                           "GROUP BY videoId ORDER BY video.name");
 }
 
 QStringList Collection::getTags(const QString &videoName)
@@ -230,4 +250,28 @@ QStringList Collection::getFiles(const QString &videoName)
     dir.setFilter(QDir::Files);
 
     return dir.entryList();
+}
+
+QPixmap Collection::getCover(const QString &videoName)
+{
+    QDir dir(getPath(videoName));
+    dir.setFilter(QDir::Files);
+
+    dir.setNameFilters(QStringList("*front*.jpg"));
+    if (dir.entryInfoList().count() > 0) {
+        return QPixmap(dir.entryInfoList().first().absoluteFilePath());
+    }
+
+    dir.setNameFilters(QStringList("*cover*.jpg"));
+    if (dir.entryInfoList().count() > 0) {
+        return QPixmap(dir.entryInfoList().first().absoluteFilePath());
+    }
+
+    dir.setNameFilters(QStringList("*.jpg"));
+    if (dir.entryInfoList().count() > 0) {
+        return QPixmap(dir.entryInfoList().first().absoluteFilePath());
+
+    }
+
+    return QPixmap(); // TODO: get some standard thingy to show here.
 }

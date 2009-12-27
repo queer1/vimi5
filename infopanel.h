@@ -13,7 +13,7 @@ class InfoPanel : public QGroupBox
 
 public:
     explicit InfoPanel(QWidget *parent = 0);
-    void setInfo(const QString &title, const QStringList &tags, const QStringList &files, const QString &path);
+    void setInfo(const QString &title);
     const QString &videoName() { return m_videoName; }
 
 signals:
@@ -26,8 +26,11 @@ private:
     QLabel *m_title;
     QLabel *m_tags;
     QLabel *m_files;
+    QLabel *m_path;
+    QLabel *m_cover;
     QPushButton *m_tagEditButton;
     QString m_videoName;
+
 };
 
 #endif // INFOPANEL_H

@@ -13,6 +13,7 @@
 #include <QSplitter>
 #include <QSqlError>
 #include <QStatusBar>
+#include <QFileSystemModel>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
@@ -31,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     videoContainer->layout()->addWidget(m_videoFilterEdit);
 
     m_videoView = new QTreeView(this);
-    m_videoView->setRootIsDecorated(false);
+    //m_videoView->setRootIsDecorated(false);
     videoContainer->layout()->addWidget(m_videoView);
 
     m_videoModel = new VideoFilterProxyModel;
@@ -43,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QGroupBox *tagContainer = new QGroupBox(this);
     tagContainer->setLayout(new QVBoxLayout);
     tagContainer->setTitle("Tags");
+    tagContainer->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
     m_tagFilterEdit = new QLineEdit(this);
     tagContainer->layout()->addWidget(m_tagFilterEdit);
@@ -142,10 +144,7 @@ void MainWindow::updateInfoPanel(const QModelIndex &i)
 
     QString videoName = index.model()->data(index).toString();
 
-    m_infoPanel->setInfo(videoName,
-                         m_collection->getTags(videoName),
-                         m_collection->getFiles(videoName),
-                         m_collection->getPath(videoName));
+    m_infoPanel->setInfo(videoName);
 }
 
 void MainWindow::getCollectionPath()

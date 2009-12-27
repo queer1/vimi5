@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include <QDir>
+#include <QImage>
 #include <QSqlQueryModel>
 
 class Collection : public QSqlQueryModel
@@ -20,6 +21,8 @@ public:
     static QStringList getTags(const QString& videoName = QString());
     static QStringList getFiles(const QString& videoName);
     static QString getPath(const QString &videoName);
+    static QPixmap getCover(const QString &videoName);
+    QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
 
 signals:
     void updated();
