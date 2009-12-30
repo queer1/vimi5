@@ -19,3 +19,4 @@ HEADERS += mainwindow.h \
     infopanel.h \
     tagdialog.h \
     aboutdialog.h
+RESOURCES += images.qrc

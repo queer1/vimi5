@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Set up the video list view
     QGroupBox *videoContainer = new QGroupBox(this);
     videoContainer->setLayout(new QVBoxLayout);
-    videoContainer->setTitle("Videos");;
+    videoContainer->setTitle("Videos");
 
     m_videoFilterEdit = new QLineEdit(this);
     videoContainer->layout()->addWidget(m_videoFilterEdit);
@@ -60,8 +60,6 @@ MainWindow::MainWindow(QWidget *parent) :
     updateTagModel();
     m_tagFilterModel->setSourceModel(m_tagModel);
     m_tagView->setModel(m_tagFilterModel);
-
-
 
 
     // Set up the info panel
