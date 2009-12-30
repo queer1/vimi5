@@ -116,6 +116,8 @@ void Collection::scan(QDir dir)
                     addTagToDb(dir.dirName(), QString::fromUtf8(file.readLine().simplified().toLower())); // One tag per line
             }
         }
+        if (getTags(dir.dirName()).size() == 0) // All videos need at least one tag, a bug, unfortunately
+            addTag(dir.dirName(), "video");
         emit statusUpdated("Video added:" + dir.dirName());
 
     }

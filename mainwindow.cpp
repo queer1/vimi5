@@ -157,8 +157,7 @@ void MainWindow::getCollectionPath()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory Containing Collection"),
                                                     Config::collectionPath,
-                                                    QFileDialog::ShowDirsOnly
-                                                    | QFileDialog::DontResolveSymlinks);
+                                                    QFileDialog::ShowDirsOnly);
     if (dir != "") {
         Config::collectionPath = dir;
         Config::save();
