@@ -261,8 +261,18 @@ QPixmap Collection::getCover(const QString &videoName)
         return QPixmap();
 
     QDir dir(getPath(videoName));
-    dir.setFilter(QDir::Files);
 
+
+    // Check if there is a separate folder with covers
+    QStringList names;
+    names << "Covers" << "covers" << "cover" << "Cover";
+    dir.setNameFilters(names);
+    dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+    if (dir.entryList().count() > 0) {
+        dir.cd(dir.entryList().first());
+    }
+
+    dir.setFilter(QDir::Files);
     dir.setNameFilters(QStringList("*front*.jpg"));
     if (dir.entryInfoList().count() > 0) {
         return QPixmap(dir.entryInfoList().first().absoluteFilePath());
