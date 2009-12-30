@@ -5,6 +5,7 @@
 #include "mainwindow.h"
 #include "tagdialog.h"
 
+#include <QDebug>
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QVBoxLayout>
@@ -26,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Set up the video list view
     QGroupBox *videoContainer = new QGroupBox(this);
-    videoContainer->setLayout(new QVBoxLayout(this));
+    videoContainer->setLayout(new QVBoxLayout);
     videoContainer->setTitle("Videos");;
 
     m_videoFilterEdit = new QLineEdit(this);

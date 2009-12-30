@@ -303,7 +303,6 @@ QPixmap Collection::getCover(const QString &videoName, int maxSize)
 // assume that the source image is ARGB32 formatted
 QImage Collection::quickScale(const QImage &s, int width, int height)
 {
-    //Q_ASSERT(source.format() == QImage::Format_ARGB32);
     QImage source;
     if (source.format() != QImage::Format_ARGB32)
         source = s.convertToFormat(QImage::Format_ARGB32);
