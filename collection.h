@@ -41,7 +41,6 @@ private:
     static void addTagToDb(QString video, QString tag);
     static void initializeDatabase();
 
-
     QStringList m_cachedVideoDirectories;
 };
 

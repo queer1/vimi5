@@ -103,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    Config::save();
+    Config::save(); // Just in case
 }
 
 void MainWindow::updateTagModel()
@@ -159,8 +159,10 @@ void MainWindow::getCollectionPath()
                                                     Config::collectionPath,
                                                     QFileDialog::ShowDirsOnly
                                                     | QFileDialog::DontResolveSymlinks);
-    if (dir != "")
+    if (dir != "") {
         Config::collectionPath = dir;
+        Config::save();
+    }
 }
 
 void MainWindow::editTags()

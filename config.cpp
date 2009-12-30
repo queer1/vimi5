@@ -27,6 +27,9 @@ void Config::load()
         movieSuffixes = settingSuffixes;
     else
         movieSuffixes = defaultSuffixes;
+
+    save(); // Save default config
+
 }
 
 void Config::save()

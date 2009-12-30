@@ -2,6 +2,7 @@
 
 #include <QByteArray>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QMessageBox>
 #include <QSqlQuery>
 
@@ -42,13 +43,13 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 void Collection::initializeDatabase()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("vimi.db");
+    QString path = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
+    QDir(path).mkpath(path);
+    db.setDatabaseName(path + "/sqlite.db");
+
     if (!db.open()) {
         QMessageBox::critical(0, tr("Cannot open database"),
-            tr("Unable to establish a database connection.\n"
-               "This example needs SQLite support. Please read "
-               "the Qt SQL driver documentation for information how "
-               "to build it."), QMessageBox::Cancel);
+            tr("Unable to open/create database."), QMessageBox::Cancel);
         return;
     }
 
@@ -254,6 +255,9 @@ QStringList Collection::getFiles(const QString &videoName)
 
 QPixmap Collection::getCover(const QString &videoName)
 {
+    if (videoName.isEmpty())
+        return QPixmap();
+
     QDir dir(getPath(videoName));
     dir.setFilter(QDir::Files);
 
@@ -270,7 +274,6 @@ QPixmap Collection::getCover(const QString &videoName)
     dir.setNameFilters(QStringList("*.jpg"));
     if (dir.entryInfoList().count() > 0) {
         return QPixmap(dir.entryInfoList().first().absoluteFilePath());
-
     }
 
     return QPixmap(); // TODO: get some standard thingy to show here.
