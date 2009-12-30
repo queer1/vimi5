@@ -66,7 +66,7 @@ void InfoPanel::setInfo(const QString &title)
     QPixmap cover = Collection::getCover(title);
     if (qMax(cover.height(), cover.width()) > 250) {
         float factor = 250.0f / qMax(cover.height(), cover.width());
-        cover = cover.scaled(cover.height() * factor, cover.width() * factor, Qt::KeepAspectRatioByExpanding);
+        cover = cover.scaled(cover.height() * factor, cover.width() * factor, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
     }
     m_cover->setPixmap(cover);
     m_cover->repaint();
