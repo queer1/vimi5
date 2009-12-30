@@ -10,10 +10,12 @@ SOURCES += main.cpp \
     collection.cpp \
     config.cpp \
     infopanel.cpp \
-    tagdialog.cpp
+    tagdialog.cpp \
+    aboutdialog.cpp
 HEADERS += mainwindow.h \
     videofilterproxymodel.h \
     collection.h \
     config.h \
     infopanel.h \
-    tagdialog.h
+    tagdialog.h \
+    aboutdialog.h

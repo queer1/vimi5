@@ -1,5 +1,6 @@
 // Copyright 2009 cwk
 
+#include "aboutdialog.h"
 #include "config.h"
 #include "mainwindow.h"
 #include "tagdialog.h"
@@ -83,12 +84,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_videoFilterEdit, SIGNAL(textChanged(QString)), m_videoModel, SLOT(setFilterFixedString(QString)));
     connect(m_infoPanel, SIGNAL(editTags()), this, SLOT(editTags()));
 
-    // Set up the menu
-    QMenu *fileMenu = new QMenu("&File");
+    // Set up the File menu
+    QMenu *fileMenu = new QMenu("&File", this);
     fileMenu->addAction(QIcon(), "&Rescan...", m_collection, SLOT(rescan()), QKeySequence::Refresh);
     fileMenu->addAction(QIcon(), "&Set Path to Collection...", this, SLOT(getCollectionPath()));
     fileMenu->addAction(QIcon(), "&Quit", this, SLOT(close()), QKeySequence::Quit);
     menuBar()->addMenu(fileMenu);
+
+    // Set up the Help menu
+    QMenu *helpMenu = new QMenu("&Help", this);
+    helpMenu->addAction(QIcon(), "&About Vimi...", this, SLOT(showAboutDialog()));
+    menuBar()->addMenu(helpMenu);
 
     m_videoView->resizeColumnToContents(0);
 
@@ -164,4 +170,10 @@ void MainWindow::editTags()
     dialog.raise();
     dialog.exec();
     updateTagModel();
+}
+
+void MainWindow::showAboutDialog()
+{
+    AboutDialog *dialog = new AboutDialog(this);
+    dialog->show();
 }
