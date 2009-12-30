@@ -4,6 +4,7 @@
 #include "infopanel.h"
 #include <QDesktopServices>
 #include <QDebug>
+#include <QScrollArea>
 #include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -42,7 +43,7 @@ void InfoPanel::setInfo(const QString &title)
     QStringList tags = Collection::getTags(title);
     m_videoName = title;
 
-    m_title->setText("<h1>" + title + "</h1>");
+    m_title->setText("<h3>" + title + "</h3>");
 
     // List of tags
     QString tagHtml = "<b>Tags:</b><ul>";

@@ -1,4 +1,5 @@
 // Copyright 2009 cwk
+// Maybe redistributed under GPLv2 or 3
 
 #include <QByteArray>
 #include <QDebug>
@@ -7,6 +8,9 @@
 #include <QSqlQuery>
 
 #include "collection.h"
+
+// Static cover cache
+QHash<QString, QImage> Collection::m_coverCache;
 
 Collection::Collection()
     : QSqlQueryModel()
@@ -29,13 +33,7 @@ QVariant Collection::data(const QModelIndex &item, int role) const
                                "WHERE videoTag.videoId = video.rowid AND videoTag.tagId = tag.rowid "
                                "GROUP BY videoId ORDER BY video.name");
         query.seek(item.row());
-        QPixmap cover = getCover(query.value(0).toString());
-        if (!cover.isNull() && qMax(cover.height(), cover.width()) > Config::maxCoverSize) {
-            float factor = 1;
-            factor = Config::maxCoverSize / qMax(cover.height(), cover.width());
-            return cover.scaled(cover.width() * factor, cover.height() * factor);
-        } else
-            return cover;
+        return getCover(query.value(0).toString(), Config::maxCoverSize);
     } else
         return QSqlQueryModel::data(item, role);
 }
@@ -255,13 +253,13 @@ QStringList Collection::getFiles(const QString &videoName)
     return dir.entryList();
 }
 
-QPixmap Collection::getCover(const QString &videoName)
+QPixmap Collection::getCover(const QString &videoName, int maxSize)
 {
+    qDebug() << "foo";
     if (videoName.isEmpty())
         return QPixmap();
 
     QDir dir(getPath(videoName));
-
 
     // Check if there is a separate folder with covers
     QStringList names;
@@ -272,21 +270,70 @@ QPixmap Collection::getCover(const QString &videoName)
         dir.cd(dir.entryList().first());
     }
 
-    dir.setFilter(QDir::Files);
-    dir.setNameFilters(QStringList("*front*.jpg"));
-    if (dir.entryInfoList().count() > 0) {
-        return QPixmap(dir.entryInfoList().first().absoluteFilePath());
+    // Checking the disk is slow, scaling is fast.
+    QImage cover;
+    if (m_coverCache.contains(videoName))
+        cover = m_coverCache.value(videoName);
+    else {
+        // Try to either find *front*.jpg, *cover*.jpg or just any plain *.jpg
+        dir.setFilter(QDir::Files);
+        if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0)
+            cover = QImage(dir.entryInfoList(QStringList("*front*.jpg")).first().absoluteFilePath());
+        else if (dir.entryInfoList(QStringList("*cover*.jpg")).count() > 0)
+            cover = QImage(dir.entryInfoList(QStringList("*cover*.jpg")).first().absoluteFilePath());
+        else if (dir.entryInfoList(QStringList("*.jpg")).count() > 0)
+            cover = QImage(dir.entryInfoList(QStringList("*.jpg")).first().absoluteFilePath());
+
+        m_coverCache.insert(videoName, cover);
     }
 
-    dir.setNameFilters(QStringList("*cover*.jpg"));
-    if (dir.entryInfoList().count() > 0) {
-        return QPixmap(dir.entryInfoList().first().absoluteFilePath());
+    if (!cover.isNull() && qMax(cover.height(), cover.width()) > maxSize) {
+        float factor = 1;
+        factor = (float)maxSize / qMax(cover.height(), cover.width());
+        return QPixmap::fromImage(quickScale(cover, cover.width() * factor, cover.height() * factor));
+    } else
+        return QPixmap::fromImage(cover);
+}
+
+// Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+// for the explanation of the trick, check out:
+// http://www.virtualdub.org/blog/pivot/entry.php?id=116
+// http://www.compuphase.com/graphic/scale3.htm
+#define AVG(a,b)  ( ((((a)^(b)) & 0xfefefefeUL) >> 1) + ((a)&(b)) )
+
+// assume that the source image is ARGB32 formatted
+QImage Collection::quickScale(const QImage &s, int width, int height)
+{
+    //Q_ASSERT(source.format() == QImage::Format_ARGB32);
+    QImage source;
+    if (source.format() != QImage::Format_ARGB32)
+        source = s.convertToFormat(QImage::Format_ARGB32);
+    else
+        source = s;
+
+    if (width == 0 || height == 0) {
+        qDebug() << "asked to resize to 0";
+        return QImage();
     }
 
-    dir.setNameFilters(QStringList("*.jpg"));
-    if (dir.entryInfoList().count() > 0) {
-        return QPixmap(dir.entryInfoList().first().absoluteFilePath());
+    QImage dest(width, height, QImage::Format_ARGB32);
+
+    int sw = source.width();
+    int sh = source.height();
+    int xs = (sw << 8) / width;
+    int ys = (sh << 8) / height;
+    quint32 *dst = reinterpret_cast<quint32*>(dest.bits());
+    int stride = dest.bytesPerLine() >> 2;
+
+    for (int y = 0, yi = ys >> 2; y < height; ++y, yi += ys, dst += stride) {
+        const quint32 *src1 = reinterpret_cast<const quint32*>(source.scanLine(yi >> 8));
+        const quint32 *src2 = reinterpret_cast<const quint32*>(source.scanLine((yi + ys / 2) >> 8));
+        for (int x = 0, xi1 = xs / 4, xi2 = xs * 3 / 4; x < width; ++x, xi1 += xs, xi2 += xs) {
+            quint32 pixel1 = AVG(src1[xi1 >> 8], src1[xi2 >> 8]);
+            quint32 pixel2 = AVG(src2[xi1 >> 8], src2[xi2 >> 8]);
+            dst[x] = AVG(pixel1, pixel2);
+        }
     }
 
-    return QPixmap(); // TODO: get some standard thingy to show here.
+    return dest;
 }
