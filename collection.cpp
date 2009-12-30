@@ -255,7 +255,6 @@ QStringList Collection::getFiles(const QString &videoName)
 
 QPixmap Collection::getCover(const QString &videoName, int maxSize)
 {
-    qDebug() << "foo";
     if (videoName.isEmpty())
         return QPixmap();
 
