@@ -97,6 +97,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_videoView->resizeColumnToContents(0);
 
+
     statusBar()->showMessage(tr("Ready."));
 }
 
