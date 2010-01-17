@@ -287,10 +287,12 @@ QPixmap Collection::getCover(const QString &videoName, int maxSize)
 
         m_coverCache.insert(videoName, cover);
     }
+    if (cover.isNull())
+        cover = QImage(":/images/defaultcover.png");
 
-    if (!cover.isNull() && qMax(cover.height(), cover.width()) > maxSize) {
+    if (!cover.isNull() && cover.height() > maxSize) {
         float factor = 1;
-        factor = (float)maxSize / qMax(cover.height(), cover.width());
+        factor = (float)maxSize / cover.height(), cover.width();
         return QPixmap::fromImage(quickScale(cover, cover.width() * factor, cover.height() * factor));
     } else
         return QPixmap::fromImage(cover);

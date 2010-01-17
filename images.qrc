@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/images">
         <file>splash.png</file>
+        <file>defaultcover.png</file>
     </qresource>
 </RCC>
