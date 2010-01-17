@@ -22,7 +22,7 @@ InfoPanel::InfoPanel(QWidget *parent) :
     m_tags = new QLabel("");
     m_files = new QLabel("");
     m_path = new QLabel("");
-    m_tagEditButton = new QPushButton("Edit tags...");
+    m_tagEditButton = new QPushButton("&Edit tags...");
 
     setLayout(new QVBoxLayout);
     layout()->addWidget(m_title);
@@ -64,11 +64,7 @@ void InfoPanel::setInfo(const QString &title)
     m_path->setText("<br /> <a href='" + path + "'>Click to open in file manager</a>");
 
     m_cover->setPixmap(QPixmap());
-    QPixmap cover = Collection::getCover(title);
-    if (qMax(cover.height(), cover.width()) > 250) {
-        float factor = 250.0f / qMax(cover.height(), cover.width());
-        cover = cover.scaled(cover.height() * factor, cover.width() * factor, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-    }
+    QPixmap cover = Collection::getCover(title, 250);
     m_cover->setPixmap(cover);
     m_cover->repaint();
 
