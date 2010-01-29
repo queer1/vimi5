@@ -27,13 +27,7 @@ Collection::Collection()
 QVariant Collection::data(const QModelIndex &item, int role) const
 {
     if (role == Qt::DecorationRole && item.column() == 0) {
-        QSqlQuery query;
-        query.exec("SELECT video.name, group_concat(tag.name, ', ') "
-                               "FROM video, tag, videoTag "
-                               "WHERE videoTag.videoId = video.rowid AND videoTag.tagId = tag.rowid "
-                               "GROUP BY videoId ORDER BY video.name");
-        query.seek(item.row());
-        return getCover(query.value(0).toString(), Config::maxCoverSize);
+        return getCover(item.data(Qt::DisplayRole).toString(), Config::maxCoverSize);
     } else
         return QSqlQueryModel::data(item, role);
 }
