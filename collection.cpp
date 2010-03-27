@@ -27,13 +27,7 @@ Collection::Collection()
 QVariant Collection::data(const QModelIndex &item, int role) const
 {
     if (role == Qt::DecorationRole && item.column() == 0) {
-        QSqlQuery query;
-        query.exec("SELECT video.name, group_concat(tag.name, ', ') "
-                               "FROM video, tag, videoTag "
-                               "WHERE videoTag.videoId = video.rowid AND videoTag.tagId = tag.rowid "
-                               "GROUP BY videoId ORDER BY video.name");
-        query.seek(item.row());
-        return getCover(query.value(0).toString(), Config::maxCoverSize);
+        return getCover(item.data(Qt::DisplayRole).toString(), Config::maxCoverSize);
     } else
         return QSqlQueryModel::data(item, role);
 }
@@ -287,10 +281,12 @@ QPixmap Collection::getCover(const QString &videoName, int maxSize)
 
         m_coverCache.insert(videoName, cover);
     }
+    if (cover.isNull())
+        cover = QImage(":/images/defaultcover.png");
 
-    if (!cover.isNull() && qMax(cover.height(), cover.width()) > maxSize) {
+    if (!cover.isNull() && cover.height() > maxSize) {
         float factor = 1;
-        factor = (float)maxSize / qMax(cover.height(), cover.width());
+        factor = (float)maxSize / cover.height(), cover.width();
         return QPixmap::fromImage(quickScale(cover, cover.width() * factor, cover.height() * factor));
     } else
         return QPixmap::fromImage(cover);
