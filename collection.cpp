@@ -262,7 +262,7 @@ QPixmap Collection::getCover(const QString &videoName, int maxSize)
 
     // Check if there is a separate folder with covers
     QStringList names;
-    names << "Covers" << "covers" << "cover" << "Cover";
+    names << "*cover*" << "*Cover*";
     dir.setNameFilters(names);
     dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
     if (dir.entryList().count() > 0) {
@@ -280,6 +280,8 @@ QPixmap Collection::getCover(const QString &videoName, int maxSize)
             cover = QImage(dir.entryInfoList(QStringList("*front*.jpg")).first().absoluteFilePath());
         else if (dir.entryInfoList(QStringList("*cover*.jpg")).count() > 0)
             cover = QImage(dir.entryInfoList(QStringList("*cover*.jpg")).first().absoluteFilePath());
+        else if (dir.entryInfoList(QStringList("*" + videoName + "*.jpg")).count() > 0)
+            cover = QImage(dir.entryInfoList(QStringList("*" + videoName + "*.jpg")).first().absoluteFilePath());
         else if (dir.entryInfoList(QStringList("*.jpg")).count() > 0)
             cover = QImage(dir.entryInfoList(QStringList("*.jpg")).first().absoluteFilePath());
 
