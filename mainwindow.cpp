@@ -6,6 +6,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QTabWidget(parent)
 {
     setTabPosition(QTabWidget::West);
-    addTab(new CheggitView(this), QIcon(), "Cheggit");
+    addTab(CheggitView::instance(), QIcon(), "Cheggit");
     addTab(new CollectionView(this), QIcon(), "Collection");
 }

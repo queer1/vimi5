@@ -1,31 +1,39 @@
 # Copyright 2009 cwk
-QT += core \
-    gui \
-    sql \
-    webkit \
-    network \
-    xml
+
+QT += core\
+      gui\
+      network\
+      sql\
+      webkit\
+      xml
+
 TARGET = vimi
 TEMPLATE = app
-SOURCES += main.cpp \
-    collectionview.cpp \
-    videofilterproxymodel.cpp \
-    collection.cpp \
-    config.cpp \
-    infopanel.cpp \
-    tagdialog.cpp \
-    aboutdialog.cpp \
-    cheggitview.cpp \
-    mainwindow.cpp \
-    cookiestorage.cpp
-HEADERS += collectionview.h \
-    videofilterproxymodel.h \
-    collection.h \
-    config.h \
-    infopanel.h \
-    tagdialog.h \
-    aboutdialog.h \
-    cheggitview.h \
-    mainwindow.h \
-    cookiestorage.h
+
+SOURCES += main.cpp\
+           aboutdialog.cpp\
+           cheggitview.cpp\
+           collection.cpp\
+           collectionview.cpp\
+           config.cpp\
+           cookiestorage.cpp\
+           infopanel.cpp\
+           mainwindow.cpp\
+           tagdialog.cpp\
+           tagfetchdialog.cpp\
+           videofilterproxymodel.cpp
+
+HEADERS += aboutdialog.h\
+           cheggitview.h\
+           collection.h\
+           collectionview.h\
+           config.h\
+           cookiestorage.h\
+           infopanel.h\
+           mainwindow.h\
+           tagdialog.h\
+           tagfetchdialog.h\
+           videofilterproxymodel.h
+
 RESOURCES += images.qrc
+

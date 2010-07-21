@@ -10,14 +10,15 @@ class CheggitView : public QWidget
 {
 Q_OBJECT
 public:
-    explicit CheggitView(QWidget *parent = 0);
+    static CheggitView *instance() { if (!m_instance) m_instance=new CheggitView; return m_instance; }
 
     void searchMovies(const QString &title);
     void getTags(const QUrl &movie);
 
+
 signals:
-    void foundMovies(const QList<QPair<QString, QUrl> > movies);
-    void foundTags(const QStringList tags);
+    void foundMovies(const QList<QPair<QString, QUrl> > &movies);
+    void foundTags(const QStringList &tags);
 
 private slots:
     void parseSearch(QNetworkReply *reply);
@@ -25,6 +26,9 @@ private slots:
     void search();
 
 private:
+    CheggitView();
+    static CheggitView *m_instance;
+
     QToolBar *m_toolbar;
     QWebView *m_webview;
     QNetworkAccessManager *m_searchAccessManager;

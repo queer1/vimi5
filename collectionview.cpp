@@ -4,6 +4,7 @@
 #include "config.h"
 #include "collectionview.h"
 #include "tagdialog.h"
+#include "tagfetchdialog.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -75,13 +76,14 @@ CollectionView::CollectionView(QWidget *parent) :
     splitter->addWidget(m_infoPanel);
 
     // Connect signals
-    connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(updateVideoFilter(QStandardItem*)));
-    connect(m_collection, SIGNAL(updated()), this, SLOT(updateTagModel()));
+    connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), SLOT(updateVideoFilter(QStandardItem*)));
+    connect(m_collection, SIGNAL(updated()), SLOT(updateTagModel()));
     connect(m_collection, SIGNAL(statusUpdated(QString)), statusBar(), SLOT(showMessage(QString)));
-    connect(m_videoView, SIGNAL(activated(QModelIndex)), this, SLOT(updateInfoPanel(QModelIndex)));
+    connect(m_videoView, SIGNAL(activated(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_tagFilterEdit, SIGNAL(textChanged(QString)), m_tagFilterModel, SLOT(setFilterFixedString(QString)));
     connect(m_videoFilterEdit, SIGNAL(textChanged(QString)), m_videoModel, SLOT(setFilterFixedString(QString)));
-    connect(m_infoPanel, SIGNAL(editTags()), this, SLOT(editTags()));
+    connect(m_infoPanel, SIGNAL(editTags()), SLOT(editTags()));
+    connect(m_infoPanel, SIGNAL(fetchTags()), SLOT(fetchTags()));
 
     // Set up the File menu
     QMenu *fileMenu = new QMenu("&File", this);
@@ -167,6 +169,15 @@ void CollectionView::getCollectionPath()
 void CollectionView::editTags()
 {
     TagDialog dialog(m_infoPanel->videoName(), m_collection, this);
+    dialog.show();
+    dialog.raise();
+    dialog.exec();
+    updateTagModel();
+}
+
+void CollectionView::fetchTags()
+{
+    TagFetchDialog dialog(m_infoPanel->videoName(), m_collection, this);
     dialog.show();
     dialog.raise();
     dialog.exec();

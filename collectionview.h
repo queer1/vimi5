@@ -27,6 +27,7 @@ private slots:
     void updateInfoPanel(const QModelIndex&);
     void getCollectionPath();
     void editTags();
+    void fetchTags();
     void showAboutDialog();
 
 private:

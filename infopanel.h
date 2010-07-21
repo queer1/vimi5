@@ -18,6 +18,7 @@ public:
 
 signals:
     void editTags();
+    void fetchTags();
 
 private slots:
     void launchFile(const QString&);
@@ -28,7 +29,6 @@ private:
     QLabel *m_files;
     QLabel *m_path;
     QLabel *m_cover;
-    QPushButton *m_tagEditButton;
     QString m_videoName;
 
 };

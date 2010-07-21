@@ -6,11 +6,11 @@
 #include <QRegExp>
 #include <QPair>
 
+CheggitView *CheggitView::m_instance=0;
 
-
-CheggitView::CheggitView(QWidget *parent) :
-    QWidget(parent), m_searching(false),
-    m_webview(new QWebView(this))
+CheggitView::CheggitView() : QWidget(0),
+    m_webview(new QWebView(this)),
+    m_searching(false)
 {
     CookieStorage *cookieJar = new CookieStorage(this);
     m_webview->page()->networkAccessManager()->setCookieJar(cookieJar);
@@ -27,9 +27,6 @@ CheggitView::CheggitView(QWidget *parent) :
 
     m_webview->load(QUrl("http://cheggit.net"));
 
-    QPushButton *button = new QPushButton("test!", this);
-    connect(button, SIGNAL(clicked()), SLOT(search()));
-    layout()->addWidget(button);
 
     m_movieAccessManager = new QNetworkAccessManager(this);
     m_movieAccessManager->setCookieJar(cookieJar);
@@ -81,7 +78,7 @@ void CheggitView::parseSearch(QNetworkReply *reply)
             title = regexp.cap(2);
             pos += regexp.matchedLength();
             if (url.isEmpty() || title.isEmpty()) continue;
-            qDebug() << title << url;
+            //qDebug() << title << url;
             urls.append(QPair<QString, QUrl>(title, QUrl(urlBeginning + url)));
         }
         if (!urls.isEmpty())
@@ -117,7 +114,7 @@ void CheggitView::parseMovie(QNetworkReply *reply)
             tag = regexp.cap(1);
             pos += regexp.matchedLength();
             if (tag.isEmpty()) continue;
-            qDebug() << tag;
+            //qDebug() << tag;
             tags << tag;
         }
 

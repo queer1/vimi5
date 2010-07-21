@@ -22,7 +22,8 @@ InfoPanel::InfoPanel(QWidget *parent) :
     m_tags = new QLabel("");
     m_files = new QLabel("");
     m_path = new QLabel("");
-    m_tagEditButton = new QPushButton("&Edit tags...");
+    QPushButton *tagEditButton = new QPushButton("&Edit tags...");
+    QPushButton *tagFetchButton = new QPushButton("&Fetch tags...");
 
     setLayout(new QVBoxLayout);
     layout()->addWidget(m_title);
@@ -31,11 +32,13 @@ InfoPanel::InfoPanel(QWidget *parent) :
     layout()->addWidget(m_files);
     layout()->addWidget(m_path);
     layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
-    layout()->addWidget(m_tagEditButton);
+    layout()->addWidget(tagEditButton);
+    layout()->addWidget(tagFetchButton);
 
     connect(m_files, SIGNAL(linkActivated(QString)), SLOT(launchFile(QString)));
     connect(m_path, SIGNAL(linkActivated(QString)), SLOT(launchFile(QString)));
-    connect(m_tagEditButton, SIGNAL(clicked()), SIGNAL(editTags()));
+    connect(tagEditButton, SIGNAL(clicked()), SIGNAL(editTags()));
+    connect(tagFetchButton, SIGNAL(clicked()), SIGNAL(fetchTags()));
 }
 
 void InfoPanel::setInfo(const QString &title)
