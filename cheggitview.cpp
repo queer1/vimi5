@@ -1,4 +1,5 @@
 #include "cheggitview.h"
+#include "cookiestorage.h"
 #include <QDebug>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -8,9 +9,11 @@
 
 
 CheggitView::CheggitView(QWidget *parent) :
-    QWidget(parent), m_searching(false)
+    QWidget(parent), m_searching(false),
+    m_webview(new QWebView(this))
 {
-    m_webview = new QWebView(this);
+    CookieStorage *cookieJar = new CookieStorage(this);
+    m_webview->page()->networkAccessManager()->setCookieJar(cookieJar);
 
     m_toolbar = new QToolBar("Actions", this);
     m_toolbar->addAction(m_webview->pageAction(QWebPage::Back));
@@ -29,9 +32,9 @@ CheggitView::CheggitView(QWidget *parent) :
     layout()->addWidget(button);
 
     m_movieAccessManager = new QNetworkAccessManager(this);
-    m_movieAccessManager->setCookieJar(m_webview->page()->networkAccessManager()->cookieJar());
+    m_movieAccessManager->setCookieJar(cookieJar);
     m_searchAccessManager = new QNetworkAccessManager(this);
-    m_searchAccessManager->setCookieJar(m_webview->page()->networkAccessManager()->cookieJar());
+    m_searchAccessManager->setCookieJar(cookieJar);
 }
 
 void CheggitView::search()

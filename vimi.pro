@@ -16,7 +16,8 @@ SOURCES += main.cpp \
     tagdialog.cpp \
     aboutdialog.cpp \
     cheggitview.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    cookiestorage.cpp
 HEADERS += collectionview.h \
     videofilterproxymodel.h \
     collection.h \
@@ -25,5 +26,6 @@ HEADERS += collectionview.h \
     tagdialog.h \
     aboutdialog.h \
     cheggitview.h \
-    mainwindow.h
+    mainwindow.h \
+    cookiestorage.h
 RESOURCES += images.qrc
