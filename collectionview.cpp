@@ -1,13 +1,11 @@
 // Copyright 2009 cwk
 
-#include "aboutdialog.h"
 #include "config.h"
 #include "collectionview.h"
 #include "tagdialog.h"
 #include "tagfetchdialog.h"
 
 #include <QDebug>
-#include <QFileDialog>
 #include <QGroupBox>
 #include <QVBoxLayout>
 #include <QMenuBar>
@@ -15,11 +13,10 @@
 #include <QSqlQuery>
 #include <QSplitter>
 #include <QSqlError>
-#include <QStatusBar>
 #include <QFileSystemModel>
 
 CollectionView::CollectionView(QWidget *parent) :
-    QMainWindow(parent)
+    QSplitter(parent)
 {
 
     Config::load();
@@ -66,41 +63,21 @@ CollectionView::CollectionView(QWidget *parent) :
     // Set up the info panel
     m_infoPanel = new InfoPanel(this);
 
-    // Set a splitter as main widget in the window
-    QSplitter *splitter = new QSplitter(this);
-    setCentralWidget(splitter);
-
     // Add the widgets to the window
-    splitter->addWidget(tagContainer);
-    splitter->addWidget(videoContainer);
-    splitter->addWidget(m_infoPanel);
+    addWidget(tagContainer);
+    addWidget(videoContainer);
+    addWidget(m_infoPanel);
 
     // Connect signals
     connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), SLOT(updateVideoFilter(QStandardItem*)));
     connect(m_collection, SIGNAL(updated()), SLOT(updateTagModel()));
-    connect(m_collection, SIGNAL(statusUpdated(QString)), statusBar(), SLOT(showMessage(QString)));
     connect(m_videoView, SIGNAL(activated(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_tagFilterEdit, SIGNAL(textChanged(QString)), m_tagFilterModel, SLOT(setFilterFixedString(QString)));
     connect(m_videoFilterEdit, SIGNAL(textChanged(QString)), m_videoModel, SLOT(setFilterFixedString(QString)));
     connect(m_infoPanel, SIGNAL(editTags()), SLOT(editTags()));
     connect(m_infoPanel, SIGNAL(fetchTags()), SLOT(fetchTags()));
 
-    // Set up the File menu
-    QMenu *fileMenu = new QMenu("&File", this);
-    fileMenu->addAction(QIcon(), "&Rescan...", m_collection, SLOT(rescan()), QKeySequence::Refresh);
-    fileMenu->addAction(QIcon(), "&Set Path to Collection...", this, SLOT(getCollectionPath()));
-    fileMenu->addAction(QIcon(), "&Quit", this, SLOT(close()), QKeySequence::Quit);
-    menuBar()->addMenu(fileMenu);
-
-    // Set up the Help menu
-    QMenu *helpMenu = new QMenu("&Help", this);
-    helpMenu->addAction(QIcon(), "&About Vimi...", this, SLOT(showAboutDialog()));
-    menuBar()->addMenu(helpMenu);
-
     m_videoView->resizeColumnToContents(0);
-
-
-    statusBar()->showMessage(tr("Ready."));
 }
 
 CollectionView::~CollectionView()
@@ -155,17 +132,6 @@ void CollectionView::updateInfoPanel(const QModelIndex &i)
     m_infoPanel->setInfo(videoName);
 }
 
-void CollectionView::getCollectionPath()
-{
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory Containing Collection"),
-                                                    Config::collectionPath,
-                                                    QFileDialog::ShowDirsOnly);
-    if (dir != "") {
-        Config::collectionPath = dir;
-        Config::save();
-    }
-}
-
 void CollectionView::editTags()
 {
     TagDialog dialog(m_infoPanel->videoName(), m_collection, this);
@@ -182,10 +148,4 @@ void CollectionView::fetchTags()
     dialog.raise();
     dialog.exec();
     updateTagModel();
-}
-
-void CollectionView::showAboutDialog()
-{
-    AboutDialog *dialog = new AboutDialog(this);
-    dialog->show();
 }

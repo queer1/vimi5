@@ -2,17 +2,20 @@
 #define MAINWINDOW_H
 
 #include <QTabWidget>
+#include <QMainWindow>
 
-class MainWindow : public QTabWidget
+class MainWindow : public QMainWindow
 {
 Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = 0);
 
-signals:
+private slots:
+    void showAboutDialog();
+    void getCollectionPath();
 
-public slots:
-
+private:
+    QTabWidget m_tabWidget;
 };
 
 #endif // MAINWINDOW_H

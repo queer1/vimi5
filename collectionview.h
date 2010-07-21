@@ -8,12 +8,12 @@
 #include "videofilterproxymodel.h"
 #include <QLineEdit>
 #include <QListView>
-#include <QMainWindow>
+#include <QSplitter>
 #include <QSqlQueryModel>
 #include <QStandardItemModel>
 #include <QTreeView>
 
-class CollectionView : public QMainWindow {
+class CollectionView : public QSplitter {
 
     Q_OBJECT
 
@@ -21,14 +21,14 @@ public:
     CollectionView(QWidget *parent = 0);
     ~CollectionView();
 
+    Collection *collection() { return m_collection; }
+
 private slots:
     void updateVideoFilter(QStandardItem *tag);
     void updateTagModel();
     void updateInfoPanel(const QModelIndex&);
-    void getCollectionPath();
     void editTags();
     void fetchTags();
-    void showAboutDialog();
 
 private:
     QListView *m_tagView;
