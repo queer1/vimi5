@@ -15,6 +15,7 @@ public:
 private:
     QLabel *m_text;
     QLabel *m_header;
+    QLabel *m_logo;
     QPushButton *m_button;
 };
 
