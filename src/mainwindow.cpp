@@ -29,7 +29,9 @@ MainWindow::MainWindow(QWidget *parent) :
     helpMenu->addAction(QIcon(), "&About Vimi...", this, SLOT(showAboutDialog()));
     menuBar()->addMenu(helpMenu);
 
-
+    if (Config::collectionPath().isEmpty()) {
+        getCollectionPath();
+    }
     statusBar()->showMessage(tr("Ready."));
 }
 
@@ -43,10 +45,9 @@ void MainWindow::showAboutDialog()
 void MainWindow::getCollectionPath()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory Containing Collection"),
-                                                    Config::collectionPath,
+                                                    Config::collectionPath(),
                                                     QFileDialog::ShowDirsOnly);
     if (dir != "") {
-        Config::collectionPath = dir;
-        Config::save();
+        Config::setCollectionPath(dir);
     }
 }

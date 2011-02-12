@@ -18,9 +18,6 @@
 CollectionView::CollectionView(QWidget *parent) :
     QSplitter(parent)
 {
-
-    Config::load();
-
     m_collection = new Collection();
 
     // Set up the video list view
@@ -78,11 +75,6 @@ CollectionView::CollectionView(QWidget *parent) :
     connect(m_infoPanel, SIGNAL(fetchTags()), SLOT(fetchTags()));
 
     m_videoView->resizeColumnToContents(0);
-}
-
-CollectionView::~CollectionView()
-{
-    Config::save(); // Just in case
 }
 
 void CollectionView::updateTagModel()

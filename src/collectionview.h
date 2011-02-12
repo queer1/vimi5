@@ -19,7 +19,6 @@ class CollectionView : public QSplitter {
 
 public:
     CollectionView(QWidget *parent = 0);
-    ~CollectionView();
 
     Collection *collection() { return m_collection; }
 

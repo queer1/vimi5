@@ -4,17 +4,18 @@
 #include <QDesktopServices>
 #include <QSettings>
 
-QString Config::collectionPath;
-QStringList Config::movieSuffixes;
-float Config::maxCoverSize;
+QString Config::m_collectionPath;
+QStringList Config::m_movieSuffixes;
+int Config::m_maxCoverSize;
+bool Config::m_loaded = false;
 
 void Config::load()
 {
     QSettings settings;
 
-    collectionPath = settings.value("collectionPath", QDesktopServices::storageLocation(QDesktopServices::MoviesLocation)).toString();
+    m_collectionPath = settings.value("collectionPath", QDesktopServices::storageLocation(QDesktopServices::MoviesLocation)).toString();
 
-    maxCoverSize = settings.value("maxCoverSize", 150.0f).toFloat();
+    m_maxCoverSize = settings.value("maxCoverSize", 150).toInt();
 
     QStringList defaultSuffixes;
     defaultSuffixes << "*.mpg"
@@ -24,18 +25,47 @@ void Config::load()
                     << "*.mp4";
     QStringList settingSuffixes = settings.value("movieSuffixes", defaultSuffixes).toStringList();
     if (settingSuffixes.length() > 0)
-        movieSuffixes = settingSuffixes;
+        m_movieSuffixes = settingSuffixes;
     else
-        movieSuffixes = defaultSuffixes;
+        m_movieSuffixes = defaultSuffixes;
 
     save(); // Save default config
-
 }
 
 void Config::save()
 {
     QSettings settings;
-    settings.setValue("collectionPath", collectionPath);
-    settings.setValue("movieSuffixes", movieSuffixes);
-    settings.setValue("maxCoverSize", maxCoverSize);
+    settings.setValue("collectionPath", m_collectionPath);
+    settings.setValue("movieSuffixes", m_movieSuffixes);
+    settings.setValue("maxCoverSize", m_maxCoverSize);
+}
+
+QString Config::collectionPath()
+{
+    if (!m_loaded)
+        load();
+    return m_collectionPath;
+}
+
+QStringList Config::movieSuffixes()
+{
+    if (!m_loaded)
+        load();
+    return m_movieSuffixes;
+}
+
+int Config::maxCoverSize()
+{
+    if (!m_loaded)
+        load();
+    return m_maxCoverSize;
+}
+
+void Config::setCollectionPath(QString path)
+{
+    if (!m_loaded)
+        load();
+
+    m_collectionPath = path;
+    save();
 }

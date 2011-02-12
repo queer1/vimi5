@@ -9,14 +9,19 @@
 class Config
 {
 public:
+    static QString collectionPath();
+    static QStringList movieSuffixes();
+    static int maxCoverSize();
+
+    static void setCollectionPath(QString path);
+private:
     static void load();
     static void save();
 
-    static void getCollectionPath();
-
-    static QString collectionPath;
-    static QStringList movieSuffixes;
-    static float maxCoverSize;
+    static QString m_collectionPath;
+    static QStringList m_movieSuffixes;
+    static int m_maxCoverSize;
+    static bool m_loaded;
 };
 
 #endif // CONFIG_H

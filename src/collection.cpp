@@ -27,7 +27,7 @@ Collection::Collection()
 QVariant Collection::data(const QModelIndex &item, int role) const
 {
     if (role == Qt::DecorationRole && item.column() == 0) {
-        return getCover(item.data(Qt::DisplayRole).toString(), Config::maxCoverSize);
+        return getCover(item.data(Qt::DisplayRole).toString(), Config::maxCoverSize());
     } else
         return QSqlQueryModel::data(item, role);
 }
@@ -77,7 +77,7 @@ void Collection::rescan()
     while (query.next())
         m_cachedVideoDirectories << query.value(0).toString();
 
-    scan(QDir(Config::collectionPath));
+    scan(QDir(Config::collectionPath()));
 
     reload();
     emit updated();
@@ -92,7 +92,7 @@ void Collection::scan(QDir dir)
     if (m_cachedVideoDirectories.contains(dir.path())) // We already know about this video
         return;
 
-    dir.setNameFilters(Config::movieSuffixes);
+    dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
     if (dir.count() > 0) { // Found movie files
         QSqlQuery query;
@@ -241,7 +241,7 @@ QStringList Collection::getFiles(const QString &videoName)
 {
 
     QDir dir(getPath(videoName));
-    dir.setNameFilters(Config::movieSuffixes);
+    dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
 
     return dir.entryList();
