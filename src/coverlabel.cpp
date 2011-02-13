@@ -45,24 +45,28 @@ void CoverLabel::enterEvent(QEvent *)
 void CoverLabel::nextImage()
 {
     QImage image;
+    int height, width, ratio;
     // Sanity check sizes
     do {
-        while (m_dir->fileInfo().size() > 1024*1024 && m_dir->hasNext()) // more than 1 MB
-            m_dir->next();
         image = QImage(m_dir->next());
-    } while ((image.height() > 1024 || image.width() > 1024) && m_dir->hasNext());
+        height = image.height();
+        width = image.width();
+        if (height == 0 || width == 0) continue;
+
+        ratio = qMax(width, height) / qMin(width, height);
+    } while (m_dir->hasNext() &&
+            (height > 1024 || width > 1024 ||
+            height < 100 || width < 100 ||
+            ratio > 2));
 
     if (!m_dir->hasNext()) { // restart
         m_timer.stop();
         enterEvent();
+        return;
     }
 
-    if (image.height() > height()) {
-        float factor = (float)height() / image.height();
-        image = Video::quickScale(image, image.width() * factor, image.height() * factor);
-    }
-    if (image.width() > width()) {
-        float factor = (float)width() / image.width();
+    if (image.width() > this->width()) {
+        float factor = (float)this->width() / image.width();
         image = Video::quickScale(image, image.width() * factor, image.height() * factor);
     }
     setPixmap(QPixmap::fromImage(image));
