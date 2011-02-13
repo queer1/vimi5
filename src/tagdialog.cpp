@@ -20,7 +20,7 @@ TagDialog::TagDialog(const QString &videoName, Collection *collection, QWidget *
 
     m_tagEdit = new QComboBox(this);
     m_tagEdit->setEditable(true);
-    m_tagEdit->setCompleter(new QCompleter(Collection::getTags(), this));
+    m_tagEdit->setCompleter(new QCompleter(Collection::getTags().toList(), this));
     m_tagEdit->completer()->setCaseSensitivity(Qt::CaseInsensitive);
 
     m_tagView = new QListWidget(this);
@@ -53,7 +53,7 @@ TagDialog::TagDialog(const QString &videoName, Collection *collection, QWidget *
 void TagDialog::updateModel()
 {
     m_tagView->clear();
-    m_tagView->insertItems(0, Collection::getTags(m_videoName));
+    m_tagView->insertItems(0, Collection::getTags(m_videoName).toList());
 }
 
 void TagDialog::addTag()

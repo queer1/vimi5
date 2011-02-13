@@ -4,26 +4,35 @@
 #define COLLECTION_H
 
 #include "config.h"
+#include "video.h"
 #include <QDir>
 #include <QImage>
-#include <QSqlQueryModel>
+#include <QAbstractTableModel>
 #include <QHash>
+#include <QSet>
 
-class Collection : public QSqlQueryModel
+class Collection : public QAbstractTableModel
 {
 
     Q_OBJECT;
 
 public:
     Collection();
+    ~Collection();
 
     void addTag(const QString &video, const QString &tag);
     void removeTag(const QString &video, const QString &tag);
-    static QStringList getTags(const QString& videoName = QString());
+    static QSet<QString> getTags(const QString& videoName = QString());
     static QStringList getFiles(const QString& videoName);
     static QString getPath(const QString &videoName);
     static QPixmap getCover(const QString &videoName, int maxSize = Config::maxCoverSize());
+
     QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
+    int rowCount(const QModelIndex & = QModelIndex()) const { return m_videoNames.size(); }
+    int columnCount(const QModelIndex &) const { return 2; }
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    bool hasChildren(const QModelIndex &index) const;
+
 
 signals:
     void updated();
@@ -37,13 +46,12 @@ private slots:
 
 private:
     void scan(QDir directory);
-    static void writeTagCache(const QString &video);
+    void addVideo(const Video &video);
 
-    static void addTagToDb(QString video, QString tag);
     static void initializeDatabase();
-    static QImage quickScale(const QImage &source, int width, int height);
 
-    static QHash<QString, QImage> m_coverCache;
+    static QHash<QString, Video> m_videos;
+    static QStringList m_videoNames;
 
     QStringList m_cachedVideoDirectories;
 };

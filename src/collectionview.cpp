@@ -10,9 +10,7 @@
 #include <QVBoxLayout>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QSqlQuery>
 #include <QSplitter>
-#include <QSqlError>
 #include <QFileSystemModel>
 
 CollectionView::CollectionView(QWidget *parent) :
@@ -80,18 +78,14 @@ CollectionView::CollectionView(QWidget *parent) :
 
 void CollectionView::updateTagModel()
 {
-    QSqlQuery query;
-    query.exec("SELECT DISTINCT name FROM tag");
-
     m_tagModel->clear();
 
     QStringList activeTags = m_videoModel->activeTagFilters();
+    QList<QString> allTags = Collection::getTags().toList();
     m_videoModel->clearTags();
 
     QStandardItem *tag;
-    QString tagName;
-    while (query.next()) {
-        tagName = query.value(0).toString();
+    foreach(const QString &tagName, allTags) {
         tag = new QStandardItem(tagName);
         tag->setCheckable(true);
 

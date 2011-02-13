@@ -9,7 +9,6 @@
 #include <QLineEdit>
 #include <QListView>
 #include <QSplitter>
-#include <QSqlQueryModel>
 #include <QStandardItemModel>
 #include <QTreeView>
 

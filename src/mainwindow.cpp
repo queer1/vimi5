@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_tabWidget.addTab(CheggitView::instance(), QIcon(), "Cheggit");
     CollectionView *cv = new CollectionView;
     m_tabWidget.addTab(cv, QIcon(), "Collection");
+    m_tabWidget.setCurrentIndex(1);
 
     // Set up the File menu
     QMenu *fileMenu = new QMenu("&File", this);

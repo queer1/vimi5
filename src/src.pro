@@ -3,7 +3,6 @@
 QT += core\
       gui\
       network\
-      sql\
       webkit\
       xml
 
@@ -21,7 +20,8 @@ SOURCES += main.cpp\
            mainwindow.cpp\
            tagdialog.cpp\
            tagfetchdialog.cpp\
-           videofilterproxymodel.cpp
+           videofilterproxymodel.cpp \
+    video.cpp
 
 HEADERS += aboutdialog.h\
            cheggitview.h\
@@ -33,7 +33,7 @@ HEADERS += aboutdialog.h\
            mainwindow.h\
            tagdialog.h\
            tagfetchdialog.h\
-           videofilterproxymodel.h
+           videofilterproxymodel.h \
+    video.h
 
 include(images/images.pro)
-

@@ -9,7 +9,6 @@
 #include <QLabel>
 #include <QListWidget>
 #include <QPushButton>
-#include <QSqlQueryModel>
 
 class TagDialog : public QDialog
 {
@@ -27,7 +26,6 @@ private:
 
     QComboBox *m_tagEdit;
     QListWidget *m_tagView;
-    QSqlQueryModel *m_tagModel;
     QPushButton *m_addButton;
     QPushButton *m_removeButton;
     QPushButton *m_closeButton;
