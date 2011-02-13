@@ -21,14 +21,16 @@ CollectionView::CollectionView(QWidget *parent) :
     // Set up the video list view
     QGroupBox *videoContainer = new QGroupBox(this);
     videoContainer->setLayout(new QVBoxLayout);
-    videoContainer->setTitle("Videos");
+    //videoContainer->setTitle("Videos");
 
     m_videoFilterEdit = new QLineEdit(this);
+    m_videoFilterEdit->setPlaceholderText("Search videos");
     videoContainer->layout()->addWidget(m_videoFilterEdit);
 
     m_videoView = new QTreeView(this);
     m_videoView->setWordWrap(true);
-    m_videoView->setHeaderHidden(true);
+    m_videoView->setAlternatingRowColors(true);
+    m_videoView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     videoContainer->layout()->addWidget(m_videoView);
 
     m_videoModel = new VideoFilterProxyModel;
@@ -39,10 +41,11 @@ CollectionView::CollectionView(QWidget *parent) :
     // Set up the tag view
     QGroupBox *tagContainer = new QGroupBox(this);
     tagContainer->setLayout(new QVBoxLayout);
-    tagContainer->setTitle("Tags");
+    //tagContainer->setTitle("Tags");
     tagContainer->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 
     m_tagFilterEdit = new QLineEdit(this);
+    m_tagFilterEdit->setPlaceholderText("Search tags");
     tagContainer->layout()->addWidget(m_tagFilterEdit);
 
     m_tagView = new QListView(this);
@@ -68,6 +71,7 @@ CollectionView::CollectionView(QWidget *parent) :
     connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), SLOT(updateVideoFilter(QStandardItem*)));
     connect(m_collection, SIGNAL(updated()), SLOT(updateTagModel()));
     connect(m_videoView, SIGNAL(activated(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
+    connect(m_videoView, SIGNAL(clicked(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_tagFilterEdit, SIGNAL(textChanged(QString)), m_tagFilterModel, SLOT(setFilterFixedString(QString)));
     connect(m_videoFilterEdit, SIGNAL(textChanged(QString)), m_videoModel, SLOT(setFilterFixedString(QString)));
     connect(m_infoPanel, SIGNAL(editTags()), SLOT(editTags()));
@@ -82,6 +86,7 @@ void CollectionView::updateTagModel()
 
     QStringList activeTags = m_videoModel->activeTagFilters();
     QList<QString> allTags = Collection::getTags().toList();
+    qSort(allTags);
     m_videoModel->clearTags();
 
     QStandardItem *tag;

@@ -32,7 +32,7 @@ public:
     int columnCount(const QModelIndex &) const { return 2; }
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     bool hasChildren(const QModelIndex &index) const;
-
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
 signals:
     void updated();

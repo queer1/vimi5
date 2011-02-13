@@ -27,25 +27,23 @@ Collection::Collection()
     }
 
     reload();
-    setHeaderData(0, Qt::Horizontal, tr("Name"));
-    setHeaderData(1, Qt::Horizontal, tr("Tags"));
 
     connect(this, SIGNAL(updated()), SLOT(reload()));
 }
 
 Collection::~Collection()
 {
-    QString path = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
-    QDir(path).mkpath(path);
-    QFile file(path + "/videos.db");
-    if (file.open(QIODevice::WriteOnly)) {
-        foreach(const Video &video, m_videos) {
-            file.write(video.path().toUtf8());
-        }
-        file.close();
-    } else {
-        qWarning() << file.errorString();
-    }
+}
+
+QVariant Collection::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+        return QVariant();
+
+    if (section == 0)
+        return tr("Name");
+    else if (section == 1)
+        return tr("Tags");
 }
 
 QVariant Collection::data(const QModelIndex &item, int role) const
@@ -97,15 +95,14 @@ bool Collection::hasChildren(const QModelIndex &index) const
 
 void Collection::rescan()
 {
-    qDebug() << "Rescanning collection ...";
     emit statusUpdated("Starting scan...");
 
     m_cachedVideoDirectories.clear();
- /*   QSqlQuery query;
-    query.exec("SELECT path FROM video");
-    while (query.next())
-        m_cachedVideoDirectories << query.value(0).toString();*/
 
+    beginRemoveRows(QModelIndex(), 0, rowCount());
+    m_videoNames.clear();
+    m_videos.clear();
+    endRemoveRows();
     scan(QDir(Config::collectionPath()));
 
     reload();
@@ -128,9 +125,6 @@ void Collection::rescan()
 void Collection::scan(QDir dir)
 {
     qDebug() << "Scanning directory: " << dir.path();
-
-  //  if (m_cachedVideoDirectories.contains(dir.path())) // We already know about this video
-  //      return;
 
     dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
