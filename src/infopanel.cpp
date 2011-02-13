@@ -14,9 +14,10 @@ InfoPanel::InfoPanel(QWidget *parent) :
 {
     hide();
 
-    setTitle("Info");
+    //setTitle("Info");
 
     m_title = new QLabel("");
+    m_title->setWordWrap(true);
     m_cover = new QLabel();
 
     m_tags = new QLabel("");
@@ -48,11 +49,15 @@ void InfoPanel::setInfo(const QString &title)
 
     m_title->setText("<h3>" + title + "</h3>");
 
-    // List of tags
-    QString tagHtml = "<b>Tags:</b><ul>";
-    foreach (QString tag, tags) tagHtml += "<li>" + tag + "</li>";
-    tagHtml += "</ul>";
-    m_tags->setText(tagHtml);
+    if (!tags.empty()) {
+        // List of tags
+        QString tagHtml = "<b>Tags:</b><ul>";
+        foreach (QString tag, tags) tagHtml += "<li>" + tag + "</li>";
+        tagHtml += "</ul>";
+        m_tags->setText(tagHtml);
+    } else {
+        m_tags->clear();
+    }
 
     // List of files
     QStringList files = Collection::getFiles(title);
@@ -60,11 +65,11 @@ void InfoPanel::setInfo(const QString &title)
 
     QString fileHtml = "<b>Files:</b><ul>";
     foreach (QString file, files)
-        fileHtml += "<li><a href='" + path + "/" + file + "'>" + file + "</a></li>";
+        fileHtml += "<li><a href='" + QUrl::toPercentEncoding(path + "/" + file) + "'>" + file + "</a></li>";
     fileHtml += "</ul>";
     m_files->setText(fileHtml);
 
-    m_path->setText("<br /> <a href='" + path + "'>Click to open in file manager</a>");
+    m_path->setText("<br /> <a href='" + QUrl::toPercentEncoding(path) + "'>Click to open in file manager</a>");
 
     m_cover->setPixmap(QPixmap());
     QPixmap cover = Collection::getCover(title, 250);
@@ -76,6 +81,8 @@ void InfoPanel::setInfo(const QString &title)
 
 void InfoPanel::launchFile(const QString &file)
 {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(file));
+    QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(file.toLocal8Bit()));
+    qWarning() << url.toString();
+    QDesktopServices::openUrl(url);//QUrl::fromPercentEncoding(file.toLocal8Bit()));
 }
 

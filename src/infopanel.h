@@ -30,7 +30,6 @@ private:
     QLabel *m_path;
     QLabel *m_cover;
     QString m_videoName;
-
 };
 
 #endif // INFOPANEL_H

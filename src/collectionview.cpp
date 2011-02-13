@@ -37,7 +37,6 @@ CollectionView::CollectionView(QWidget *parent) :
     m_videoModel->setSourceModel(m_collection);
     m_videoView->setModel(m_videoModel);
 
-
     // Set up the tag view
     QGroupBox *tagContainer = new QGroupBox(this);
     tagContainer->setLayout(new QVBoxLayout);
@@ -50,14 +49,12 @@ CollectionView::CollectionView(QWidget *parent) :
 
     m_tagView = new QListView(this);
     tagContainer->layout()->addWidget(m_tagView);
-
     m_tagModel = new QStandardItemModel(this);
     m_tagFilterModel = new QSortFilterProxyModel;
     m_tagFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     updateTagModel();
     m_tagFilterModel->setSourceModel(m_tagModel);
     m_tagView->setModel(m_tagFilterModel);
-
 
     // Set up the info panel
     m_infoPanel = new InfoPanel(this);
