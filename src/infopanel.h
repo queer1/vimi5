@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QGroupBox>
 #include <QPushButton>
+#include "coverlabel.h"
 
 class InfoPanel : public QGroupBox
 {
@@ -29,7 +30,7 @@ private:
     QLabel *m_tags;
     QLabel *m_files;
     QLabel *m_path;
-    QLabel *m_cover;
+    CoverLabel *m_cover;
     QString m_videoName;
 };
 

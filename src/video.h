@@ -23,9 +23,9 @@ public:
     void addTag(QString tag);
     void removeTag(QString tag);
     void scanForCovers();
+    static QImage quickScale(const QImage &source, int width, int height);
 
 private:
-    static QImage quickScale(const QImage &source, int width, int height);
     void writeTagCache();
 
     QString m_path;

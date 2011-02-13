@@ -28,7 +28,7 @@ public slots:
 private:
     bool decodeVideoPacket();
     bool getVideoPacket();
-    QImage decodeVideoFrame();
+    void decodeVideoFrame();
 
     AVFormatContext *m_formatContext;
     AVFrame *m_frame;

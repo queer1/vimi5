@@ -78,9 +78,11 @@ CollectionView::CollectionView(QWidget *parent) :
     connect(m_infoPanel, SIGNAL(createCovers()), SLOT(createCovers()));
 
     m_videoView->resizeColumnToContents(0);
+    m_videoView->resizeColumnToContents(1);
 
     setStretchFactor(1, 2);
 }
+
 
 void CollectionView::updateTagModel()
 {
@@ -152,4 +154,5 @@ void CollectionView::createCovers()
     dialog.exec();
     Collection::scanForCovers(m_infoPanel->videoName());
     m_videoView->repaint();
+    m_infoPanel->setInfo(m_infoPanel->videoName());
 }

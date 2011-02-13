@@ -59,7 +59,7 @@ VideoWidget::VideoWidget(QWidget *parent, QString file)
     m_frame = avcodec_alloc_frame();
     Q_ASSERT(m_frame);
     decodeVideoFrame();
-    decodeVideoFrame();
+    seek(length() / 2);
 }
 
 VideoWidget::~VideoWidget()
@@ -115,7 +115,6 @@ void VideoWidget::seek(int halfSeconds)
         qWarning() << "Seeking in video failed";
     }
     decodeVideoFrame();
-    m_activeFrame = QImage();
     repaint();
 }
 
@@ -170,7 +169,7 @@ bool VideoWidget::getVideoPacket()
     return frameDecoded;
 }
 
-QImage VideoWidget::decodeVideoFrame()
+void VideoWidget::decodeVideoFrame()
 {
     bool frameFinished = false;
 
@@ -180,7 +179,7 @@ QImage VideoWidget::decodeVideoFrame()
 
     if (!frameFinished) {
         qWarning() << "decodeVideoFrame() failed: frame not finished";
-        return QImage();
+        return;
     }
 
     if (m_frame->interlaced_frame) {
@@ -211,14 +210,11 @@ QImage VideoWidget::decodeVideoFrame()
     QImage frame(m_videoCodecContext->width, m_videoCodecContext->height, QImage::Format_RGB888);
     frame.fromData(reinterpret_cast<const uchar*>(m_frame->data), m_frame->linesize[0] * m_videoCodecContext->height);
 
-    return frame;
+    m_activeFrame = frame;
 }
 
 void VideoWidget::paintEvent(QPaintEvent *)
 {
-    if (m_activeFrame.isNull())
-        m_activeFrame = decodeVideoFrame();
-
     QPainter painter(this);
     painter.drawImage(0, 0, m_activeFrame);
 }

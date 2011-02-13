@@ -18,7 +18,7 @@ InfoPanel::InfoPanel(QWidget *parent) :
 
     m_title = new QLabel("");
     m_title->setWordWrap(true);
-    m_cover = new QLabel();
+    m_cover = new CoverLabel(this);
 
     m_tags = new QLabel("");
     m_files = new QLabel("");
@@ -74,9 +74,7 @@ void InfoPanel::setInfo(const QString &title)
 
     m_path->setText("<br /> <a href='" + QUrl::toPercentEncoding(path) + "'>Click to open in file manager</a>");
 
-    m_cover->setPixmap(QPixmap());
-    QPixmap cover = Collection::getCover(title, 250);
-    m_cover->setPixmap(cover);
+    m_cover->setVideo(title);
     m_cover->repaint();
 
     show();

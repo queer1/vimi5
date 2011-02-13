@@ -66,7 +66,7 @@ QPixmap Video::cover(int maxSize) const
 
     if (cover.height() > maxSize) {
         float factor = (float)maxSize / cover.height();//, cover.width();
-        return QPixmap::fromImage(quickScale(cover, cover.width() * factor, cover.height() * factor));
+        return QPixmap::fromImage(quickScale(cover, cover.width()*factor, cover.height() * factor));
     } else
         return QPixmap::fromImage(cover);
 }
