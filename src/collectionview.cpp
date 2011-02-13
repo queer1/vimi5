@@ -84,7 +84,7 @@ CollectionView::CollectionView(QWidget *parent) :
 
     m_videoView->resizeColumnToContents(0);
 
-    setStretchFactor(1, 10);
+    setStretchFactor(1, 2);
 }
 
 void CollectionView::updateTagModel()
