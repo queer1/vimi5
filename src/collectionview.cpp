@@ -23,7 +23,6 @@ CollectionView::CollectionView(QWidget *parent) :
     // Set up the video list view
     QGroupBox *videoContainer = new QGroupBox(this);
     videoContainer->setLayout(new QVBoxLayout);
-    //videoContainer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
     //videoContainer->setTitle("Videos");
 
     m_videoFilterEdit = new QLineEdit(this);
@@ -35,10 +34,6 @@ CollectionView::CollectionView(QWidget *parent) :
     m_videoView->setAlternatingRowColors(true);
     m_videoView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     videoContainer->layout()->addWidget(m_videoView);
-
-    /*m_videoView->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
-    m_videoFilterEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-    videoContainer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);*/
 
     m_videoModel = new VideoFilterProxyModel;
     m_videoModel->setSourceModel(m_collection);
@@ -62,10 +57,6 @@ CollectionView::CollectionView(QWidget *parent) :
     m_tagView->setModel(m_tagFilterModel);
     // Set up the info panel
     m_infoPanel = new InfoPanel(this);
-
-    //m_tagView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-    /*m_tagView->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
-    tagContainer->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);*/
 
     // Add the widgets to the window
     addWidget(tagContainer);
