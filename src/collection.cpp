@@ -28,8 +28,9 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 {
     if (role == Qt::DecorationRole && item.column() == 0) {
         return getCover(item.data(Qt::DisplayRole).toString(), Config::maxCoverSize());
-    } else
+    } else {
         return QSqlQueryModel::data(item, role);
+    }
 }
 
 void Collection::initializeDatabase()
@@ -89,8 +90,8 @@ void Collection::scan(QDir dir)
 {
     qDebug() << "Scanning directory: " << dir.path();
 
-    if (m_cachedVideoDirectories.contains(dir.path())) // We already know about this video
-        return;
+  //  if (m_cachedVideoDirectories.contains(dir.path())) // We already know about this video
+  //      return;
 
     dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);

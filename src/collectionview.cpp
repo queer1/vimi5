@@ -30,6 +30,7 @@ CollectionView::CollectionView(QWidget *parent) :
 
     m_videoView = new QTreeView(this);
     //m_videoView->setRootIsDecorated(false);
+    m_videoView->setWordWrap(true);
     videoContainer->layout()->addWidget(m_videoView);
 
     m_videoModel = new VideoFilterProxyModel;
