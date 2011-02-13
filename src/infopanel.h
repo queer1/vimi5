@@ -19,6 +19,7 @@ public:
 signals:
     void editTags();
     void fetchTags();
+    void createCovers();
 
 private slots:
     void launchFile(const QString&);

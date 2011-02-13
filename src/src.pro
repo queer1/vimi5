@@ -25,7 +25,8 @@ SOURCES += main.cpp\
            tagfetchdialog.cpp\
            videofilterproxymodel.cpp \
     video.cpp \
-    covermaker.cpp
+    covermaker.cpp \
+    videowidget.cpp
 
 HEADERS += aboutdialog.h\
            cheggitview.h\
@@ -39,6 +40,7 @@ HEADERS += aboutdialog.h\
            tagfetchdialog.h\
            videofilterproxymodel.h \
     video.h \
-    covermaker.h
+    covermaker.h \
+    videowidget.h
 
 include(images/images.pro)

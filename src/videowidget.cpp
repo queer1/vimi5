@@ -7,8 +7,8 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
-VideoWidget::VideoWidget(QString file)
-    : QWidget(),
+VideoWidget::VideoWidget(QWidget *parent, QString file)
+    : QWidget(parent),
     m_packet(0),
     m_videoStream(-1)
 {
@@ -58,6 +58,8 @@ VideoWidget::VideoWidget(QString file)
 
     m_frame = avcodec_alloc_frame();
     Q_ASSERT(m_frame);
+    decodeVideoFrame();
+    decodeVideoFrame();
 }
 
 VideoWidget::~VideoWidget()
@@ -77,9 +79,9 @@ VideoWidget::~VideoWidget()
         av_free(m_frame);
 }
 
-void VideoWidget::seek(int seconds)
+void VideoWidget::seek(int halfSeconds)
 {
-    qint64 timestamp = AV_TIME_BASE * static_cast<qint64>(seconds);
+    qint64 timestamp = (AV_TIME_BASE/2) * static_cast<qint64>(halfSeconds);
     if (timestamp < 0) {
         timestamp = 0;
     }
@@ -112,6 +114,9 @@ void VideoWidget::seek(int seconds)
     if (gotFrame == 0) {
         qWarning() << "Seeking in video failed";
     }
+    decodeVideoFrame();
+    m_activeFrame = QImage();
+    repaint();
 }
 
 bool VideoWidget::decodeVideoPacket()
@@ -182,7 +187,6 @@ void VideoWidget::decodeVideoFrame()
 
 QImage VideoWidget::getFrame()
 {
-    decodeVideoFrame();
     if (m_frame->interlaced_frame) {
         avpicture_deinterlace((AVPicture*) m_frame, (AVPicture*) m_frame, m_videoCodecContext->pix_fmt,
                               m_videoCodecContext->width, m_videoCodecContext->height);
@@ -209,13 +213,22 @@ QImage VideoWidget::getFrame()
     m_frame = avFrame;
 
     QImage frame(m_videoCodecContext->width, m_videoCodecContext->height, QImage::Format_RGB888);
-    frame.fromData(QByteArray(reinterpret_cast<char*>(m_frame->data[0]),
-                              m_frame->linesize[0] * m_videoCodecContext->height));
+    frame.fromData(reinterpret_cast<const uchar*>(m_frame->data), m_frame->linesize[0] * m_videoCodecContext->height);
+
     return frame;
 }
 
 void VideoWidget::paintEvent(QPaintEvent *)
 {
+    if (m_activeFrame.isNull())
+        m_activeFrame = getFrame();
+
     QPainter painter(this);
-    painter.drawImage(0, 0, getFrame());
+    painter.drawImage(0, 0, m_activeFrame);
+}
+
+QSize VideoWidget::sizeHint() const
+{
+    return QSize(m_videoCodecContext->width, m_videoCodecContext->height);
+    qWarning() << m_videoCodecContext->width << m_videoCodecContext->height;
 }

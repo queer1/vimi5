@@ -17,7 +17,7 @@ public:
     QString name() const { return m_name; }
     QString tagList() const { return m_tagList; }
 
-    QStringList files();
+    QStringList files() const;
     const QSet<QString> &tags() const { return m_tags; }
     bool matchesTags (const QSet<QString> &tags) const;
     void addTag(QString tag);

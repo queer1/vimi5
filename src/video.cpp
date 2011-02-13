@@ -49,7 +49,7 @@ Video::Video(QString path) :
 
 }
 
-QStringList Video::files()
+QStringList Video::files() const
 {
     QDir dir(m_path);
     dir.setNameFilters(Config::movieSuffixes());

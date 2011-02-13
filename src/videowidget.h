@@ -1,5 +1,5 @@
-#ifndef COVERMAKER_H
-#define COVERMAKER_H
+#ifndef VIDEOWIDGET_H
+#define VIDEOWIDGET_H
 
 #include <QWidget>
 
@@ -14,12 +14,16 @@ class VideoWidget : public QWidget
     Q_OBJECT
 
 public:
-    VideoWidget(QString file);
+    VideoWidget(QWidget *parent, QString file);
     ~VideoWidget();
-    void seek(int seconds);
-    int length() { return static_cast<int>(m_pFormatContext->duration / AV_TIME_BASE); }
+    int length() { return static_cast<int>(m_formatContext->duration *2 / AV_TIME_BASE); }
     QImage getFrame();
     void paintEvent(QPaintEvent *);
+    QSize sizeHint() const;
+
+public slots:
+    void seek(int seconds);
+
 
 private:
     bool decodeVideoPacket();
@@ -31,6 +35,7 @@ private:
     AVPacket *m_packet;
     int m_videoStream;
     AVCodecContext *m_videoCodecContext;
+    QImage m_activeFrame;
 };
 
-#endif // COVERMAKER_H
+#endif // VIDEOWIDGET_H

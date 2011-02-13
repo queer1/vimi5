@@ -40,8 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::showAboutDialog()
 {
-    //AboutDialog *dialog = new AboutDialog(this);
-    VideoWidget *dialog = new VideoWidget("/home/w00t/videos/Comp/51.100.wmv");
+    AboutDialog *dialog = new AboutDialog(this);
     dialog->show();
 }
 

@@ -4,6 +4,7 @@
 #include "collectionview.h"
 #include "tagdialog.h"
 #include "tagfetchdialog.h"
+#include "covermaker.h"
 
 #include <QDebug>
 #include <QGroupBox>
@@ -72,6 +73,7 @@ CollectionView::CollectionView(QWidget *parent) :
     connect(m_videoFilterEdit, SIGNAL(textChanged(QString)), m_videoModel, SLOT(setFilterFixedString(QString)));
     connect(m_infoPanel, SIGNAL(editTags()), SLOT(editTags()));
     connect(m_infoPanel, SIGNAL(fetchTags()), SLOT(fetchTags()));
+    connect(m_infoPanel, SIGNAL(createCovers()), SLOT(createCovers()));
 
     m_videoView->resizeColumnToContents(0);
 
@@ -138,4 +140,12 @@ void CollectionView::fetchTags()
     dialog.raise();
     dialog.exec();
     updateTagModel();
+}
+
+void CollectionView::createCovers()
+{
+    CoverMaker dialog(m_infoPanel->videoName());
+    dialog.show();
+    dialog.raise();
+    dialog.exec();
 }

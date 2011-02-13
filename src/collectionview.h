@@ -11,6 +11,7 @@
 #include <QSplitter>
 #include <QStandardItemModel>
 #include <QTreeView>
+class Video;
 
 class CollectionView : public QSplitter {
 
@@ -27,6 +28,7 @@ private slots:
     void updateInfoPanel(const QModelIndex&);
     void editTags();
     void fetchTags();
+    void createCovers();
 
 private:
     QListView *m_tagView;
