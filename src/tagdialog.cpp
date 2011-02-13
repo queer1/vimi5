@@ -8,8 +8,8 @@
 #include <QSpacerItem>
 #include <QVBoxLayout>
 
-TagDialog::TagDialog(const QString &videoName, Collection *collection, QWidget *parent) :
-    QDialog(parent), m_collection(collection)
+TagDialog::TagDialog(const QString &videoName, QWidget *parent) :
+    QDialog(parent)
 {
     m_videoName = videoName;
 
@@ -58,7 +58,7 @@ void TagDialog::updateModel()
 
 void TagDialog::addTag()
 {
-    m_collection->addTag(m_videoName, m_tagEdit->lineEdit()->text());
+    Collection::addTag(m_videoName, m_tagEdit->lineEdit()->text());
     m_tagEdit->lineEdit()->clear();
 
     updateModel();
@@ -68,7 +68,7 @@ void TagDialog::removeTag()
 {
     qDebug() << m_videoName;
     QString tag = m_tagView->currentItem()->text(); //m_tagModel->data(m_tagView->currentIndex()).toString();
-    m_collection->removeTag(m_videoName, tag);
+    Collection::removeTag(m_videoName, tag);
 
     updateModel();
 }

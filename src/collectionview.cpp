@@ -126,7 +126,7 @@ void CollectionView::updateInfoPanel(const QModelIndex &i)
 
 void CollectionView::editTags()
 {
-    TagDialog dialog(m_infoPanel->videoName(), m_collection, this);
+    TagDialog dialog(m_infoPanel->videoName(), this);
     dialog.show();
     dialog.raise();
     dialog.exec();
@@ -135,7 +135,7 @@ void CollectionView::editTags()
 
 void CollectionView::fetchTags()
 {
-    TagFetchDialog dialog(m_infoPanel->videoName(), m_collection, this);
+    TagFetchDialog dialog(m_infoPanel->videoName(), this);
     dialog.show();
     dialog.raise();
     dialog.exec();
@@ -144,7 +144,7 @@ void CollectionView::fetchTags()
 
 void CollectionView::createCovers()
 {
-    CoverMaker dialog(m_infoPanel->videoName());
+    CoverMaker dialog(m_infoPanel->videoName(), this);
     dialog.show();
     dialog.raise();
     dialog.exec();

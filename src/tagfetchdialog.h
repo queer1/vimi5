@@ -11,7 +11,7 @@ class TagFetchDialog : public QDialog
 {
 Q_OBJECT
 public:
-    explicit TagFetchDialog(QString title, Collection *col, QWidget *parent = 0);
+    explicit TagFetchDialog(QString title, QWidget *parent = 0);
 
 signals:
     void newTag(const QString &tag);

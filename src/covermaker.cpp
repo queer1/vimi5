@@ -5,7 +5,7 @@
 #include <QVBoxLayout>
 #include <QImageWriter>
 
-CoverMaker::CoverMaker(QString videoName) : QDialog()
+CoverMaker::CoverMaker(QString videoName, QWidget *parent) : QDialog(parent)
 {
     m_path = Collection::getPath(videoName);
     m_comboBox = new QComboBox(this);

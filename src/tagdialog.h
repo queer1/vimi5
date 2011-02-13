@@ -14,7 +14,7 @@ class TagDialog : public QDialog
 {
 Q_OBJECT
 public:
-    explicit TagDialog(const QString &videoName, Collection *collection, QWidget *parent = 0);
+    explicit TagDialog(const QString &videoName, QWidget *parent = 0);
 
 private slots:
     void addTag();

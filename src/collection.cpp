@@ -25,10 +25,6 @@ Collection::Collection()
     } else {
         qWarning() << file.errorString() << path;
     }
-
-    reload();
-
-    connect(this, SIGNAL(updated()), SLOT(reload()));
 }
 
 Collection::~Collection()
@@ -78,7 +74,6 @@ void Collection::addVideo(const Video &video)
     }
 
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
-
     m_videos.insert(video.name(), video);
     m_videoNames.append(video.name());
     endInsertRows();
@@ -107,7 +102,6 @@ void Collection::rescan()
     endRemoveRows();
     scan(QDir(Config::collectionPath()));
 
-    reload();
     emit updated();
     emit statusUpdated("Scan finished.");
 
@@ -150,22 +144,11 @@ void Collection::addTag(const QString &video, const QString &rawTag)
     if (tag.isEmpty())
         return;
     m_videos[video].addTag(tag);
-    reload();
 }
 
 void Collection::removeTag(const QString &video, const QString &tag)
 {
     m_videos[video].removeTag(tag);
-    reload();
-}
-
-void Collection::reload()
-{
-    /*m_videoNames.clear();
-    foreach(const Video &video, m_videos) {
-        m_videoNames.append(video.name());
-    }
-*/
 }
 
 QSet<QString> Collection::getTags(const QString &videoName)

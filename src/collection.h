@@ -20,8 +20,8 @@ public:
     Collection();
     ~Collection();
 
-    void addTag(const QString &video, const QString &tag);
-    void removeTag(const QString &video, const QString &tag);
+    static void addTag(const QString &video, const QString &tag);
+    static void removeTag(const QString &video, const QString &tag);
     static QSet<QString> getTags(const QString& videoName = QString());
     static QStringList getFiles(const QString& videoName);
     static QString getPath(const QString &videoName);
@@ -42,14 +42,9 @@ signals:
 public slots:
     void rescan();
 
-private slots:
-    void reload(); // Reloads from the database
-
 private:
     void scan(QDir directory);
     void addVideo(const Video &video);
-
-    static void initializeDatabase();
 
     static QHash<QString, Video> m_videos;
     static QStringList m_videoNames;

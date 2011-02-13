@@ -11,7 +11,7 @@ class CoverMaker : public QDialog
 {
     Q_OBJECT
 public:
-    CoverMaker(QString videoName);
+    CoverMaker(QString videoName, QWidget *parent = 0);
 
 private slots:
     void selectVideo(QString);
