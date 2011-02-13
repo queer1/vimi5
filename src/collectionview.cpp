@@ -27,8 +27,8 @@ CollectionView::CollectionView(QWidget *parent) :
     videoContainer->layout()->addWidget(m_videoFilterEdit);
 
     m_videoView = new QTreeView(this);
-    //m_videoView->setRootIsDecorated(false);
     m_videoView->setWordWrap(true);
+    m_videoView->setHeaderHidden(true);
     videoContainer->layout()->addWidget(m_videoView);
 
     m_videoModel = new VideoFilterProxyModel;
