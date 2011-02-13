@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "collectionview.h"
 #include "cheggitview.h"
+#include "covermaker.h"
 
 #include <QMenuBar>
 #include <QStatusBar>
@@ -39,7 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::showAboutDialog()
 {
-    AboutDialog *dialog = new AboutDialog(this);
+    //AboutDialog *dialog = new AboutDialog(this);
+    VideoWidget *dialog = new VideoWidget("/home/w00t/videos/Comp/51.100.wmv");
     dialog->show();
 }
 

@@ -1,5 +1,8 @@
 # Copyright 2009 cwk
 
+DEFINES += __STDC_CONSTANT_MACROS
+LIBS += -lavformat -lavcodec -lswscale
+
 QT += core\
       gui\
       network\
@@ -21,7 +24,8 @@ SOURCES += main.cpp\
            tagdialog.cpp\
            tagfetchdialog.cpp\
            videofilterproxymodel.cpp \
-    video.cpp
+    video.cpp \
+    covermaker.cpp
 
 HEADERS += aboutdialog.h\
            cheggitview.h\
@@ -34,6 +38,7 @@ HEADERS += aboutdialog.h\
            tagdialog.h\
            tagfetchdialog.h\
            videofilterproxymodel.h \
-    video.h
+    video.h \
+    covermaker.h
 
 include(images/images.pro)
