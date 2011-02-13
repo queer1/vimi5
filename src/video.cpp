@@ -24,29 +24,7 @@ Video::Video(QString path) :
         }
         m_tagList = QStringList(m_tags.toList()).join(", ");
     }
-
-    // Check if there is a separate folder with covers
-    QStringList names;
-    names << "*cover*" << "*Cover*";
-    dir.setNameFilters(names);
-    dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
-    if (dir.entryList().count() > 0) {
-        dir.cd(dir.entryList().first());
-    }
-
-    // Try to either find *front*.jpg, *cover*.jpg or just any plain *.jpg
-    dir.setFilter(QDir::Files);
-    if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0)
-        m_cover = QImage(dir.entryInfoList(QStringList("*front*.jpg")).first().absoluteFilePath());
-    else if (dir.entryInfoList(QStringList("*cover*.jpg")).count() > 0)
-        m_cover = QImage(dir.entryInfoList(QStringList("*cover*.jpg")).first().absoluteFilePath());
-    else if (dir.entryInfoList(QStringList("*" + m_name + "*.jpg")).count() > 0)
-        m_cover = QImage(dir.entryInfoList(QStringList("*" + m_name + "*.jpg")).first().absoluteFilePath());
-    else if (dir.entryInfoList(QStringList("*.jpg")).count() > 0)
-        m_cover = QImage(dir.entryInfoList(QStringList("*.jpg")).first().absoluteFilePath());
-    else
-        m_cover = QImage(":/images/defaultcover.png");
-
+    scanForCovers();
 }
 
 QStringList Video::files() const
@@ -149,4 +127,31 @@ void Video::writeTagCache()
             file.rename(filename + ".tmp", filename);
         }
     }
+}
+
+void Video::scanForCovers()
+{
+    QDir dir(m_path);
+
+    // Check if there is a separate folder with covers
+    QStringList names;
+    names << "*cover*" << "*Cover*";
+    dir.setNameFilters(names);
+    dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+    if (dir.entryList().count() > 0) {
+        dir.cd(dir.entryList().first());
+    }
+
+    // Try to either find *front*.jpg, *cover*.jpg or just any plain *.jpg
+    dir.setFilter(QDir::Files);
+    if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0)
+        m_cover = QImage(dir.entryInfoList(QStringList("*front*.jpg")).first().absoluteFilePath());
+    else if (dir.entryInfoList(QStringList("*cover*.jpg")).count() > 0)
+        m_cover = QImage(dir.entryInfoList(QStringList("*cover*.jpg")).first().absoluteFilePath());
+    else if (dir.entryInfoList(QStringList("*" + m_name + "*.jpg")).count() > 0)
+        m_cover = QImage(dir.entryInfoList(QStringList("*" + m_name + "*.jpg")).first().absoluteFilePath());
+    else if (dir.entryInfoList(QStringList("*.jpg")).count() > 0)
+        m_cover = QImage(dir.entryInfoList(QStringList("*.jpg")).first().absoluteFilePath());
+    else
+        m_cover = QImage(":/images/defaultcover.png");
 }

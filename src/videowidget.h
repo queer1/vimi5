@@ -17,9 +17,9 @@ public:
     VideoWidget(QWidget *parent, QString file);
     ~VideoWidget();
     int length() { return static_cast<int>(m_formatContext->duration *2 / AV_TIME_BASE); }
-    QImage getFrame();
     void paintEvent(QPaintEvent *);
     QSize sizeHint() const;
+    QImage getFrame() const { return m_activeFrame; }
 
 public slots:
     void seek(int seconds);
@@ -28,7 +28,7 @@ public slots:
 private:
     bool decodeVideoPacket();
     bool getVideoPacket();
-    void decodeVideoFrame();
+    QImage decodeVideoFrame();
 
     AVFormatContext *m_formatContext;
     AVFrame *m_frame;

@@ -195,3 +195,8 @@ QPixmap Collection::getCover(const QString &videoName, int maxSize)
 {
     return m_videos[videoName].cover(maxSize);
 }
+
+void Collection::scanForCovers(const QString &videoName)
+{
+    m_videos[videoName].scanForCovers();
+}

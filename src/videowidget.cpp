@@ -170,8 +170,7 @@ bool VideoWidget::getVideoPacket()
     return frameDecoded;
 }
 
-
-void VideoWidget::decodeVideoFrame()
+QImage VideoWidget::decodeVideoFrame()
 {
     bool frameFinished = false;
 
@@ -181,12 +180,9 @@ void VideoWidget::decodeVideoFrame()
 
     if (!frameFinished) {
         qWarning() << "decodeVideoFrame() failed: frame not finished";
-        return;
+        return QImage();
     }
-}
 
-QImage VideoWidget::getFrame()
-{
     if (m_frame->interlaced_frame) {
         avpicture_deinterlace((AVPicture*) m_frame, (AVPicture*) m_frame, m_videoCodecContext->pix_fmt,
                               m_videoCodecContext->width, m_videoCodecContext->height);
@@ -221,7 +217,7 @@ QImage VideoWidget::getFrame()
 void VideoWidget::paintEvent(QPaintEvent *)
 {
     if (m_activeFrame.isNull())
-        m_activeFrame = getFrame();
+        m_activeFrame = decodeVideoFrame();
 
     QPainter painter(this);
     painter.drawImage(0, 0, m_activeFrame);
@@ -230,5 +226,4 @@ void VideoWidget::paintEvent(QPaintEvent *)
 QSize VideoWidget::sizeHint() const
 {
     return QSize(m_videoCodecContext->width, m_videoCodecContext->height);
-    qWarning() << m_videoCodecContext->width << m_videoCodecContext->height;
 }

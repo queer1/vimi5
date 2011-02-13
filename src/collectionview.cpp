@@ -148,4 +148,6 @@ void CollectionView::createCovers()
     dialog.show();
     dialog.raise();
     dialog.exec();
+    Collection::scanForCovers(m_infoPanel->videoName());
+    m_videoView->repaint();
 }

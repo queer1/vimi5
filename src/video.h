@@ -22,12 +22,9 @@ public:
     bool matchesTags (const QSet<QString> &tags) const;
     void addTag(QString tag);
     void removeTag(QString tag);
+    void scanForCovers();
 
-    friend QDataStream &operator>>(QDataStream &stream, Video &video);
-//    friend QDataStream &operator>>(QDataStream &in, QHash<QString, Video> &hash);
-//    friend Video &QHash<QString, Video>::operator[](const QString &akey);
 private:
-
     static QImage quickScale(const QImage &source, int width, int height);
     void writeTagCache();
 
