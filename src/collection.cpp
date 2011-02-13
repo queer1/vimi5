@@ -52,7 +52,7 @@ QVariant Collection::data(const QModelIndex &item, int role) const
     if (role == Qt::DecorationRole && item.column() == 0) {
         return m_videos[m_videoNames.at(item.row())].cover(Config::maxCoverSize());
     } else if (role == Qt::DisplayRole && item.column() == 1) {
-        return m_videos[m_videoNames.at(item.row())].name();
+        return m_videos[m_videoNames.at(item.row())].name().replace("_", " ");
     } else if (role == Qt::DisplayRole && item.column() == 2) {
         return m_videos[m_videoNames.at(item.row())].tagList();
     } else if (role == Qt::SizeHintRole && item.column() == 0) {

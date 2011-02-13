@@ -12,6 +12,7 @@ TagFetchDialog::TagFetchDialog(QString movieTitle, QWidget *parent) : QDialog(pa
     m_videoName(movieTitle)
 {
     setWindowTitle("Searching for tags for: " + movieTitle);
+
     QGridLayout *layout = new QGridLayout;
     setLayout(layout);
     layout->addWidget(new QLabel("Select movie:"), 0, 0);

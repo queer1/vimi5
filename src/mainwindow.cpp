@@ -12,6 +12,8 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+    setWindowTitle("vimi alpha");
+
     showMaximized();
     setCentralWidget(&m_tabWidget);
     m_tabWidget.setTabPosition(QTabWidget::West);

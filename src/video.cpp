@@ -54,7 +54,6 @@ void Video::removeTag(QString tag)
 
 bool Video::matchesTags(const QSet<QString> &tags) const
 {
-    //if (m_tags.isEmpty()) return true;
     return m_tags.contains(tags);
 }
 

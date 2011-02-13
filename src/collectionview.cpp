@@ -34,6 +34,8 @@ CollectionView::CollectionView(QWidget *parent) :
     m_videoView->setWordWrap(true);
     m_videoView->setAlternatingRowColors(true);
     m_videoView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    m_videoView->setSortingEnabled(true);
+    m_videoView->sortByColumn(1, Qt::AscendingOrder);
     videoContainer->layout()->addWidget(m_videoView);
 
     m_videoModel = new VideoFilterProxyModel;

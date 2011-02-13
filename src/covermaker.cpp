@@ -7,6 +7,8 @@
 
 CoverMaker::CoverMaker(QString videoName, QWidget *parent) : QDialog(parent)
 {
+    setWindowTitle("Create covers for " + videoName);
+
     m_path = Collection::getPath(videoName);
     m_comboBox = new QComboBox(this);
     m_comboBox->addItems(Collection::getFiles(videoName));
