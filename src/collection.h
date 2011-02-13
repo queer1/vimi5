@@ -29,7 +29,7 @@ public:
 
     QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
     int rowCount(const QModelIndex & = QModelIndex()) const { return m_videoNames.size(); }
-    int columnCount(const QModelIndex &) const { return 2; }
+    int columnCount(const QModelIndex &) const { return 3; }
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     bool hasChildren(const QModelIndex &index) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;

@@ -40,10 +40,12 @@ QVariant Collection::headerData(int section, Qt::Orientation orientation, int ro
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return QVariant();
 
-    if (section == 0)
+    if (section == 1)
         return tr("Name");
-    else if (section == 1)
+    else if (section == 2)
         return tr("Tags");
+    else
+        return tr("Cover");
 }
 
 QVariant Collection::data(const QModelIndex &item, int role) const
@@ -53,9 +55,9 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 
     if (role == Qt::DecorationRole && item.column() == 0) {
         return m_videos[m_videoNames.at(item.row())].cover(Config::maxCoverSize());
-    } else if (role == Qt::DisplayRole && item.column() == 0) {
-        return m_videos[m_videoNames.at(item.row())].name();
     } else if (role == Qt::DisplayRole && item.column() == 1) {
+        return m_videos[m_videoNames.at(item.row())].name();
+    } else if (role == Qt::DisplayRole && item.column() == 2) {
         return m_videos[m_videoNames.at(item.row())].tagList();
     } else if (role == Qt::SizeHintRole && item.column() == 0) {
         return m_videos[m_videoNames.at(item.row())].cover(Config::maxCoverSize()).size();

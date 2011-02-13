@@ -11,6 +11,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+    showMaximized();
     setCentralWidget(&m_tabWidget);
     m_tabWidget.setTabPosition(QTabWidget::West);
     m_tabWidget.addTab(CheggitView::instance(), QIcon(), "Cheggit");

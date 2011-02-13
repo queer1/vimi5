@@ -12,15 +12,18 @@
 #include <QMessageBox>
 #include <QSplitter>
 #include <QFileSystemModel>
+#include <QTimer>
 
 CollectionView::CollectionView(QWidget *parent) :
     QSplitter(parent)
 {
+    hide();
     m_collection = new Collection();
 
     // Set up the video list view
     QGroupBox *videoContainer = new QGroupBox(this);
     videoContainer->setLayout(new QVBoxLayout);
+    //videoContainer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
     //videoContainer->setTitle("Videos");
 
     m_videoFilterEdit = new QLineEdit(this);
@@ -33,6 +36,10 @@ CollectionView::CollectionView(QWidget *parent) :
     m_videoView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     videoContainer->layout()->addWidget(m_videoView);
 
+    /*m_videoView->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+    m_videoFilterEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    videoContainer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);*/
+
     m_videoModel = new VideoFilterProxyModel;
     m_videoModel->setSourceModel(m_collection);
     m_videoView->setModel(m_videoModel);
@@ -41,8 +48,6 @@ CollectionView::CollectionView(QWidget *parent) :
     QGroupBox *tagContainer = new QGroupBox(this);
     tagContainer->setLayout(new QVBoxLayout);
     //tagContainer->setTitle("Tags");
-    tagContainer->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
-
     m_tagFilterEdit = new QLineEdit(this);
     m_tagFilterEdit->setPlaceholderText("Search tags");
     tagContainer->layout()->addWidget(m_tagFilterEdit);
@@ -55,9 +60,12 @@ CollectionView::CollectionView(QWidget *parent) :
     updateTagModel();
     m_tagFilterModel->setSourceModel(m_tagModel);
     m_tagView->setModel(m_tagFilterModel);
-
     // Set up the info panel
     m_infoPanel = new InfoPanel(this);
+
+    //m_tagView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+    /*m_tagView->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
+    tagContainer->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);*/
 
     // Add the widgets to the window
     addWidget(tagContainer);
@@ -75,6 +83,8 @@ CollectionView::CollectionView(QWidget *parent) :
     connect(m_infoPanel, SIGNAL(fetchTags()), SLOT(fetchTags()));
 
     m_videoView->resizeColumnToContents(0);
+
+    setStretchFactor(1, 10);
 }
 
 void CollectionView::updateTagModel()
@@ -113,8 +123,8 @@ void CollectionView::updateInfoPanel(const QModelIndex &i)
 {
     QModelIndex index = i;
 
-    if (index.column() != 0)
-        index = index.model()->index(index.row(), 0);
+    if (index.column() != 1)
+        index = index.model()->index(index.row(), 1);
 
     QString videoName = index.model()->data(index).toString();
 

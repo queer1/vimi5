@@ -82,7 +82,6 @@ void InfoPanel::setInfo(const QString &title)
 void InfoPanel::launchFile(const QString &file)
 {
     QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(file.toLocal8Bit()));
-    qWarning() << url.toString();
     QDesktopServices::openUrl(url);//QUrl::fromPercentEncoding(file.toLocal8Bit()));
 }
 
