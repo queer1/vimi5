@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
     setWindowTitle("vimi alpha");
+    setWindowIcon(QIcon(":/images/icon.png"));
 
     showMaximized();
     setCentralWidget(&m_tabWidget);
