@@ -208,7 +208,10 @@ void VideoWidget::decodeVideoFrame()
     m_frame = avFrame;
 
     QImage frame(m_videoCodecContext->width, m_videoCodecContext->height, QImage::Format_RGB888);
-    frame.fromData(reinterpret_cast<const uchar*>(m_frame->data), m_frame->linesize[0] * m_videoCodecContext->height);
+    //frame.fromData(reinterpret_cast<const uchar*>(m_frame->data), m_frame->linesize[0] * m_videoCodecContext->height);
+    for (int y=0; y<m_videoCodecContext->height; y++) {
+        memcpy(frame.scanLine(y), &m_frame->data[0][y*m_frame->linesize[0]], m_videoCodecContext->width*3);
+    }
 
     m_activeFrame = frame;
 }
