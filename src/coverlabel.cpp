@@ -11,6 +11,7 @@ CoverLabel::CoverLabel(QWidget *parent) :
     setCursor(Qt::PointingHandCursor);
     connect(&m_timer, SIGNAL(timeout()), SLOT(nextImage()));
 }
+
 CoverLabel::~CoverLabel()
 {
     delete m_dir;
@@ -48,7 +49,13 @@ void CoverLabel::nextImage()
     int height, width, ratio;
     // Sanity check sizes
     do {
-        image = QImage(m_dir->next());
+        m_dir->next();
+
+        // Skip files larger than a megabyte
+        if (m_dir->fileInfo().size() > 1024*1024)
+            continue;
+
+        image = QImage(m_dir->filePath());
         height = image.height();
         width = image.width();
         if (height == 0 || width == 0) continue;
@@ -65,8 +72,8 @@ void CoverLabel::nextImage()
         return;
     }
 
-    if (image.width() > this->width()) {
-        float factor = (float)this->width() / image.width();
+    if (image.height() > 250) {
+        float factor = 250.0f / image.height();
         image = Video::quickScale(image, image.width() * factor, image.height() * factor);
     }
     setPixmap(QPixmap::fromImage(image));
