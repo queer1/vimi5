@@ -12,13 +12,14 @@
 #include <QStandardItemModel>
 #include <QTreeView>
 class Video;
+class MainWindow;
 
 class CollectionView : public QSplitter {
 
     Q_OBJECT
 
 public:
-    CollectionView(QWidget *parent = 0);
+    CollectionView(MainWindow *parent = 0);
 
     Collection *collection() { return m_collection; }
 

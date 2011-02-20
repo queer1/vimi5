@@ -5,6 +5,7 @@
 #include "tagdialog.h"
 #include "tagfetchdialog.h"
 #include "covermaker.h"
+#include "mainwindow.h"
 
 #include <QDebug>
 #include <QGroupBox>
@@ -14,12 +15,19 @@
 #include <QSplitter>
 #include <QFileSystemModel>
 #include <QTimer>
+#include <QApplication>
 
-CollectionView::CollectionView(QWidget *parent) :
+CollectionView::CollectionView(MainWindow *parent) :
     QSplitter(parent)
 {
     hide();
     m_collection = new Collection();
+    if (m_collection->rowCount() == 0) {
+        if (Config::collectionPath() == "") {
+            parent->getCollectionPath();
+        }
+        m_collection->rescan();
+    }
 
     // Set up the video list view
     QGroupBox *videoContainer = new QGroupBox(this);
@@ -78,9 +86,11 @@ CollectionView::CollectionView(QWidget *parent) :
     connect(m_infoPanel, SIGNAL(createCovers()), SLOT(createCovers()));
 
     m_videoView->resizeColumnToContents(0);
-    m_videoView->resizeColumnToContents(1);
+    //m_videoView->resizeColumnToContents(1);
 
     setStretchFactor(1, 2);
+
+    QTimer::singleShot(0, m_videoFilterEdit, SLOT(setFocus()));
 }
 
 
@@ -130,7 +140,7 @@ void CollectionView::updateInfoPanel(const QModelIndex &i)
 
 void CollectionView::editTags()
 {
-    TagDialog dialog(m_infoPanel->videoName(), this);
+    TagDialog dialog(m_infoPanel->videoName());
     dialog.show();
     dialog.raise();
     dialog.exec();
