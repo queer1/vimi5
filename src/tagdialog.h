@@ -17,7 +17,7 @@ public:
     explicit TagDialog(const QString &videoName, QWidget *parent = 0);
 
 private slots:
-    void addTag();
+    void addTag(QString tag = "");
     void removeTag();
 
 private:

@@ -22,6 +22,7 @@ TagDialog::TagDialog(const QString &videoName, QWidget *parent) :
     m_tagEdit->setEditable(true);
     m_tagEdit->setCompleter(new QCompleter(Collection::getTags().toList(), this));
     m_tagEdit->completer()->setCaseSensitivity(Qt::CaseInsensitive);
+    m_tagEdit->completer()->setCompletionMode(QCompleter::InlineCompletion);
 
     m_tagView = new QListWidget(this);
     m_tagView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -47,27 +48,27 @@ TagDialog::TagDialog(const QString &videoName, QWidget *parent) :
     connect(m_removeButton, SIGNAL(clicked()), this, SLOT(removeTag()));
     connect(m_addButton, SIGNAL(clicked()), this, SLOT(addTag()));
     connect(m_closeButton, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(m_tagEdit->lineEdit(), SIGNAL(returnPressed()), this, SLOT(addTag()));
+    connect(m_tagEdit, SIGNAL(activated(QString)), this, SLOT(addTag(QString)));
 }
 
 void TagDialog::updateModel()
 {
     m_tagView->clear();
-    m_tagView->insertItems(0, Collection::getTags(m_videoName).toList());
+    QStringList tags = Collection::getTags(m_videoName).toList();
+    qSort(tags);
+    m_tagView->insertItems(0, tags);
 }
 
-void TagDialog::addTag()
+void TagDialog::addTag(QString tag)
 {
-    Collection::addTag(m_videoName, m_tagEdit->lineEdit()->text());
-    m_tagEdit->lineEdit()->clear();
-
+    Collection::addTag(m_videoName, tag);
+    m_tagEdit->clearEditText();
     updateModel();
 }
 
 void TagDialog::removeTag()
 {
-    qDebug() << m_videoName;
-    QString tag = m_tagView->currentItem()->text(); //m_tagModel->data(m_tagView->currentIndex()).toString();
+    QString tag = m_tagView->currentItem()->text();
     Collection::removeTag(m_videoName, tag);
 
     updateModel();
