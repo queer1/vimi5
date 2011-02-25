@@ -8,6 +8,7 @@
 CoverMaker::CoverMaker(QString videoName, QWidget *parent) : QDialog(parent)
 {
     setWindowTitle("Create covers for " + videoName);
+    setLayout(new QVBoxLayout(this));
 
     m_path = Collection::getPath(videoName);
     if (Collection::getFiles(videoName).size() > 1) {
@@ -18,7 +19,7 @@ CoverMaker::CoverMaker(QString videoName, QWidget *parent) : QDialog(parent)
     }
 
     m_videoWidget = new VideoWidget(this, m_path + "/" +  Collection::getFiles(videoName).first());
-    m_videoWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    //m_videoWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
     m_slider = new QSlider(this);
     m_slider->setMaximum(m_videoWidget->length());
@@ -28,7 +29,6 @@ CoverMaker::CoverMaker(QString videoName, QWidget *parent) : QDialog(parent)
 
     QPushButton *saveButton = new QPushButton("Save");
 
-    setLayout(new QVBoxLayout(this));
 
     layout()->addWidget(saveButton);
     layout()->addWidget(m_slider);

@@ -81,7 +81,7 @@ VideoWidget::~VideoWidget()
 
 void VideoWidget::seek(int halfSeconds)
 {
-    qint64 timestamp = (AV_TIME_BASE/2) * static_cast<qint64>(halfSeconds);
+    qint64 timestamp = (AV_TIME_BASE/100) * static_cast<qint64>(halfSeconds);
     if (timestamp < 0) {
         timestamp = 0;
     }
@@ -219,7 +219,7 @@ void VideoWidget::decodeVideoFrame()
 void VideoWidget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    painter.drawImage(0, 0, m_activeFrame);
+    painter.drawImage(rect(), m_activeFrame);
 }
 
 QSize VideoWidget::sizeHint() const

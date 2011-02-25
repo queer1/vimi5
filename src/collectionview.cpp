@@ -20,7 +20,6 @@
 CollectionView::CollectionView(MainWindow *parent) :
     QSplitter(parent)
 {
-    hide();
     m_collection = new Collection();
     if (m_collection->rowCount() == 0) {
         if (Config::collectionPath() == "") {
@@ -124,12 +123,15 @@ void CollectionView::updateVideoFilter(QStandardItem *tag)
         m_videoModel->removeTag(tag->text());
     else if (tag->checkState() == Qt::Checked)
         m_videoModel->addTag(tag->text());
+
     updateInfoPanel(m_videoView->currentIndex());
     m_videoView->scrollTo(m_videoView->currentIndex());
 }
 
 void CollectionView::updateInfoPanel(const QModelIndex &i)
 {
+    if (!i.isValid()) return;
+
     QModelIndex index = i;
 
     if (index.column() != 1)
