@@ -53,9 +53,9 @@ TagDialog::TagDialog(const QString &videoName, QWidget *parent) :
 
 void TagDialog::updateModel()
 {
-    m_tagView->clear();
     QStringList tags = Collection::getTags(m_videoName).toList();
     qSort(tags);
+    m_tagView->clear();
     m_tagView->insertItems(0, tags);
 }
 

@@ -26,8 +26,8 @@ CollectionView::CollectionView(MainWindow *parent) :
         if (Config::collectionPath() == "") {
             parent->getCollectionPath();
         }
-        m_collection->rescan();
     }
+    m_collection->rescan();
 
     // Set up the video list view
     QGroupBox *videoContainer = new QGroupBox(this);
@@ -124,6 +124,8 @@ void CollectionView::updateVideoFilter(QStandardItem *tag)
         m_videoModel->removeTag(tag->text());
     else if (tag->checkState() == Qt::Checked)
         m_videoModel->addTag(tag->text());
+    updateInfoPanel(m_videoView->currentIndex());
+    m_videoView->scrollTo(m_videoView->currentIndex());
 }
 
 void CollectionView::updateInfoPanel(const QModelIndex &i)

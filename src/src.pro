@@ -43,6 +43,7 @@ HEADERS += aboutdialog.h\
     video.h \
     covermaker.h \
     videowidget.h \
-    coverlabel.h
+    coverlabel.h \
+    version.h
 
 include(images/images.pro)
