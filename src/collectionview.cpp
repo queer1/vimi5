@@ -98,8 +98,7 @@ void CollectionView::updateTagModel()
     m_tagModel->clear();
 
     QStringList activeTags = m_videoModel->activeTagFilters();
-    QList<QString> allTags = Collection::getTags().toList();
-    qSort(allTags);
+    QStringList allTags = Collection::getTags();
     m_videoModel->clearTags();
 
     QStandardItem *tag;

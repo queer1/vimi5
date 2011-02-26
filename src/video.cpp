@@ -20,9 +20,10 @@ Video::Video(QString path) :
         QFile file(dir.filePath("tags.txt"));
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             while (!file.atEnd())
-                m_tags.insert(QString::fromUtf8(file.readLine().simplified().toLower())); // One tag per line
+                m_tags.append(QString::fromUtf8(file.readLine().simplified().toLower())); // One tag per line
         }
-        m_tagList = QStringList(m_tags.toList()).join(", ");
+        qSort(m_tags);
+        m_tagList = m_tags.join(", ");
     }
     scanForCovers();
 }
@@ -38,23 +39,19 @@ QStringList Video::files() const
 
 void Video::addTag(QString tag)
 {
-    m_tags.insert(tag);
+    m_tags.append(tag);
+    qSort(m_tags);
     writeTagCache();
 
-    m_tagList = QStringList(m_tags.toList()).join(", ");
+    m_tagList = m_tags.join(", ");
 }
 
 void Video::removeTag(QString tag)
 {
-    m_tags.remove(tag);
+    m_tags.removeAll(tag);
     writeTagCache();
 
-    m_tagList = QStringList(m_tags.toList()).join(", ");
-}
-
-bool Video::matchesTags(const QSet<QString> &tags) const
-{
-    return m_tags.contains(tags);
+    m_tagList = m_tags.join(", ");
 }
 
 QPixmap Video::cover(int maxSize) const
@@ -120,7 +117,7 @@ void Video::writeTagCache()
     QString filename = m_path + "/tags.txt";
     QFile file(filename + ".tmp");
     if (file.open(QIODevice::Append | QIODevice::Text)) {
-        QByteArray data = QStringList(m_tags.toList()).join("\n").toUtf8() + "\n";
+        QByteArray data = m_tags.join("\n").toUtf8() + "\n";
         if (file.write(data) == data.size()) {
             QFile::remove(filename);
             file.rename(filename + ".tmp", filename);

@@ -47,7 +47,7 @@ InfoPanel::InfoPanel(QWidget *parent) :
 
 void InfoPanel::setInfo(const QString &title)
 {
-    QSet<QString> tags = Collection::getTags(title);
+    QStringList tags = Collection::getTags(title);
     m_videoName = title;
 
     m_title->setText("<h3>" + title + "</h3>");

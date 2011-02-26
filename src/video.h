@@ -1,10 +1,9 @@
 #ifndef VIDEO_H
 #define VIDEO_H
-#include <QSet>
+#include <QStringList>
 #include <QImage>
 class QPixmap;
 class QString;
-class QStringList;
 class QDataStream;
 
 class Video
@@ -18,8 +17,7 @@ public:
     QString tagList() const { return m_tagList; }
 
     QStringList files() const;
-    const QSet<QString> &tags() const { return m_tags; }
-    bool matchesTags (const QSet<QString> &tags) const;
+    const QStringList &tags() const { return m_tags; }
     void addTag(QString tag);
     void removeTag(QString tag);
     void scanForCovers();
@@ -32,7 +30,7 @@ private:
     QString m_name;
     QString m_coverPath;
     QImage m_cover;
-    QSet<QString> m_tags;
+    QStringList m_tags;
     QString m_tagList;
 };
 

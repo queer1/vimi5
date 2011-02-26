@@ -11,13 +11,16 @@ VideoFilterProxyModel::VideoFilterProxyModel(QObject *parent)
 
 bool VideoFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-    QString name = sourceModel()->data(sourceModel()->index(sourceRow, 1, sourceParent)).toString();
-    QString tags = sourceModel()->data(sourceModel()->index(sourceRow, 2, sourceParent)).toString();
+    const QString &name = sourceModel()->data(sourceModel()->index(sourceRow, 1, sourceParent)).toString();
+    const QString &tags = sourceModel()->data(sourceModel()->index(sourceRow, 2, sourceParent)).toString();
 
     if (!m_filter.isEmpty() && !name.contains(m_filter, Qt::CaseInsensitive) && !tags.contains(m_filter, Qt::CaseInsensitive))
         return false;
 
-    foreach (QString tag, m_tagList) {
+    if (m_tagList.isEmpty())
+        return true;
+
+    foreach (const QString &tag, m_tagList) {
         if (!tags.contains(tag, Qt::CaseInsensitive))
             return false;
     }

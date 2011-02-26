@@ -151,14 +151,16 @@ void Collection::removeTag(const QString &video, const QString &tag)
     m_videos[video].removeTag(tag);
 }
 
-QSet<QString> Collection::getTags(const QString &videoName)
+QStringList Collection::getTags(const QString &videoName)
 {
     if (videoName.isEmpty()) {
         QSet<QString> allTags;
         foreach(const Video &video, m_videos) {
-            allTags.unite(video.tags());
+            allTags.unite(video.tags().toSet());
         }
-        return allTags;
+        QStringList ret = allTags.toList();
+        qSort(ret);
+        return ret;
     } else
         return m_videos[videoName].tags();
 }

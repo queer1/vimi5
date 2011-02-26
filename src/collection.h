@@ -22,7 +22,7 @@ public:
 
     static void addTag(const QString &video, const QString &tag);
     static void removeTag(const QString &video, const QString &tag);
-    static QSet<QString> getTags(const QString& videoName = QString());
+    static QStringList getTags(const QString& videoName = QString());
     static QStringList getFiles(const QString& videoName);
     static QString getPath(const QString &videoName);
     static QPixmap getCover(const QString &videoName, int maxSize = Config::maxCoverSize());
