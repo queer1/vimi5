@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "collectionview.h"
 #include "cheggitview.h"
+#include "covermaker.h"
 
 #include <QMenuBar>
 #include <QStatusBar>
@@ -11,11 +12,16 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+    setWindowTitle("vimi alpha");
+    setWindowIcon(QIcon(":/images/icon.png"));
+
+    showMaximized();
     setCentralWidget(&m_tabWidget);
     m_tabWidget.setTabPosition(QTabWidget::West);
     m_tabWidget.addTab(CheggitView::instance(), QIcon(), "Cheggit");
     CollectionView *cv = new CollectionView;
     m_tabWidget.addTab(cv, QIcon(), "Collection");
+    m_tabWidget.setCurrentIndex(1);
 
     // Set up the File menu
     QMenu *fileMenu = new QMenu("&File", this);
@@ -29,7 +35,9 @@ MainWindow::MainWindow(QWidget *parent) :
     helpMenu->addAction(QIcon(), "&About Vimi...", this, SLOT(showAboutDialog()));
     menuBar()->addMenu(helpMenu);
 
-
+    if (Config::collectionPath().isEmpty()) {
+        getCollectionPath();
+    }
     statusBar()->showMessage(tr("Ready."));
 }
 
@@ -43,10 +51,9 @@ void MainWindow::showAboutDialog()
 void MainWindow::getCollectionPath()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory Containing Collection"),
-                                                    Config::collectionPath,
+                                                    Config::collectionPath(),
                                                     QFileDialog::ShowDirsOnly);
     if (dir != "") {
-        Config::collectionPath = dir;
-        Config::save();
+        Config::setCollectionPath(dir);
     }
 }

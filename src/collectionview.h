@@ -9,17 +9,17 @@
 #include <QLineEdit>
 #include <QListView>
 #include <QSplitter>
-#include <QSqlQueryModel>
 #include <QStandardItemModel>
 #include <QTreeView>
+class Video;
+class MainWindow;
 
 class CollectionView : public QSplitter {
 
     Q_OBJECT
 
 public:
-    CollectionView(QWidget *parent = 0);
-    ~CollectionView();
+    CollectionView(MainWindow *parent = 0);
 
     Collection *collection() { return m_collection; }
 
@@ -29,6 +29,7 @@ private slots:
     void updateInfoPanel(const QModelIndex&);
     void editTags();
     void fetchTags();
+    void createCovers();
 
 private:
     QListView *m_tagView;

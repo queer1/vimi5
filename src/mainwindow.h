@@ -10,9 +10,11 @@ Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = 0);
 
+public slots:
+    void getCollectionPath();
+
 private slots:
     void showAboutDialog();
-    void getCollectionPath();
 
 private:
     QTabWidget m_tabWidget;

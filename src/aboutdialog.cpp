@@ -6,6 +6,8 @@ AboutDialog::AboutDialog(QWidget *parent) :
     QDialog(parent)
 {
     setLayout(new QVBoxLayout(this));
+    m_logo = new QLabel();
+    m_logo->setPixmap(QPixmap(":/images/splash.png"));
 
     m_header = new QLabel("<h2>Vimi</h2>tag based video manager", this);
     m_text = new QLabel("Copyright 2009 cwk", this);
@@ -14,6 +16,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
 
     m_button = new QPushButton("Close");
 
+    layout()->addWidget(m_logo);
     layout()->addWidget(m_header);
     layout()->addWidget(m_text);
     layout()->addWidget(m_button);

@@ -5,14 +5,14 @@
 #include <QDebug>
 #include <QMetaMethod>
 
-TagFetchDialog::TagFetchDialog(QString movieTitle, Collection *collection, QWidget *parent) : QDialog(parent),
+TagFetchDialog::TagFetchDialog(QString movieTitle, QWidget *parent) : QDialog(parent),
     m_movieList(new QListWidget),
     m_tagList(new QListWidget),
     m_cheggit(CheggitView::instance()),
-    m_collection(collection),
     m_videoName(movieTitle)
 {
     setWindowTitle("Searching for tags for: " + movieTitle);
+
     QGridLayout *layout = new QGridLayout;
     setLayout(layout);
     layout->addWidget(new QLabel("Select movie:"), 0, 0);
@@ -38,7 +38,7 @@ TagFetchDialog::TagFetchDialog(QString movieTitle, Collection *collection, QWidg
 void TagFetchDialog::save()
 {
     foreach(QListWidgetItem *tag, m_tagList->selectedItems()) {
-        m_collection->addTag(m_videoName, tag->text());
+        Collection::addTag(m_videoName, tag->text());
     }
     close();
 }

@@ -9,16 +9,15 @@
 #include <QLabel>
 #include <QListWidget>
 #include <QPushButton>
-#include <QSqlQueryModel>
 
 class TagDialog : public QDialog
 {
 Q_OBJECT
 public:
-    explicit TagDialog(const QString &videoName, Collection *collection, QWidget *parent = 0);
+    explicit TagDialog(const QString &videoName, QWidget *parent = 0);
 
 private slots:
-    void addTag();
+    void addTag(QString tag = "");
     void removeTag();
 
 private:
@@ -27,7 +26,6 @@ private:
 
     QComboBox *m_tagEdit;
     QListWidget *m_tagView;
-    QSqlQueryModel *m_tagModel;
     QPushButton *m_addButton;
     QPushButton *m_removeButton;
     QPushButton *m_closeButton;
