@@ -148,6 +148,7 @@ void CollectionView::editTags()
     dialog.raise();
     dialog.exec();
     updateTagModel();
+    updateInfoPanel(m_videoView->currentIndex());
 }
 
 void CollectionView::fetchTags()
@@ -157,6 +158,7 @@ void CollectionView::fetchTags()
     dialog.raise();
     dialog.exec();
     updateTagModel();
+    updateInfoPanel(m_videoView->currentIndex());
 }
 
 void CollectionView::createCovers()
