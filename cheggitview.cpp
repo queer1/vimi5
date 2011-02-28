@@ -40,8 +40,10 @@ void CheggitView::search()
     getTags(QUrl("http://cheggit.net/torrents.php?torrentid=112758"));
 }
 
-void CheggitView::searchMovies(const QString &title)
+void CheggitView::searchMovies(const QString &t)
 {
+    QString title(t);
+    title.replace('.', ' ');
     QUrl url("http://cheggit.net/browsetorrents.php");
     QString filter("title:[");
     filter += title + "]";
@@ -115,6 +117,7 @@ void CheggitView::parseMovie(QNetworkReply *reply)
             pos += regexp.matchedLength();
             if (tag.isEmpty()) continue;
             //qDebug() << tag;
+            tag.replace('.', ' ');
             tags << tag;
         }
 
