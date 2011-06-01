@@ -28,6 +28,16 @@ Video::Video(QString path) :
     scanForCovers();
 }
 
+Video::Video(QString path, QString tags, QString coverPath) :
+    m_path(path),
+    m_coverPath(coverPath),
+    m_cover(QImage(m_coverPath)),
+    m_tags(tags.split(','))
+{
+    QDir dir(m_path);
+    m_name = dir.dirName();
+}
+
 QStringList Video::files() const
 {
     QDir dir(m_path);
@@ -54,10 +64,13 @@ void Video::removeTag(QString tag)
     m_tagList = m_tags.join(", ");
 }
 
-QPixmap Video::cover(int maxSize) const
+QPixmap Video::cover(int maxSize)
 {
     if (m_name.isEmpty())
         return QPixmap();
+
+    if (m_cover.isNull())
+        m_cover = QImage(m_coverPath);
 
     QImage cover = m_cover;
 
@@ -141,13 +154,15 @@ void Video::scanForCovers()
     // Try to either find *front*.jpg, *cover*.jpg or just any plain *.jpg
     dir.setFilter(QDir::Files);
     if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0)
-        m_cover = QImage(dir.entryInfoList(QStringList("*front*.jpg")).first().absoluteFilePath());
+        m_coverPath = dir.entryInfoList(QStringList("*front*.jpg")).first().absoluteFilePath();
     else if (dir.entryInfoList(QStringList("*cover*.jpg")).count() > 0)
-        m_cover = QImage(dir.entryInfoList(QStringList("*cover*.jpg")).first().absoluteFilePath());
+        m_coverPath = dir.entryInfoList(QStringList("*cover*.jpg")).first().absoluteFilePath();
     else if (dir.entryInfoList(QStringList("*" + m_name + "*.jpg")).count() > 0)
-        m_cover = QImage(dir.entryInfoList(QStringList("*" + m_name + "*.jpg")).first().absoluteFilePath());
+        m_coverPath = dir.entryInfoList(QStringList("*" + m_name + "*.jpg")).first().absoluteFilePath();
     else if (dir.entryInfoList(QStringList("*.jpg")).count() > 0)
-        m_cover = QImage(dir.entryInfoList(QStringList("*.jpg")).first().absoluteFilePath());
+        m_coverPath = dir.entryInfoList(QStringList("*.jpg")).first().absoluteFilePath();
     else
-        m_cover = QImage(":/images/defaultcover.png");
+        m_coverPath = ":/images/defaultcover.png";
+
+    //m_cover = QImage(m_coverPath);
 }

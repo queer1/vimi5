@@ -21,24 +21,29 @@ protected:
 Collection::Collection()
     : QAbstractTableModel()
 {
-    m_thread = new QThreadEx();
-    moveToThread(m_thread);
-    m_thread->start();
+    //m_thread = new QThreadEx();
+    //moveToThread(m_thread);
+    //m_thread->start();
     QMetaObject::invokeMethod(this, "loadCache");
 }
 
 void Collection::loadCache()
 {
+    qDebug() << "loading cache...";
     emit(statusUpdated("Loading video cache..."));
     QString path = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
     QDir(path).mkpath(path);
     QFile file(path + "/videos.db");
+    QDataStream in(&file);
     if (file.open(QIODevice::ReadOnly)) {
         QVector<Video*> videos;
         while (!file.atEnd()) {
-            videos.append(new Video(QString::fromUtf8(file.readLine()).simplified()));
+            QString path, tags, coverPath;
+            in >> path;
+            in >> tags;
+            in >> coverPath;
 
-            //addVideo(*video);
+            videos.append(new Video(path, tags, coverPath));
         }
         beginInsertRows(QModelIndex(), rowCount(), rowCount() + videos.size() - 1);
         foreach(Video *video, videos) {
@@ -138,9 +143,11 @@ void Collection::rescan()
     QString path = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
     QDir(path).mkpath(path);
     QFile file(path + "/videos.db");
+    QDataStream out(&file);
     if (file.open(QIODevice::WriteOnly)) {
         foreach(Video *video, m_videos) {
-            file.write(video->path().toUtf8() + "\n");
+            out << video->path() << video->tags().join(",") << video->coverPath();
+            //file.write(video->path().toUtf8() + "\n");
         }
         file.close();
     } else {

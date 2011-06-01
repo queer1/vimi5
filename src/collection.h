@@ -11,6 +11,7 @@
 #include <QHash>
 #include <QSet>
 #include <QThread>
+#include <QMutex>
 
 class Collection : public QAbstractTableModel
 {

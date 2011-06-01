@@ -14,7 +14,6 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
-    qDebug() << Q_FUNC_INFO << "starting";
     setWindowTitle("vimi alpha");
     setWindowIcon(QIcon(":/images/icon.png"));
 

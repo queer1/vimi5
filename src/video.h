@@ -10,8 +10,10 @@ class Video
 {
 public:
     Video (QString path = "");
+    Video (QString path, QString tags, QString coverPath);
 
-    QPixmap cover(int maxSize) const;
+    QPixmap cover(int maxSize);
+    QString coverPath() const { return m_coverPath; }
     QString path() const { return m_path; }
     QString name() const { return m_name; }
     QString tagList() const { return m_tagList; }
