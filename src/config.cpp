@@ -15,7 +15,7 @@ void Config::load()
 
     m_collectionPath = settings.value("collectionPath", QDesktopServices::storageLocation(QDesktopServices::MoviesLocation)).toString();
 
-    m_maxCoverSize = settings.value("maxCoverSize", 150).toInt();
+    m_maxCoverSize = settings.value("maxCoverSize", 128).toInt();
 
     QStringList defaultSuffixes;
     defaultSuffixes << "*.mpg"

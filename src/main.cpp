@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     a.setOrganizationDomain("cheggit.net");
 
     QSplashScreen splash(QPixmap(":/images/splash.png"));
-    splash.showMessage("Loading...", Qt::AlignBottom);
+    splash.showMessage("Loading cache and covers...", Qt::AlignBottom);
     splash.show();
     a.processEvents();
     MainWindow w;

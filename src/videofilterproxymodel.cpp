@@ -11,6 +11,9 @@ VideoFilterProxyModel::VideoFilterProxyModel(QObject *parent)
 
 bool VideoFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
+    if (m_filter.isEmpty() && m_tagList.isEmpty())
+        return true;
+
     const QString &name = sourceModel()->data(sourceModel()->index(sourceRow, 1, sourceParent)).toString();
     const QString &tags = sourceModel()->data(sourceModel()->index(sourceRow, 2, sourceParent)).toString();
 
@@ -19,9 +22,6 @@ bool VideoFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &s
 
     if (m_tagList.isEmpty())
         return true;
-
-    if (tags.isEmpty())
-        return false;
 
     foreach (const QString &tag, m_tagList) {
         if (!tags.contains(tag, Qt::CaseInsensitive))

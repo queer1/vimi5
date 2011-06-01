@@ -14,10 +14,11 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+    //hide();
     setWindowTitle("vimi alpha");
     setWindowIcon(QIcon(":/images/icon.png"));
 
-    showMaximized();
+    //showMaximized();
     setCentralWidget(&m_tabWidget);
     m_tabWidget.setTabPosition(QTabWidget::West);
     m_tabWidget.addTab(CheggitView::instance(), QIcon(), "Cheggit");
@@ -43,6 +44,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //statusBar()->showMessage(tr("Ready."));
     connect(cv, SIGNAL(statusUpdated(QString)), statusBar(), SLOT(showMessage(QString)));
+
+    QMetaObject::invokeMethod(this, "showMaximized");
 }
 
 void MainWindow::showAboutDialog()

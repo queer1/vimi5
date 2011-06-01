@@ -31,11 +31,21 @@ Video::Video(QString path) :
 Video::Video(QString path, QString tags, QString coverPath) :
     m_path(path),
     m_coverPath(coverPath),
-    m_cover(QImage(m_coverPath)),
-    m_tags(tags.split(','))
+    m_cover(QImage(m_coverPath))
 {
+    QStringList tagList = tags.split(',');
+    foreach(QString tag, tagList) {
+        if (!tag.isEmpty())
+            m_tags.append(tag);
+    }
+    qSort(m_tags);
+    m_tagList = m_tags.join(", ");
+
+
     QDir dir(m_path);
     m_name = dir.dirName();
+    float factor = (float)128 / m_cover.height();//, cover.width();
+    m_coverIconCache = QPixmap::fromImage(quickScale(m_cover, m_cover.width()*factor, m_cover.height() * factor));
 }
 
 QStringList Video::files() const
@@ -64,21 +74,21 @@ void Video::removeTag(QString tag)
     m_tagList = m_tags.join(", ");
 }
 
-QPixmap Video::cover(int maxSize)
+QPixmap Video::cover(int maxSize) const
 {
     if (m_name.isEmpty())
         return QPixmap();
 
-    if (m_cover.isNull())
-        m_cover = QImage(m_coverPath);
+    //QImage cover = m_cover;
 
-    QImage cover = m_cover;
-
-    if (cover.height() > maxSize) {
-        float factor = (float)maxSize / cover.height();//, cover.width();
-        return QPixmap::fromImage(quickScale(cover, cover.width()*factor, cover.height() * factor));
+    if (m_cover.height() > maxSize) {
+        float factor = (float)maxSize / m_cover.height();//, cover.width();
+        if (maxSize == 128) {
+            return m_coverIconCache;
+        }
+        return QPixmap::fromImage(quickScale(m_cover, m_cover.width()*factor, m_cover.height() * factor));
     } else
-        return QPixmap::fromImage(cover);
+        return QPixmap::fromImage(m_cover);
 }
 
 
@@ -164,5 +174,8 @@ void Video::scanForCovers()
     else
         m_coverPath = ":/images/defaultcover.png";
 
-    //m_cover = QImage(m_coverPath);
+    m_cover = QImage(m_coverPath);
+    float factor = (float)128 / m_cover.height();//, cover.width();
+    m_coverIconCache = QPixmap::fromImage(quickScale(m_cover, m_cover.width()*factor, m_cover.height() * factor));
+
 }

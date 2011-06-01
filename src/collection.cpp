@@ -24,7 +24,8 @@ Collection::Collection()
     //m_thread = new QThreadEx();
     //moveToThread(m_thread);
     //m_thread->start();
-    QMetaObject::invokeMethod(this, "loadCache");
+    //QMetaObject::invokeMethod(this, "loadCache");
+    loadCache();
 }
 
 void Collection::loadCache()
@@ -42,9 +43,10 @@ void Collection::loadCache()
             in >> path;
             in >> tags;
             in >> coverPath;
-
             videos.append(new Video(path, tags, coverPath));
+
         }
+        qDebug() << "Loaded" << videos.size() << "videos";
         beginInsertRows(QModelIndex(), rowCount(), rowCount() + videos.size() - 1);
         foreach(Video *video, videos) {
             if (m_videos.contains(video->name())) {
@@ -57,6 +59,7 @@ void Collection::loadCache()
     } else {
         qWarning() << file.errorString() << path;
     }
+    qSort(m_videoNames);
     emit statusUpdated("Ready!");
     qDebug() << "finished loading cache";
 }
@@ -91,7 +94,8 @@ QVariant Collection::data(const QModelIndex &item, int role) const
     } else if (role == Qt::DisplayRole && item.column() == 2) {
         return m_videos[m_videoNames.at(item.row())]->tagList();
     } else if (role == Qt::SizeHintRole && item.column() == 0) {
-        return m_videos[m_videoNames.at(item.row())]->cover(Config::maxCoverSize()).size();
+        //return m_videos[m_videoNames.at(item.row())]->cover(Config::maxCoverSize()).size();
+        return QSize(128, 128);
     } else {
         return QVariant();
     }
@@ -136,6 +140,7 @@ void Collection::rescan()
     m_videos.clear();
     endRemoveRows();
     scan(QDir(Config::collectionPath()));
+    qSort(m_videoNames);
 
     emit updated();
     emit statusUpdated("Scan finished.");
@@ -145,11 +150,13 @@ void Collection::rescan()
     QFile file(path + "/videos.db");
     QDataStream out(&file);
     if (file.open(QIODevice::WriteOnly)) {
+        qDebug() << "writing cache...";
         foreach(Video *video, m_videos) {
             out << video->path() << video->tags().join(",") << video->coverPath();
             //file.write(video->path().toUtf8() + "\n");
         }
         file.close();
+        qDebug() << "finished writing cache!";
     } else {
         qWarning() << file.errorString();
     }
@@ -157,7 +164,7 @@ void Collection::rescan()
 
 void Collection::scan(QDir dir)
 {
-    qDebug() << "Scanning directory: " << dir.path();
+    //qDebug() << "Scanning directory: " << dir.path();
 
     dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
