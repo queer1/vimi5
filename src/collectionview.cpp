@@ -26,7 +26,7 @@ CollectionView::CollectionView(MainWindow *parent) :
             parent->getCollectionPath();
         }
     }
-    m_collection->rescan();
+    //QMetaObject::invokeMethod(m_collection, SLOT(rescan()));
 
     // Set up the video list view
     QGroupBox *videoContainer = new QGroupBox(this);
@@ -83,6 +83,7 @@ CollectionView::CollectionView(MainWindow *parent) :
     connect(m_infoPanel, SIGNAL(editTags()), SLOT(editTags()));
     connect(m_infoPanel, SIGNAL(fetchTags()), SLOT(fetchTags()));
     connect(m_infoPanel, SIGNAL(createCovers()), SLOT(createCovers()));
+    connect(m_collection, SIGNAL(statusUpdated(QString)), SIGNAL(statusUpdated(QString)));
 
     m_videoView->resizeColumnToContents(0);
     //m_videoView->resizeColumnToContents(1);

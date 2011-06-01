@@ -10,6 +10,7 @@
 #include <QAbstractTableModel>
 #include <QHash>
 #include <QSet>
+#include <QThread>
 
 class Collection : public QAbstractTableModel
 {
@@ -41,13 +42,16 @@ signals:
 
 public slots:
     void rescan();
-
+private slots:
+    void loadCache();
 private:
     void scan(QDir directory);
     void addVideo(const Video &video);
 
+
     static QHash<QString, Video> m_videos;
     static QStringList m_videoNames;
+    QThread *m_thread;
 
     QStringList m_cachedVideoDirectories;
 };

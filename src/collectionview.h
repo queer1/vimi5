@@ -23,6 +23,9 @@ public:
 
     Collection *collection() { return m_collection; }
 
+signals:
+    void statusUpdated(const QString &text);
+
 private slots:
     void updateVideoFilter(QStandardItem *tag);
     void updateTagModel();

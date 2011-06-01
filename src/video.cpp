@@ -16,7 +16,7 @@ Video::Video(QString path) :
 
     m_name = dir.dirName();
 
-    if (dir.exists("tags.txt")) { // There is a tag cache here
+   if (dir.exists("tags.txt")) { // There is a tag cache here
         QFile file(dir.filePath("tags.txt"));
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             while (!file.atEnd())

@@ -11,20 +11,49 @@
 QHash<QString, Video> Collection::m_videos;
 QStringList Collection::m_videoNames;
 
+class QThreadEx : public QThread
+{
+protected:
+    void run() { exec(); }
+};
+
+
 Collection::Collection()
     : QAbstractTableModel()
 {
+    m_thread = new QThreadEx();
+    moveToThread(m_thread);
+    m_thread->start();
+    QMetaObject::invokeMethod(this, "loadCache");
+}
+
+void Collection::loadCache()
+{
+    emit(statusUpdated("Loading video cache..."));
     QString path = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
     QDir(path).mkpath(path);
     QFile file(path + "/videos.db");
     if (file.open(QIODevice::ReadOnly)) {
+        QVector<Video*> videos;
         while (!file.atEnd()) {
-            Video *video = new Video(QString::fromUtf8(file.readLine()).simplified());
-            addVideo(*video);
+            videos.append(new Video(QString::fromUtf8(file.readLine()).simplified()));
+
+            //addVideo(*video);
         }
+        beginInsertRows(QModelIndex(), rowCount(), rowCount() + videos.size() - 1);
+        foreach(const Video *video, videos) {
+            if (m_videos.contains(video->name())) {
+                qWarning() << video->name() << "already in collection";
+            }
+            m_videos.insert(video->name(), *video);
+            m_videoNames.append(video->name());
+        }
+        endInsertRows();
     } else {
         qWarning() << file.errorString() << path;
     }
+    emit statusUpdated("Ready!");
+    qDebug() << "finished loading cache";
 }
 
 Collection::~Collection()
@@ -49,6 +78,7 @@ QVariant Collection::data(const QModelIndex &item, int role) const
     if (!item.isValid() || (role != Qt::DisplayRole && role != Qt::DecorationRole))
         return QVariant();
 
+
     if (role == Qt::DecorationRole && item.column() == 0) {
         return m_videos[m_videoNames.at(item.row())].cover(Config::maxCoverSize());
     } else if (role == Qt::DisplayRole && item.column() == 1) {
@@ -65,7 +95,7 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 void Collection::addVideo(const Video &video)
 {
     if (m_videos.contains(video.name())) {
-        qWarning() << video.name();
+        qWarning() << video.name() << "already in collection";
         int index = m_videoNames.indexOf(video.name());
         beginRemoveRows(QModelIndex(), index, index);
         m_videos.remove(video.name());

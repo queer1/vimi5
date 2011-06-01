@@ -1,7 +1,8 @@
 # Copyright 2009 cwk
 
 DEFINES += __STDC_CONSTANT_MACROS
-LIBS += -lavformat -lavcodec -lswscale
+
+LIBS += -lavformat -lavcodec -lswscale -lavutil
 
 QT += core\
       gui\
@@ -45,5 +46,11 @@ HEADERS += aboutdialog.h\
     videowidget.h \
     coverlabel.h \
     version.h
+
+win32 {
+    LIBS += -LC:\ffmpeg\lib -static-libgcc
+    CONFIG += static
+    INCLUDEPATH += C:\ffmpeg\include
+}
 
 include(images/images.pro)

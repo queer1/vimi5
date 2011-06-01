@@ -8,10 +8,13 @@
 #include <QStatusBar>
 #include <QFileDialog>
 
+#include <QDebug>
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+    qDebug() << Q_FUNC_INFO << "starting";
     setWindowTitle("vimi alpha");
     setWindowIcon(QIcon(":/images/icon.png"));
 
@@ -38,7 +41,9 @@ MainWindow::MainWindow(QWidget *parent) :
     if (Config::collectionPath().isEmpty()) {
         getCollectionPath();
     }
-    statusBar()->showMessage(tr("Ready."));
+
+    //statusBar()->showMessage(tr("Ready."));
+    connect(cv, SIGNAL(statusUpdated(QString)), statusBar(), SLOT(showMessage(QString)));
 }
 
 void MainWindow::showAboutDialog()
