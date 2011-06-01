@@ -84,6 +84,7 @@ CollectionView::CollectionView(MainWindow *parent) :
     connect(m_infoPanel, SIGNAL(fetchTags()), SLOT(fetchTags()));
     connect(m_infoPanel, SIGNAL(createCovers()), SLOT(createCovers()));
     connect(m_collection, SIGNAL(statusUpdated(QString)), SIGNAL(statusUpdated(QString)));
+    connect(m_infoPanel, SIGNAL(selectedTag(QString)), SLOT(selectTag(QString)));
 
     m_videoView->resizeColumnToContents(0);
     //m_videoView->resizeColumnToContents(1);
@@ -171,4 +172,17 @@ void CollectionView::createCovers()
     Collection::scanForCovers(m_infoPanel->videoName());
     m_videoView->repaint();
     m_infoPanel->setInfo(m_infoPanel->videoName());
+}
+
+void CollectionView::selectTag(const QString &tag)
+{
+    for (int i=0; i<m_tagModel->rowCount(); i++) {
+        if (m_tagModel->item(i)->text() == tag) {
+            m_tagModel->item(i)->setCheckState(Qt::Checked);
+            break;
+         }
+    }
+    m_videoModel->addTag(tag);
+    updateInfoPanel(m_videoView->currentIndex());
+    m_videoView->scrollTo(m_videoView->currentIndex());
 }

@@ -40,6 +40,7 @@ InfoPanel::InfoPanel(QWidget *parent) :
 
     connect(m_files, SIGNAL(linkActivated(QString)), SLOT(launchFile(QString)));
     connect(m_path, SIGNAL(linkActivated(QString)), SLOT(launchFile(QString)));
+    connect(m_tags, SIGNAL(linkActivated(QString)), SIGNAL(selectedTag(QString)));
     connect(tagEditButton, SIGNAL(clicked()), SIGNAL(editTags()));
     connect(tagFetchButton, SIGNAL(clicked()), SIGNAL(fetchTags()));
     connect(createCoversButton, SIGNAL(clicked()), SIGNAL(createCovers()));
@@ -55,7 +56,7 @@ void InfoPanel::setInfo(const QString &title)
     if (!tags.empty()) {
         // List of tags
         QString tagHtml = "<b>Tags:</b><ul>";
-        foreach (QString tag, tags) tagHtml += "<li>" + tag + "</li>";
+        foreach (QString tag, tags) tagHtml += "<li><a href='" + tag + "'>" + tag + "</a></li>";
         tagHtml += "</ul>";
         m_tags->setText(tagHtml);
     } else {
@@ -85,4 +86,3 @@ void InfoPanel::launchFile(const QString &file)
     QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(file.toLocal8Bit()));
     QDesktopServices::openUrl(url);//QUrl::fromPercentEncoding(file.toLocal8Bit()));
 }
-

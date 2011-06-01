@@ -21,6 +21,7 @@ signals:
     void editTags();
     void fetchTags();
     void createCovers();
+    void selectedTag(const QString&);
 
 private slots:
     void launchFile(const QString&);

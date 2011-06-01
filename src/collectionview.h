@@ -33,6 +33,7 @@ private slots:
     void editTags();
     void fetchTags();
     void createCovers();
+    void selectTag(const QString &tag);
 
 private:
     QListView *m_tagView;
