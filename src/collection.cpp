@@ -8,7 +8,7 @@
 #include <QSet>
 
 #include "collection.h"
-QHash<QString, Video> Collection::m_videos;
+QHash<QString, Video*> Collection::m_videos;
 QStringList Collection::m_videoNames;
 
 class QThreadEx : public QThread
@@ -41,11 +41,11 @@ void Collection::loadCache()
             //addVideo(*video);
         }
         beginInsertRows(QModelIndex(), rowCount(), rowCount() + videos.size() - 1);
-        foreach(const Video *video, videos) {
+        foreach(Video *video, videos) {
             if (m_videos.contains(video->name())) {
                 qWarning() << video->name() << "already in collection";
             }
-            m_videos.insert(video->name(), *video);
+            m_videos.insert(video->name(), video);
             m_videoNames.append(video->name());
         }
         endInsertRows();
@@ -80,32 +80,32 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 
 
     if (role == Qt::DecorationRole && item.column() == 0) {
-        return m_videos[m_videoNames.at(item.row())].cover(Config::maxCoverSize());
+        return m_videos[m_videoNames.at(item.row())]->cover(Config::maxCoverSize());
     } else if (role == Qt::DisplayRole && item.column() == 1) {
-        return m_videos[m_videoNames.at(item.row())].name();
+        return m_videos[m_videoNames.at(item.row())]->name();
     } else if (role == Qt::DisplayRole && item.column() == 2) {
-        return m_videos[m_videoNames.at(item.row())].tagList();
+        return m_videos[m_videoNames.at(item.row())]->tagList();
     } else if (role == Qt::SizeHintRole && item.column() == 0) {
-        return m_videos[m_videoNames.at(item.row())].cover(Config::maxCoverSize()).size();
+        return m_videos[m_videoNames.at(item.row())]->cover(Config::maxCoverSize()).size();
     } else {
         return QVariant();
     }
 }
 
-void Collection::addVideo(const Video &video)
+void Collection::addVideo(Video *video)
 {
-    if (m_videos.contains(video.name())) {
-        qWarning() << video.name() << "already in collection";
-        int index = m_videoNames.indexOf(video.name());
+    if (m_videos.contains(video->name())) {
+        qWarning() << video->name() << "already in collection";
+        int index = m_videoNames.indexOf(video->name());
         beginRemoveRows(QModelIndex(), index, index);
-        m_videos.remove(video.name());
+        m_videos.remove(video->name());
         m_videoNames.removeAt(index);
         endRemoveRows();
     }
 
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    m_videos.insert(video.name(), video);
-    m_videoNames.append(video.name());
+    m_videos.insert(video->name(), video);
+    m_videoNames.append(video->name());
     endInsertRows();
 
 }
@@ -139,8 +139,8 @@ void Collection::rescan()
     QDir(path).mkpath(path);
     QFile file(path + "/videos.db");
     if (file.open(QIODevice::WriteOnly)) {
-        foreach(const Video &video, m_videos) {
-            file.write(video.path().toUtf8() + "\n");
+        foreach(Video *video, m_videos) {
+            file.write(video->path().toUtf8() + "\n");
         }
         file.close();
     } else {
@@ -155,7 +155,7 @@ void Collection::scan(QDir dir)
     dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
     if (dir.count() > 0) { // Found movie files
-        addVideo(Video(dir.path()));
+        addVideo(new Video(dir.path()));
     }
 
     dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::AllDirs | QDir::Executable);
@@ -173,44 +173,44 @@ void Collection::addTag(const QString &video, const QString &rawTag)
 
     if (tag.isEmpty())
         return;
-    m_videos[video].addTag(tag);
+    m_videos[video]->addTag(tag);
 }
 
 void Collection::removeTag(const QString &video, const QString &tag)
 {
-    m_videos[video].removeTag(tag);
+    m_videos[video]->removeTag(tag);
 }
 
 QStringList Collection::getTags(const QString &videoName)
 {
     if (videoName.isEmpty()) {
         QSet<QString> allTags;
-        foreach(const Video &video, m_videos) {
-            allTags.unite(video.tags().toSet());
+        foreach(Video *video, m_videos) {
+            allTags.unite(video->tags().toSet());
         }
         QStringList ret = allTags.toList();
         qSort(ret);
         return ret;
     } else
-        return m_videos[videoName].tags();
+        return m_videos[videoName]->tags();
 }
 
 QString Collection::getPath(const QString &videoName)
 {
-    return m_videos[videoName].path();
+    return m_videos[videoName]->path();
 }
 
 QStringList Collection::getFiles(const QString &videoName)
 {
-    return m_videos[videoName].files();
+    return m_videos[videoName]->files();
 }
 
 QPixmap Collection::getCover(const QString &videoName, int maxSize)
 {
-    return m_videos[videoName].cover(maxSize);
+    return m_videos[videoName]->cover(maxSize);
 }
 
 void Collection::scanForCovers(const QString &videoName)
 {
-    m_videos[videoName].scanForCovers();
+    m_videos[videoName]->scanForCovers();
 }

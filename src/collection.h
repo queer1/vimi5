@@ -46,10 +46,10 @@ private slots:
     void loadCache();
 private:
     void scan(QDir directory);
-    void addVideo(const Video &video);
+    void addVideo(Video *video);
 
 
-    static QHash<QString, Video> m_videos;
+    static QHash<QString, Video*> m_videos;
     static QStringList m_videoNames;
     QThread *m_thread;
 
