@@ -34,7 +34,6 @@ CollectionView::CollectionView(MainWindow *parent) :
     //videoContainer->setTitle("Videos");
 
     m_videoFilterEdit = new QLineEdit(this);
-    m_videoFilterEdit->setPlaceholderText("Search videos");
     videoContainer->layout()->addWidget(m_videoFilterEdit);
 
     m_videoView = new QTreeView(this);
@@ -54,7 +53,6 @@ CollectionView::CollectionView(MainWindow *parent) :
     tagContainer->setLayout(new QVBoxLayout);
     //tagContainer->setTitle("Tags");
     m_tagFilterEdit = new QLineEdit(this);
-    m_tagFilterEdit->setPlaceholderText("Search tags");
     tagContainer->layout()->addWidget(m_tagFilterEdit);
 
     m_tagView = new QListView(this);
@@ -88,6 +86,11 @@ CollectionView::CollectionView(MainWindow *parent) :
 
     m_videoView->resizeColumnToContents(0);
     //m_videoView->resizeColumnToContents(1);
+
+#if QT_VERSION >= 0x040700
+    m_tagFilterEdit->setPlaceholderText("Search tags");
+    m_videoFilterEdit->setPlaceholderText("Search videos");
+#endif
 
     setStretchFactor(1, 2);
 
