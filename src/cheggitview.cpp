@@ -25,7 +25,7 @@ CheggitView::CheggitView() : QWidget(0),
     layout()->addWidget(m_toolbar);
     layout()->addWidget(m_webview);
 
-    m_webview->load(QUrl("http://cheggit.net"));
+    //m_webview->load(QUrl("http://cheggit.net"));
 
 
     m_movieAccessManager = new QNetworkAccessManager(this);

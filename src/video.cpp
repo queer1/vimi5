@@ -1,16 +1,21 @@
 #include "video.h"
 #include "config.h"
+#include "mainwindow.h"
+#include "collection.h"
 #include <QDir>
 #include <QDebug>
 #include <QPixmap>
 #include <QSet>
+#include <QWaitCondition>
+#include <QtCore/QtConcurrentRun>
+#include <cstdlib>
 
-Video::Video(QString path) :
+QPixmap *Video::m_defaultCover = 0;
+
+Video::Video(QObject *parent, QString path) : QObject(parent),
         m_path(path)
 {
-    if (path == "") {
-        Q_ASSERT(false);
-    }
+    Q_ASSERT(path != "");
 
     QDir dir(m_path);
 
@@ -28,10 +33,10 @@ Video::Video(QString path) :
     scanForCovers();
 }
 
-Video::Video(QString path, QString tags, QString coverPath) :
+Video::Video(QObject *parent, QString path, QString tags, QString coverPath) : QObject(parent),
     m_path(path),
-    m_coverPath(coverPath),
-    m_cover(QImage(m_coverPath))
+    m_coverPath(coverPath)
+    //m_cover(QImage(m_coverPath))
 {
     QStringList tagList = tags.split(',');
     foreach(QString tag, tagList) {
@@ -45,7 +50,7 @@ Video::Video(QString path, QString tags, QString coverPath) :
     QDir dir(m_path);
     m_name = dir.dirName();
     float factor = (float)128 / m_cover.height();//, cover.width();
-    m_coverIconCache = QPixmap::fromImage(quickScale(m_cover, m_cover.width()*factor, m_cover.height() * factor));
+    //m_coverIconCache = QPixmap::fromImage(quickScale(m_cover, m_cover.width()*factor, m_cover.height() * factor));
 }
 
 QStringList Video::files() const
@@ -74,16 +79,29 @@ void Video::removeTag(QString tag)
     m_tagList = m_tags.join(", ");
 }
 
-QPixmap Video::cover(int maxSize) const
+QPixmap Video::cover(int maxSize)
 {
     if (m_name.isEmpty())
         return QPixmap();
 
     //QImage cover = m_cover;
+    if (m_cover.isNull()) {
+        if (!m_coverPath.isEmpty()) {
+            QtConcurrent::run(this, &Video::loadCover);
+        }
+        if (m_defaultCover == 0)
+            m_defaultCover = new QPixmap(QPixmap::fromImage(QImage(":/images/defaultcover.png")));
+        //m_cover = m_defaultCover->toImage();
+        return *m_defaultCover;
+    }
 
     if (m_cover.height() > maxSize) {
         float factor = (float)maxSize / m_cover.height();//, cover.width();
         if (maxSize == 128) {
+            if (m_coverIconCache.isNull()) {
+                float factor = (float)128 / m_cover.height();//, cover.width();
+                m_coverIconCache = QPixmap::fromImage(quickScale(m_cover, m_cover.width()*factor, m_cover.height() * factor));
+            }
             return m_coverIconCache;
         }
         return QPixmap::fromImage(quickScale(m_cover, m_cover.width()*factor, m_cover.height() * factor));
@@ -171,11 +189,28 @@ void Video::scanForCovers()
         m_coverPath = dir.entryInfoList(QStringList("*" + m_name + "*.jpg")).first().absoluteFilePath();
     else if (dir.entryInfoList(QStringList("*.jpg")).count() > 0)
         m_coverPath = dir.entryInfoList(QStringList("*.jpg")).first().absoluteFilePath();
-    else
-        m_coverPath = ":/images/defaultcover.png";
+    //else
+    //    m_coverPath = ":/images/defaultcover.png";
 
-    m_cover = QImage(m_coverPath);
+    //m_cover = QImage(m_coverPath);
     float factor = (float)128 / m_cover.height();//, cover.width();
-    m_coverIconCache = QPixmap::fromImage(quickScale(m_cover, m_cover.width()*factor, m_cover.height() * factor));
+//    m_coverIconCache = QPixmap::fromImage(quickScale(m_cover, m_cover.width()*factor, m_cover.height() * factor));
+}
 
+void Video::loadCover()
+{
+    if (!MainWindow::running)
+        return;
+    if (!Collection::launched)
+        Collection::launchWaiter.wait(&Collection::launchMutex);
+
+    QImage cover = QImage(m_coverPath);
+    if (cover.isNull()) {
+        qWarning() << "unable to load cover:" << m_coverPath;
+        m_coverPath = "";
+    }
+
+    m_cover = cover;
+    //qDebug() << "loaded cover: " << m_coverPath;
+    emit coverLoaded(m_name);
 }

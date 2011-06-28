@@ -12,6 +12,7 @@
 #include <QSet>
 #include <QThread>
 #include <QMutex>
+#include <QWaitCondition>
 
 class Collection : public QAbstractTableModel
 {
@@ -37,14 +38,21 @@ public:
     bool hasChildren(const QModelIndex &index) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
+    static QMutex launchMutex;
+    static QWaitCondition launchWaiter;
+    static bool launched;
+
 signals:
     void updated();
     void statusUpdated(const QString &text);
+    void repaintCover(int row, const QModelIndex &parent);
 
 public slots:
     void rescan();
 private slots:
     void loadCache();
+    void coverLoaded(const QString &name);
+
 private:
     void scan(QDir directory);
     void addVideo(Video *video);
@@ -55,6 +63,7 @@ private:
     QThread *m_thread;
 
     QStringList m_cachedVideoDirectories;
+    //QHash<int, QModelIndex&> m_indices;
 };
 
 #endif // COLLECTION_H

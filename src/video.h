@@ -3,17 +3,19 @@
 #include <QStringList>
 #include <QImage>
 #include <QPixmap>
+#include <QObject>
 class QString;
 class QDataStream;
 
-class Video
+class Video : public QObject
 {
+    Q_OBJECT
 public:
-    Video (QString path = "");
-    Video (QString path, QString tags, QString coverPath);
+    Video (QObject *parent, QString path = "");
+    Video (QObject *parent, QString path, QString tags, QString coverPath);
 
-    QPixmap cover(int maxSize) const;
-    QImage cover() const { return m_cover; }
+    QPixmap cover(int maxSize);
+    //const QImage cover();
     QString coverPath() const { return m_coverPath; }
     QString path() const { return m_path; }
     QString name() const { return m_name; }
@@ -25,6 +27,10 @@ public:
     void removeTag(QString tag);
     void scanForCovers();
     static QImage quickScale(const QImage &source, int width, int height);
+    void loadCover();
+
+signals:
+    void coverLoaded(const QString& name);
 
 private:
     void writeTagCache();
@@ -36,6 +42,8 @@ private:
     QStringList m_tags;
     QString m_tagList;
     QPixmap m_coverIconCache;
+
+    static QPixmap *m_defaultCover;
 };
 
 #endif // VIDEO_H

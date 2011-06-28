@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
     start = clock();
 
     QApplication a(argc, argv);
+    QApplication::setQuitOnLastWindowClosed(true);
     a.setApplicationName("Vimi");
     a.setOrganizationName("Cheggit");
     a.setOrganizationDomain("cheggit.net");

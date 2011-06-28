@@ -7,13 +7,19 @@
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QFileDialog>
+#include <QApplication>
+#include <QThreadPool>
+#include <QWaitCondition>
 
 #include <QDebug>
 
+bool MainWindow::running;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+    running = true;
+
     //hide();
     setWindowTitle("vimi alpha");
     setWindowIcon(QIcon(":/images/icon.png"));
@@ -46,6 +52,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(cv, SIGNAL(statusUpdated(QString)), statusBar(), SLOT(showMessage(QString)));
 
     QMetaObject::invokeMethod(this, "showMaximized");
+    Collection::launched = true;
+    Collection::launchWaiter.wakeAll();
+}
+
+MainWindow::~MainWindow()
+{
+    running = false;
+    QApplication::quit();
 }
 
 void MainWindow::showAboutDialog()

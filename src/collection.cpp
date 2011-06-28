@@ -6,10 +6,14 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QSet>
+#include <QThreadPool>
 
 #include "collection.h"
 QHash<QString, Video*> Collection::m_videos;
 QStringList Collection::m_videoNames;
+QMutex Collection::launchMutex;
+QWaitCondition Collection::launchWaiter;
+bool Collection::launched;
 
 class QThreadEx : public QThread
 {
@@ -25,6 +29,8 @@ Collection::Collection()
     //moveToThread(m_thread);
     //m_thread->start();
     //QMetaObject::invokeMethod(this, "loadCache");
+    launchMutex.lock();
+    launched = false;
     loadCache();
 }
 
@@ -43,8 +49,9 @@ void Collection::loadCache()
             in >> path;
             in >> tags;
             in >> coverPath;
-            videos.append(new Video(path, tags, coverPath));
-
+            Video *video = new Video(this, path, tags, coverPath);
+            videos.append(video);
+            connect(video, SIGNAL(coverLoaded(QString)), this, SLOT(coverLoaded(QString)), Qt::QueuedConnection);
         }
         qDebug() << "Loaded" << videos.size() << "videos";
         beginInsertRows(QModelIndex(), rowCount(), rowCount() + videos.size() - 1);
@@ -86,14 +93,13 @@ QVariant Collection::data(const QModelIndex &item, int role) const
     if (!item.isValid() || (role != Qt::DisplayRole && role != Qt::DecorationRole))
         return QVariant();
 
-
     if (role == Qt::DecorationRole && item.column() == 0) {
         return m_videos[m_videoNames.at(item.row())]->cover(Config::maxCoverSize());
     } else if (role == Qt::DisplayRole && item.column() == 1) {
         return m_videos[m_videoNames.at(item.row())]->name();
     } else if (role == Qt::DisplayRole && item.column() == 2) {
         return m_videos[m_videoNames.at(item.row())]->tagList();
-    } else if (role == Qt::SizeHintRole && item.column() == 0) {
+    } else if (role == Qt::SizeHintRole) {// && item.column() == 0) {
         //return m_videos[m_videoNames.at(item.row())]->cover(Config::maxCoverSize()).size();
         return QSize(128, 128);
     } else {
@@ -117,6 +123,7 @@ void Collection::addVideo(Video *video)
     m_videoNames.append(video->name());
     endInsertRows();
 
+    connect(video, SIGNAL(coverLoaded(QString)), this, SLOT(coverLoaded()));
 }
 
 QModelIndex Collection::index(int row, int column, const QModelIndex &) const
@@ -169,7 +176,7 @@ void Collection::scan(QDir dir)
     dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
     if (dir.count() > 0) { // Found movie files
-        addVideo(new Video(dir.path()));
+        addVideo(new Video(this, dir.path()));
     }
 
     dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::AllDirs | QDir::Executable);
@@ -227,4 +234,11 @@ QPixmap Collection::getCover(const QString &videoName, int maxSize)
 void Collection::scanForCovers(const QString &videoName)
 {
     m_videos[videoName]->scanForCovers();
+}
+
+void Collection::coverLoaded(const QString &videoName)
+{
+    int row = m_videoNames.indexOf(videoName);
+    //emit repaintCover(row, createIndex(row, 0, row));
+    emit dataChanged(createIndex(row, 0, row), createIndex(row, 0, row));
 }

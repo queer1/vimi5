@@ -42,6 +42,7 @@ CollectionView::CollectionView(MainWindow *parent) :
     m_videoView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_videoView->setSortingEnabled(true);
     m_videoView->sortByColumn(1, Qt::AscendingOrder);
+
     videoContainer->layout()->addWidget(m_videoView);
 
     m_videoModel = new VideoFilterProxyModel;
@@ -74,6 +75,7 @@ CollectionView::CollectionView(MainWindow *parent) :
     // Connect signals
     connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), SLOT(updateVideoFilter(QStandardItem*)));
     connect(m_collection, SIGNAL(updated()), SLOT(updateTagModel()));
+    connect(m_collection, SIGNAL(repaintCover(int,QModelIndex)), this, SLOT(coverLoaded(int,QModelIndex)));
     connect(m_videoView, SIGNAL(activated(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_videoView, SIGNAL(clicked(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_tagFilterEdit, SIGNAL(textChanged(QString)), m_tagFilterModel, SLOT(setFilterFixedString(QString)));
@@ -188,4 +190,18 @@ void CollectionView::selectTag(const QString &tag)
     m_videoModel->addTag(tag);
     updateInfoPanel(m_videoView->currentIndex());
     m_videoView->scrollTo(m_videoView->currentIndex());
+}
+
+void CollectionView::coverLoaded(int row, const QModelIndex &index)
+{
+
+    //if (!m_videoView->isRowHidden(row, parent)) {
+      //  qDebug() << "redisplaying row" << row;
+
+        //m_videoView->dataChanged(m_collection->index(row, 0), m_collection->index(row, 0));
+    m_videoView->dataChanged(index, index);
+    m_videoView->repaint();
+        m_videoView->setCurrentIndex(m_collection->index(row, 0));
+        QTimer::singleShot(100, this, SLOT(repaint()));
+    //}
 }
