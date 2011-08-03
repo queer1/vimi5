@@ -5,6 +5,9 @@
 #include <QSettings>
 
 QString Config::m_collectionPath;
+QString Config::m_dirExplorer;
+QString Config::m_moviePlayer;
+QString Config::m_imageViewer;
 QStringList Config::m_movieSuffixes;
 int Config::m_maxCoverSize;
 bool Config::m_loaded = false;
@@ -59,6 +62,32 @@ int Config::maxCoverSize()
     if (!m_loaded)
         load();
     return m_maxCoverSize;
+}
+
+QString Config::dirExplorer()
+{
+    if (!m_loaded)
+        load();
+
+    return m_dirExplorer;
+}
+
+
+QString Config::moviePlayer()
+{
+    if (!m_loaded)
+        load();
+
+    return m_moviePlayer;
+}
+
+
+QString Config::imageViewer()
+{
+    if (!m_loaded)
+        load();
+
+    return m_imageViewer;
 }
 
 void Config::setCollectionPath(QString path)

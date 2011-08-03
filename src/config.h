@@ -5,23 +5,32 @@
 
 #include <QString>
 #include <QStringList>
-
+class SettingsDialog;
 class Config
 {
 public:
     static QString collectionPath();
     static QStringList movieSuffixes();
     static int maxCoverSize();
+    static QString dirExplorer();
+    static QString moviePlayer();
+    static QString imageViewer();
 
     static void setCollectionPath(QString path);
+
+    friend class SettingsDialog;
 private:
     static void load();
     static void save();
 
+    static bool m_loaded;
+
     static QString m_collectionPath;
     static QStringList m_movieSuffixes;
     static int m_maxCoverSize;
-    static bool m_loaded;
+    static QString m_dirExplorer;
+    static QString m_moviePlayer;
+    static  QString m_imageViewer;
 };
 
 #endif // CONFIG_H

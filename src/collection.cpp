@@ -22,8 +22,8 @@ protected:
 };
 
 
-Collection::Collection()
-    : QAbstractTableModel()
+Collection::Collection(QObject *parent)
+    : QAbstractTableModel(parent)
 {
     //m_thread = new QThreadEx();
     //moveToThread(m_thread);
@@ -31,6 +31,12 @@ Collection::Collection()
     //QMetaObject::invokeMethod(this, "loadCache");
     launchMutex.lock();
     launched = false;
+
+    m_coverLoader = new CoverLoader;
+    QThread *thread = new QThread;
+    m_coverLoader->moveToThread(thread);
+    thread->start();
+
     loadCache();
 }
 
@@ -51,6 +57,7 @@ void Collection::loadCache()
             in >> coverPath;
             Video *video = new Video(this, path, tags, coverPath);
             videos.append(video);
+            connect(video, SIGNAL(needToLoadCover(Video*)), m_coverLoader, SLOT(loadVideo(Video*)));
             connect(video, SIGNAL(coverLoaded(QString)), this, SLOT(coverLoaded(QString)), Qt::QueuedConnection);
         }
         qDebug() << "Loaded" << videos.size() << "videos";
@@ -94,7 +101,7 @@ QVariant Collection::data(const QModelIndex &item, int role) const
         return QVariant();
 
     if (role == Qt::DecorationRole && item.column() == 0) {
-        return m_videos[m_videoNames.at(item.row())]->cover(Config::maxCoverSize());
+        return m_videos[m_videoNames.at(item.row())]->thumbnail();
     } else if (role == Qt::DisplayRole && item.column() == 1) {
         return m_videos[m_videoNames.at(item.row())]->name();
     } else if (role == Qt::DisplayRole && item.column() == 2) {
@@ -123,7 +130,8 @@ void Collection::addVideo(Video *video)
     m_videoNames.append(video->name());
     endInsertRows();
 
-    connect(video, SIGNAL(coverLoaded(QString)), this, SLOT(coverLoaded()));
+    connect(video, SIGNAL(needToLoadCover(Video*)), m_coverLoader, SLOT(loadVideo(Video*)));
+    connect(video, SIGNAL(coverLoaded(QString)), this, SLOT(coverLoaded(QString)));
 }
 
 QModelIndex Collection::index(int row, int column, const QModelIndex &) const
@@ -176,7 +184,7 @@ void Collection::scan(QDir dir)
     dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
     if (dir.count() > 0) { // Found movie files
-        addVideo(new Video(this, dir.path()));
+        addVideo(Video::makeVideo(this, dir.path()));
     }
 
     dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::AllDirs | QDir::Executable);

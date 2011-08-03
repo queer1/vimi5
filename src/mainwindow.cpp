@@ -3,6 +3,7 @@
 #include "collectionview.h"
 #include "cheggitview.h"
 #include "covermaker.h"
+#include "settingsdialog.h"
 
 #include <QMenuBar>
 #include <QStatusBar>
@@ -35,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Set up the File menu
     QMenu *fileMenu = new QMenu("&File", this);
     fileMenu->addAction(QIcon(), "&Rescan...", cv->collection(), SLOT(rescan()), QKeySequence::Refresh);
+    fileMenu->addAction(QIcon(), "&Settings...", this, SLOT(showSettings()), QKeySequence::Preferences);
     fileMenu->addAction(QIcon(), "&Set Path to Collection...", this, SLOT(getCollectionPath()));
     fileMenu->addAction(QIcon(), "&Quit", this, SLOT(close()), QKeySequence::Quit);
     menuBar()->addMenu(fileMenu);
@@ -77,4 +79,10 @@ void MainWindow::getCollectionPath()
     if (dir != "") {
         Config::setCollectionPath(dir);
     }
+}
+
+void MainWindow::showSettings()
+{
+    SettingsDialog *dialog = new SettingsDialog(this);
+    dialog->show();
 }

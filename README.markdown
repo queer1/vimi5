@@ -1,21 +1,23 @@
 # Vimi
 
-
 ## Overview
 
 Vimi is a cross-platform, tag based video manager written in Qt4.
+
+### Usage
 
 It assumes that each movie consists of a single directory, consisting of the
 individual video files, an optional cover image and an optional file named
 "tags.txt" containing tags for this move, one on each line.
 
-When you add new tags, these will also be written to the "tags.txt" file, as
-well as being written to the SQLite database used as a cache by Vimi. 
-
+When you add new tags, these will also be written to the "tags.txt" file in
+the movie directory, as well as being written to the internal Vimi cache.
 
 ### Dependencies:
 
- * Qt 4.6
+ * [Qt](http://qt.nokia.com/)
+ * [ffmpeg](http://www.ffmpeg.org/)
+    Windows builds of ffmpeg are available from http://ffmpeg.zeranoe.com/
 
 ## Develop
 

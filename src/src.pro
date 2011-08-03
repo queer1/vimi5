@@ -35,7 +35,9 @@ SOURCES += main.cpp\
     video.cpp \
     covermaker.cpp \
     videowidget.cpp \
-    coverlabel.cpp
+    coverlabel.cpp \
+    settingsdialog.cpp \
+    coverloader.cpp
 
 HEADERS += aboutdialog.h\
            cheggitview.h\
@@ -52,7 +54,9 @@ HEADERS += aboutdialog.h\
     covermaker.h \
     videowidget.h \
     coverlabel.h \
-    version.h
+    version.h \
+    settingsdialog.h \
+    coverloader.h
 
 win32 {
     LIBS += -LC:\ffmpeg\lib -static-libgcc

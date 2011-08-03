@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "video.h"
+#include "coverloader.h"
 #include <QDir>
 #include <QImage>
 #include <QAbstractTableModel>
@@ -20,7 +21,7 @@ class Collection : public QAbstractTableModel
     Q_OBJECT;
 
 public:
-    Collection();
+    Collection(QObject *parent);
     ~Collection();
 
     static void addTag(const QString &video, const QString &tag);
@@ -63,6 +64,7 @@ private:
     QThread *m_thread;
 
     QStringList m_cachedVideoDirectories;
+    CoverLoader *m_coverLoader;
     //QHash<int, QModelIndex&> m_indices;
 };
 

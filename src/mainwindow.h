@@ -15,6 +15,7 @@ public:
 
 public slots:
     void getCollectionPath();
+    void showSettings();
 
 private slots:
     void showAboutDialog();

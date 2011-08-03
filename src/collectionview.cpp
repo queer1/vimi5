@@ -20,7 +20,7 @@
 CollectionView::CollectionView(MainWindow *parent) :
     QSplitter(parent)
 {
-    m_collection = new Collection();
+    m_collection = new Collection(this);
     if (m_collection->rowCount() == 0) {
         if (Config::collectionPath() == "") {
             parent->getCollectionPath();
@@ -59,7 +59,7 @@ CollectionView::CollectionView(MainWindow *parent) :
     m_tagView = new QListView(this);
     tagContainer->layout()->addWidget(m_tagView);
     m_tagModel = new QStandardItemModel(this);
-    m_tagFilterModel = new QSortFilterProxyModel;
+    m_tagFilterModel = new QSortFilterProxyModel(this);
     m_tagFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     updateTagModel();
     m_tagFilterModel->setSourceModel(m_tagModel);
