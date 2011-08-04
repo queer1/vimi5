@@ -14,7 +14,6 @@ public:
     static int maxCoverSize();
     static QString dirExplorer();
     static QString moviePlayer();
-    static QString imageViewer();
 
     static void setCollectionPath(QString path);
 
@@ -30,7 +29,6 @@ private:
     static int m_maxCoverSize;
     static QString m_dirExplorer;
     static QString m_moviePlayer;
-    static  QString m_imageViewer;
 };
 
 #endif // CONFIG_H

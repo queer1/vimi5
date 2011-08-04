@@ -24,7 +24,8 @@ signals:
     void selectedTag(const QString&);
 
 private slots:
-    void launchFile(const QString&);
+    void openVideo(const QString&);
+    void openDirectory(const QString&);
 
 private:
     QLabel *m_title;

@@ -7,7 +7,6 @@
 QString Config::m_collectionPath;
 QString Config::m_dirExplorer;
 QString Config::m_moviePlayer;
-QString Config::m_imageViewer;
 QStringList Config::m_movieSuffixes;
 int Config::m_maxCoverSize;
 bool Config::m_loaded = false;
@@ -17,8 +16,9 @@ void Config::load()
     QSettings settings;
 
     m_collectionPath = settings.value("collectionPath", QDesktopServices::storageLocation(QDesktopServices::MoviesLocation)).toString();
-
     m_maxCoverSize = settings.value("maxCoverSize", 128).toInt();
+    m_dirExplorer = settings.value("dirExplorer", "").toString();
+    m_moviePlayer = settings.value("moviePlayer", "").toString();
 
     QStringList defaultSuffixes;
     defaultSuffixes << "*.mpg"
@@ -41,6 +41,10 @@ void Config::save()
     settings.setValue("collectionPath", m_collectionPath);
     settings.setValue("movieSuffixes", m_movieSuffixes);
     settings.setValue("maxCoverSize", m_maxCoverSize);
+    settings.setValue("moviePlayer", m_moviePlayer);
+    settings.setValue("dirExplorer", m_dirExplorer);
+
+
 }
 
 QString Config::collectionPath()
@@ -81,14 +85,6 @@ QString Config::moviePlayer()
     return m_moviePlayer;
 }
 
-
-QString Config::imageViewer()
-{
-    if (!m_loaded)
-        load();
-
-    return m_imageViewer;
-}
 
 void Config::setCollectionPath(QString path)
 {

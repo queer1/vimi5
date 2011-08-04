@@ -14,7 +14,10 @@ public:
 
 signals:
 
-public slots:
+private slots:
+    void browseForCollection();
+    void save();
+
 private:
     QPushButton m_saveButton;
     QPushButton m_cancelButton;
@@ -27,7 +30,6 @@ private:
     QLineEdit m_maxCoverSize;
     QLineEdit m_dirExplorer;
     QLineEdit m_moviePlayer;
-    QLineEdit m_imageViewer;
 };
 
 #endif // SETTINGSDIALOG_H

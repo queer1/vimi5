@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
+#include <QProcess>
 
 InfoPanel::InfoPanel(QWidget *parent) :
     QGroupBox(parent)
@@ -38,8 +39,8 @@ InfoPanel::InfoPanel(QWidget *parent) :
     layout()->addWidget(tagFetchButton);
     layout()->addWidget(createCoversButton);
 
-    connect(m_files, SIGNAL(linkActivated(QString)), SLOT(launchFile(QString)));
-    connect(m_path, SIGNAL(linkActivated(QString)), SLOT(launchFile(QString)));
+    connect(m_files, SIGNAL(linkActivated(QString)), SLOT(openVideo(QString)));
+    connect(m_path, SIGNAL(linkActivated(QString)), SLOT(openDirectory(QString)));
     connect(m_tags, SIGNAL(linkActivated(QString)), SIGNAL(selectedTag(QString)));
     connect(tagEditButton, SIGNAL(clicked()), SIGNAL(editTags()));
     connect(tagFetchButton, SIGNAL(clicked()), SIGNAL(fetchTags()));
@@ -81,8 +82,25 @@ void InfoPanel::setInfo(const QString &title)
     show();
 }
 
-void InfoPanel::launchFile(const QString &file)
+void InfoPanel::openDirectory(const QString &directory)
 {
-    QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(file.toLocal8Bit()));
-    QDesktopServices::openUrl(url);//QUrl::fromPercentEncoding(file.toLocal8Bit()));
+    if (Config::dirExplorer().isEmpty()) {
+        QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(directory.toLocal8Bit()));
+        QDesktopServices::openUrl(url);//QUrl::fromPercentEncoding(file.toLocal8Bit()));
+    } else {
+        QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(directory.toLocal8Bit()));
+        QProcess::execute(Config::dirExplorer(), QStringList(url.toLocalFile()));
+    }}
+
+void InfoPanel::openVideo(const QString &file)
+{
+    qWarning() << Config::moviePlayer();
+    if (Config::moviePlayer().isEmpty()) {
+        qWarning() << "no video player configured";
+        QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(file.toLocal8Bit()));
+        QDesktopServices::openUrl(url);//QUrl::fromPercentEncoding(file.toLocal8Bit()));
+    } else {
+        QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(file.toLocal8Bit()));
+        QProcess::execute(Config::moviePlayer(), QStringList(url.toLocalFile()));
+    }
 }

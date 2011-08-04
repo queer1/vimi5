@@ -23,9 +23,6 @@ public:
 
     Collection *collection() { return m_collection; }
 
-public slots:
-    void coverLoaded(int row, const QModelIndex &parent);
-
 signals:
     void statusUpdated(const QString &text);
 
