@@ -4,6 +4,7 @@
 #include <QImage>
 #include <QPixmap>
 #include <QObject>
+#include <QMutex>
 
 class QString;
 class QDataStream;
@@ -28,10 +29,12 @@ public:
     void addTag(QString tag);
     void removeTag(QString tag);
     static QString scanForCovers(QString path);
-    void scanForCovers() { m_coverPath = scanForCovers(m_path); }
     static QImage quickScale(const QImage &source, int width, int height);
     static Video *makeVideo (Collection *parent, QString path = "");
     void generateThumbnail();
+
+public slots:
+    void scanForCovers() { m_coverPath = scanForCovers(m_path); }
 
 signals:
     void coverLoaded(const QString& name);
@@ -43,14 +46,17 @@ private:
     QString m_path;
     QString m_name;
     QString m_coverPath;
-    QImage *m_cover;
     QStringList m_tags;
     QString m_tagList;
+    QImage m_thumbnailImage;
     QPixmap m_thumbnail;
     Collection *m_collection;
+    QImage *m_cover;
 
     static QPixmap *m_defaultCover;
     static QPixmap *m_defaultThumbnail;
+
+    QMutex m_mutex;
 };
 
 #endif // VIDEO_H

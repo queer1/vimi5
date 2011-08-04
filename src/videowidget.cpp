@@ -17,8 +17,10 @@ VideoWidget::VideoWidget(QWidget *parent, QString file)
     avcodec_register_all();
 
     QFileInfo fileInfo(file);
+    m_formatContext = avformat_alloc_context();
 
-    if (av_open_input_file(&m_formatContext, fileInfo.absoluteFilePath().toUtf8().data(), NULL, 0, NULL) != 0) {
+    qWarning() << fileInfo.absoluteFilePath().toUtf8().data();
+    if (avformat_open_input(&m_formatContext, fileInfo.absoluteFilePath().toUtf8().constData(), NULL, NULL) != 0) {
         qWarning() <<  "Could not open input file: " << fileInfo.absoluteFilePath();
         return;
     }
@@ -50,6 +52,11 @@ VideoWidget::VideoWidget(QWidget *parent, QString file)
         return;
     }
 
+    // Inform the codec that we can handle truncated bitstreams -- i.e.,
+    // bitstreams where frame boundaries can fall in the middle of packets
+//    if(videoCodec->capabilities & CODEC_CAP_TRUNCATED)
+//        m_videoCodecContext->flags|=CODEC_FLAG_TRUNCATED;
+
     m_videoCodecContext->workaround_bugs = 1;
 
     if (avcodec_open(m_videoCodecContext, videoCodec) < 0) {
@@ -68,11 +75,11 @@ VideoWidget::~VideoWidget()
         avcodec_close(m_videoCodecContext);
 
     if (m_formatContext)
-        av_close_input_file(m_formatContext);
+        avformat_free_context(m_formatContext);
 
     if (m_packet) {
         av_free_packet(m_packet);
-        delete m_packet;
+        //delete m_packet;
     }
 
     if (m_frame)
@@ -128,14 +135,10 @@ bool VideoWidget::decodeVideoPacket()
 
     int frameFinished = 0;
 
-#if LIBAVCODEC_VERSION_MAJOR < 53
-    int bytesDecoded = avcodec_decode_video(m_videoCodecContext, m_frame, &frameFinished, m_packet->data, m_packet->size);
-#else
     int bytesDecoded = avcodec_decode_video2(m_videoCodecContext, m_frame, &frameFinished, m_packet);
-#endif
 
     if (bytesDecoded < 0) {
-        qWarning() << "Failed to decode video frame: bytesDecoded < 0";
+        qWarning() << "Failed to decode video packet: bytesDecoded < 0";
     }
 
     return (frameFinished > 0);
@@ -187,33 +190,39 @@ void VideoWidget::decodeVideoFrame()
                               m_videoCodecContext->width, m_videoCodecContext->height);
     }
 
-    SwsContext* scaleContext = sws_getContext(m_videoCodecContext->width, m_videoCodecContext->height,
-                                   m_videoCodecContext->pix_fmt,
-                                   m_videoCodecContext->width, m_videoCodecContext->height,
-                                   PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
+    {
+        SwsContext* scaleContext = sws_getContext(m_videoCodecContext->width, m_videoCodecContext->height,
+                                                  m_videoCodecContext->pix_fmt,
+                                                  m_videoCodecContext->width, m_videoCodecContext->height,
+                                                  PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
 
-    AVFrame *avFrame = avcodec_alloc_frame();
+        AVFrame *avFrame = avcodec_alloc_frame();
 
-    int numBytes = avpicture_get_size(PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
-    quint8 *frameBuffer = reinterpret_cast<quint8*>(av_malloc(numBytes));
-    avpicture_fill((AVPicture*) avFrame, frameBuffer, PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
+        int numBytes = avpicture_get_size(PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
+        quint8 *frameBuffer = reinterpret_cast<quint8*>(av_malloc(numBytes));
 
-    sws_scale(scaleContext, m_frame->data, m_frame->linesize, 0, m_videoCodecContext->height,
-              avFrame->data, avFrame->linesize);
-    sws_freeContext(scaleContext);
+        avpicture_fill((AVPicture*) avFrame, frameBuffer, PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
 
-    av_free(m_frame);
-    av_free(frameBuffer);
+        sws_scale(scaleContext, m_frame->data, m_frame->linesize, 0, m_videoCodecContext->height,
+                  avFrame->data, avFrame->linesize);
+        sws_freeContext(scaleContext);
 
-    m_frame = avFrame;
+        av_free(m_frame);
+       // av_free(frameBuffer);
+
+        m_frame = avFrame;
+    }
 
     QImage frame(m_videoCodecContext->width, m_videoCodecContext->height, QImage::Format_RGB888);
-    //frame.fromData(reinterpret_cast<const uchar*>(m_frame->data), m_frame->linesize[0] * m_videoCodecContext->height);
+
+    //memcpy(frame.bits(), &m_frame[0], m_frame->linesize[m_frame->height] * m_frame->height);
+
     for (int y=0; y<m_videoCodecContext->height; y++) {
-        memcpy(frame.scanLine(y), &m_frame->data[0][y*m_frame->linesize[0]], m_videoCodecContext->width*3);
+        memcpy(frame.scanLine(y), &m_frame->data[0][y*m_frame->linesize[0]], m_frame->linesize[0]);
     }
 
     m_activeFrame = frame;
+
 }
 
 void VideoWidget::paintEvent(QPaintEvent *)

@@ -191,17 +191,3 @@ void CollectionView::selectTag(const QString &tag)
     updateInfoPanel(m_videoView->currentIndex());
     m_videoView->scrollTo(m_videoView->currentIndex());
 }
-
-void CollectionView::coverLoaded(int row, const QModelIndex &index)
-{
-
-    //if (!m_videoView->isRowHidden(row, parent)) {
-      //  qDebug() << "redisplaying row" << row;
-
-        //m_videoView->dataChanged(m_collection->index(row, 0), m_collection->index(row, 0));
-    m_videoView->dataChanged(index, index);
-    m_videoView->repaint();
-        m_videoView->setCurrentIndex(m_collection->index(row, 0));
-        QTimer::singleShot(100, this, SLOT(repaint()));
-    //}
-}

@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QSet>
 #include <QThreadPool>
+#include <QApplication>
 
 #include "collection.h"
 QHash<QString, Video*> Collection::m_videos;
@@ -15,20 +16,9 @@ QMutex Collection::launchMutex;
 QWaitCondition Collection::launchWaiter;
 bool Collection::launched;
 
-class QThreadEx : public QThread
-{
-protected:
-    void run() { exec(); }
-};
-
-
 Collection::Collection(QObject *parent)
     : QAbstractTableModel(parent)
 {
-    //m_thread = new QThreadEx();
-    //moveToThread(m_thread);
-    //m_thread->start();
-    //QMetaObject::invokeMethod(this, "loadCache");
     launchMutex.lock();
     launched = false;
 
@@ -58,7 +48,7 @@ void Collection::loadCache()
             Video *video = new Video(this, path, tags, coverPath);
             videos.append(video);
             connect(video, SIGNAL(needToLoadCover(Video*)), m_coverLoader, SLOT(loadVideo(Video*)));
-            connect(video, SIGNAL(coverLoaded(QString)), this, SLOT(coverLoaded(QString)), Qt::QueuedConnection);
+            connect(video, SIGNAL(coverLoaded(QString)), this, SLOT(coverLoaded(QString)));
         }
         qDebug() << "Loaded" << videos.size() << "videos";
         beginInsertRows(QModelIndex(), rowCount(), rowCount() + videos.size() - 1);
@@ -116,6 +106,7 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 
 void Collection::addVideo(Video *video)
 {
+    qWarning() << video->name();
     if (m_videos.contains(video->name())) {
         qWarning() << video->name() << "already in collection";
         int index = m_videoNames.indexOf(video->name());
