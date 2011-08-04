@@ -29,7 +29,7 @@ void CoverLabel::setVideo(const QString &video)
 void CoverLabel::leaveEvent(QEvent *)
 {
     m_timer.stop();
-    setPixmap(Collection::getCover(m_videoName, 250));
+    setPixmap(Collection::getCover(m_videoName, width()-10));
 }
 
 void CoverLabel::enterEvent(QEvent *)
@@ -48,34 +48,38 @@ void CoverLabel::enterEvent(QEvent *)
 void CoverLabel::nextImage()
 {
     QImage image;
-    int height, width, ratio;
-    // Sanity check sizes
-    do {
-        m_dir->next();
 
-        // Skip files larger than a megabyte
-        if (m_dir->fileInfo().size() > 1024*1024)
-            continue;
+    {
+        int height, width, ratio;
+        // Sanity check sizes
+        do {
 
-        image = QImage(m_dir->filePath());
-        height = image.height();
-        width = image.width();
-        if (height == 0 || width == 0) continue;
+            m_dir->next();
 
-        ratio = qMax(width, height) / qMin(width, height);
-    } while (m_dir->hasNext() &&
-            (height > 1024 || width > 1024 ||
-            height < 100 || width < 100 ||
-            ratio > 2));
+            // Skip files larger than a megabyte
+            if (m_dir->fileInfo().size() > 1024*1024)
+                continue;
 
+            image = QImage(m_dir->filePath());
+            height = image.height();
+            width = image.width();
+            if (height == 0 || width == 0) continue;
+
+            ratio = qMax(width, height) / qMin(width, height);
+        } while (m_dir->hasNext() &&
+                 (height > 1024 || width > 1024 ||
+                  height < 100 || width < 100 ||
+                  ratio > 2));
+    }
     if (!m_dir->hasNext()) { // restart
         m_timer.stop();
         enterEvent();
         return;
     }
 
-    if (image.height() > 250) {
-        float factor = 250.0f / image.height();
+    float maxSize = width() - 10;
+    if (image.width() > maxSize) {
+        float factor = maxSize / image.width();
         image = Video::quickScale(image, image.width() * factor, image.height() * factor);
     }
     setPixmap(QPixmap::fromImage(image));
