@@ -10,6 +10,7 @@ CoverLabel::CoverLabel(QWidget *parent) :
 {
     setCursor(Qt::PointingHandCursor);
     connect(&m_timer, SIGNAL(timeout()), SLOT(nextImage()));
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 CoverLabel::~CoverLabel()
@@ -20,7 +21,8 @@ CoverLabel::~CoverLabel()
 void CoverLabel::setVideo(const QString &video)
 {
     m_videoName = video;
-    setPixmap(Collection::getCover(m_videoName, 250));
+    setPixmap(Collection::getCover(m_videoName, width()-10));
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_path = Collection::getPath(m_videoName);
 }
 

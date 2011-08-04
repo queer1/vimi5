@@ -9,6 +9,7 @@
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QProcess>
+#include <QFontMetrics>
 
 InfoPanel::InfoPanel(QWidget *parent) :
     QGroupBox(parent)
@@ -19,10 +20,13 @@ InfoPanel::InfoPanel(QWidget *parent) :
 
     m_title = new QLabel("");
     m_title->setWordWrap(true);
+    //m_title->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     m_cover = new CoverLabel(this);
+    //m_cover->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     m_tags = new QLabel("");
     m_files = new QLabel("");
+    m_files->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     m_path = new QLabel("");
     QPushButton *tagEditButton = new QPushButton("&Edit tags...");
     QPushButton *tagFetchButton = new QPushButton("&Fetch tags...");
@@ -49,6 +53,8 @@ InfoPanel::InfoPanel(QWidget *parent) :
 
 void InfoPanel::setInfo(const QString &title)
 {
+    QFontMetrics m(font());
+
     QStringList tags = Collection::getTags(title);
     m_videoName = title;
 
@@ -68,10 +74,10 @@ void InfoPanel::setInfo(const QString &title)
     QStringList files = Collection::getFiles(title);
     QString path = Collection::getPath(title);
 
-    QString fileHtml = "<b>Files:</b><ul>";
+    QString fileHtml = "<b>Files:</b><br/>";
     foreach (QString file, files)
-        fileHtml += "<li><a href='" + QUrl::toPercentEncoding(path + "/" + file) + "'>" + file + "</a></li>";
-    fileHtml += "</ul>";
+        fileHtml += "<a href='" + QUrl::toPercentEncoding(path + "/" + file) + "'>" + m.elidedText(file, Qt::ElideRight, width()-20) + "</a><br/>";
+    fileHtml += "";
     m_files->setText(fileHtml);
 
     m_path->setText("<br /> <a href='" + QUrl::toPercentEncoding(path) + "'>Click to open in file manager</a>");
@@ -80,6 +86,11 @@ void InfoPanel::setInfo(const QString &title)
     m_cover->repaint();
 
     show();
+}
+
+void InfoPanel::resizeEvent(QResizeEvent *)
+{
+    setInfo(m_videoName);
 }
 
 void InfoPanel::openDirectory(const QString &directory)

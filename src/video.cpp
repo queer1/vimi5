@@ -95,12 +95,19 @@ QPixmap Video::cover(int maxSize)
         if (!m_coverPath.isEmpty()) {
             qWarning() << m_coverPath << m_path;
             m_cover = new QImage(m_coverPath);
+            if (m_cover->isNull()) {
+                delete m_cover;
+                m_cover = 0;
+                m_coverPath = "";
+                return *m_defaultCover;
+            }
+        } else {
+            return *m_defaultCover;
         }
-        return *m_defaultCover;
     }
 
-    if (m_cover->height() > maxSize) {
-        float factor = (float)maxSize / m_cover->height();//, cover.width();
+    if (m_cover->width() > maxSize) {
+        float factor = (float)maxSize / m_cover->width();//, cover.width();
         return QPixmap::fromImage(quickScale(*m_cover, m_cover->width()*factor, m_cover->height() * factor));
     } else
         return QPixmap::fromImage(*m_cover);

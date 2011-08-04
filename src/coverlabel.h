@@ -20,6 +20,7 @@ private:
     void leaveEvent(QEvent *);
     void enterEvent(QEvent * = 0);
     void mousePressEvent(QMouseEvent *ev);
+    void updateGeometry() {}
 
     QString m_videoName;
     QString m_path;

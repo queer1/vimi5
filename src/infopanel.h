@@ -28,6 +28,8 @@ private slots:
     void openDirectory(const QString&);
 
 private:
+    void resizeEvent(QResizeEvent *event);
+
     QLabel *m_title;
     QLabel *m_tags;
     QLabel *m_files;
