@@ -8,7 +8,7 @@
 
 class VideoFilterProxyModel : public QSortFilterProxyModel
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     VideoFilterProxyModel(QObject *parent=0);

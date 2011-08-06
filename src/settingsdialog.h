@@ -19,9 +19,6 @@ private slots:
     void save();
 
 private:
-    QPushButton m_saveButton;
-    QPushButton m_cancelButton;
-
     QLineEdit m_collectionPath;
     QPushButton m_collectionPathBrowse;
 
@@ -30,6 +27,9 @@ private:
     QLineEdit m_maxCoverSize;
     QLineEdit m_dirExplorer;
     QLineEdit m_moviePlayer;
+
+    QPushButton m_saveButton;
+    QPushButton m_cancelButton;
 };
 
 #endif // SETTINGSDIALOG_H

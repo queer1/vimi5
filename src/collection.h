@@ -18,7 +18,7 @@
 class Collection : public QAbstractTableModel
 {
 
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
     Collection(QObject *parent);
