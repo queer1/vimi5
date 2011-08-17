@@ -19,6 +19,7 @@ public:
 signals:
     void foundMovies(const QList<QPair<QString, QUrl> > &movies);
     void foundTags(const QStringList &tags);
+    void pleaseLogin();
 
 private slots:
     void parseSearch(QNetworkReply *reply);
@@ -27,6 +28,7 @@ private slots:
 
 private:
     CheggitView();
+    void showEvent(QShowEvent *);
     static CheggitView *m_instance;
 
     QToolBar *m_toolbar;

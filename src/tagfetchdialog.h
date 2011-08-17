@@ -21,6 +21,7 @@ private slots:
     void tagsFetched(const QStringList &tags);
     void save();
     void movieSelected(QModelIndex);
+    void showPleaseLogin();
 
 private:
     QListWidget *m_movieList;

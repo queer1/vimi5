@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QRegExp>
 #include <QPair>
+#include <QProgressBar>
 
 CheggitView *CheggitView::m_instance=0;
 
@@ -24,14 +25,21 @@ CheggitView::CheggitView() : QWidget(0),
     setLayout(new QVBoxLayout);
     layout()->addWidget(m_toolbar);
     layout()->addWidget(m_webview);
-
-    //m_webview->load(QUrl("http://cheggit.net"));
-
+    QProgressBar *bar = new QProgressBar;
+    bar->setRange(0, 100);
+    layout()->addWidget(bar);
+    connect(m_webview->page(), SIGNAL(loadProgress(int)), bar, SLOT(setValue(int)));
+    connect(m_webview->page(), SIGNAL(loadStarted()), bar, SLOT(show()));
+    connect(m_webview->page(), SIGNAL(loadFinished(bool)), bar, SLOT(hide()));
 
     m_movieAccessManager = new QNetworkAccessManager(this);
     m_movieAccessManager->setCookieJar(cookieJar);
     m_searchAccessManager = new QNetworkAccessManager(this);
     m_searchAccessManager->setCookieJar(cookieJar);
+}
+void CheggitView::showEvent(QShowEvent *)
+{
+    m_webview->load(QUrl("http://cheggit.net"));
 }
 
 void CheggitView::search()
@@ -83,9 +91,12 @@ void CheggitView::parseSearch(QNetworkReply *reply)
             //qDebug() << title << url;
             urls.append(QPair<QString, QUrl>(title, QUrl(urlBeginning + url)));
         }
-        if (!urls.isEmpty())
+        if (!urls.isEmpty()) {
             emit foundMovies(urls);
+            return;
+        }
     }
+    emit pleaseLogin();
 }
 
 void CheggitView::getTags(const QUrl &movie)
@@ -121,7 +132,10 @@ void CheggitView::parseMovie(QNetworkReply *reply)
             tags << tag;
         }
 
-        if (!tags.isEmpty())
+        if (!tags.isEmpty()) {
             emit foundTags(tags);
+            return;
+        }
     }
+    emit pleaseLogin();
 }

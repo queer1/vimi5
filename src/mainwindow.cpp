@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QThreadPool>
 #include <QWaitCondition>
+#include <QSettings>
 
 #include <QDebug>
 
@@ -56,6 +57,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QMetaObject::invokeMethod(this, "showMaximized");
     Collection::launched = true;
     Collection::launchWaiter.wakeAll();
+
+    QSettings settings("Cheggit", "Vimi");
+    restoreGeometry(settings.value("geometry").toByteArray());
 }
 
 MainWindow::~MainWindow()
@@ -85,4 +89,12 @@ void MainWindow::showSettings()
 {
     SettingsDialog *dialog = new SettingsDialog(this);
     dialog->show();
+}
+
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    QSettings settings("Cheggit", "Vimi");
+    settings.setValue("geometry", saveGeometry());
+    QWidget::closeEvent(event);
 }

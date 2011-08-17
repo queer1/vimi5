@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include <QDebug>
 #include <QMetaMethod>
+#include <QMessageBox>
 
 TagFetchDialog::TagFetchDialog(QString movieTitle, QWidget *parent) : QDialog(parent),
     m_movieList(new QListWidget),
@@ -30,6 +31,7 @@ TagFetchDialog::TagFetchDialog(QString movieTitle, QWidget *parent) : QDialog(pa
 
     connect(m_cheggit, SIGNAL(foundMovies(const QList<QPair<QString,QUrl> >&)), SLOT(moviesFetched(const QList<QPair<QString,QUrl> >&)));
     connect(m_cheggit, SIGNAL(foundTags(const QStringList&)), SLOT(tagsFetched(const QStringList&)));
+    connect(m_cheggit, SIGNAL(pleaseLogin()), SLOT(showPleaseLogin()));
     connect(m_movieList, SIGNAL(clicked(QModelIndex)), SLOT(movieSelected(QModelIndex)));
 
     m_cheggit->searchMovies(movieTitle);
@@ -62,4 +64,11 @@ void TagFetchDialog::movieSelected(QModelIndex index)
 {
     m_tagList->clear();
     m_cheggit->getTags(m_movies.at(index.row()).second);
+}
+
+void TagFetchDialog::showPleaseLogin()
+{
+    close();
+    QMessageBox::warning(parentWidget(), "Unable to get usable data from Cheggit.",
+                         "Please log in to Cheggit first (see the Cheggit tab).");
 }

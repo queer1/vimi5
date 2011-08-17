@@ -36,6 +36,7 @@ private slots:
     void selectTag(const QString &tag);
 
 private:
+
     QListView *m_tagView;
     QTreeView *m_videoView;
     QStandardItemModel *m_tagModel;

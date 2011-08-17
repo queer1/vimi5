@@ -16,6 +16,7 @@
 #include <QFileSystemModel>
 #include <QTimer>
 #include <QApplication>
+#include <QSettings>
 
 CollectionView::CollectionView(MainWindow *parent) :
     QSplitter(parent)
@@ -75,7 +76,6 @@ CollectionView::CollectionView(MainWindow *parent) :
     // Connect signals
     connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), SLOT(updateVideoFilter(QStandardItem*)));
     connect(m_collection, SIGNAL(updated()), SLOT(updateTagModel()));
-    connect(m_collection, SIGNAL(repaintCover(int,QModelIndex)), this, SLOT(coverLoaded(int,QModelIndex)));
     connect(m_videoView, SIGNAL(activated(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_videoView, SIGNAL(clicked(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_tagFilterEdit, SIGNAL(textChanged(QString)), m_tagFilterModel, SLOT(setFilterFixedString(QString)));
