@@ -37,7 +37,8 @@ SOURCES += main.cpp\
     videowidget.cpp \
     coverlabel.cpp \
     settingsdialog.cpp \
-    coverloader.cpp
+    coverloader.cpp \
+    tagreplacementdialog.cpp
 
 HEADERS += aboutdialog.h\
            cheggitview.h\
@@ -56,7 +57,8 @@ HEADERS += aboutdialog.h\
     coverlabel.h \
     version.h \
     settingsdialog.h \
-    coverloader.h
+    coverloader.h \
+    tagreplacementdialog.h
 
 win32 {
     LIBS += -LC:\ffmpeg\lib -static-libgcc

@@ -4,6 +4,7 @@
 #include "cheggitview.h"
 #include "covermaker.h"
 #include "settingsdialog.h"
+#include "tagreplacementdialog.h"
 
 #include <QMenuBar>
 #include <QStatusBar>
@@ -41,6 +42,11 @@ MainWindow::MainWindow(QWidget *parent) :
     fileMenu->addAction(QIcon(), "&Quit", this, SLOT(close()), QKeySequence::Quit);
     menuBar()->addMenu(fileMenu);
 
+    // Set up the Tag menu
+    QMenu *tagMenu = new QMenu("T&ags", this);
+    tagMenu->addAction(QIcon(), "&Replace tags...", this, SLOT(showTagReplacementDialog()));
+    menuBar()->addMenu(tagMenu);
+
     // Set up the Help menu
     QMenu *helpMenu = new QMenu("&Help", this);
     helpMenu->addAction(QIcon(), "&About Vimi...", this, SLOT(showAboutDialog()));
@@ -52,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //statusBar()->showMessage(tr("Ready."));
     connect(cv, SIGNAL(statusUpdated(QString)), statusBar(), SLOT(showMessage(QString)));
+    connect(this, SIGNAL(updatedTags()), cv, SLOT(updateTagModel()));
 
     QMetaObject::invokeMethod(this, "showMaximized");
     Collection::launched = true;
@@ -85,4 +92,11 @@ void MainWindow::showSettings()
 {
     SettingsDialog *dialog = new SettingsDialog(this);
     dialog->show();
+}
+
+void MainWindow::showTagReplacementDialog()
+{
+    TagReplacementDialog *dialog = new TagReplacementDialog(this);
+    dialog->show();
+    connect(dialog, SIGNAL(finished(int)), this, SIGNAL(updatedTags()));
 }

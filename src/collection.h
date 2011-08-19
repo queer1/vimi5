@@ -31,6 +31,7 @@ public:
     static QString getPath(const QString &videoName);
     static QPixmap getCover(const QString &videoName, int maxSize = Config::maxCoverSize());
     static void scanForCovers(const QString &videoName);
+    static void replaceTag(const QString &oldTag, const QString &newTag);
 
     QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
     int rowCount(const QModelIndex & = QModelIndex()) const { return m_videoNames.size(); }
@@ -50,9 +51,13 @@ signals:
 
 public slots:
     void rescan();
+    void writeCache();
+
 private slots:
     void loadCache();
+
     void coverLoaded(const QString &name);
+
 
 private:
     void scan(QDir directory);

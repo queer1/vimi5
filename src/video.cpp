@@ -37,7 +37,6 @@ Video::Video(Collection *parent, QString path, QString tags, QString coverPath) 
     m_collection(parent),
     m_cover(0)
 {
-    QMutexLocker l(&m_mutex);
     QStringList tagList = tags.split(',');
     foreach(QString tag, tagList) {
         if (!tag.isEmpty())
@@ -57,6 +56,10 @@ Video::Video(Collection *parent, QString path, QString tags, QString coverPath) 
     }
     if (m_defaultCover == 0)
         m_defaultCover = new QPixmap(QPixmap::fromImage(QImage(":/images/defaultcover.png")));
+}
+Video::~Video()
+{
+    m_mutex.lock();
 }
 
 QStringList Video::files() const
@@ -202,6 +205,8 @@ QString Video::scanForCovers(QString path)
 
 void Video::generateThumbnail()
 {
+    QMutexLocker l(&m_mutex);
+
     if (!Collection::launched)
         Collection::launchWaiter.wait(&Collection::launchMutex);
     if (m_coverPath.isEmpty())

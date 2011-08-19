@@ -96,6 +96,8 @@ QVariant Collection::data(const QModelIndex &item, int role) const
         return m_videos[m_videoNames.at(item.row())]->name();
     } else if (role == Qt::DisplayRole && item.column() == 2) {
         return m_videos[m_videoNames.at(item.row())]->tagList();
+    } else if (role == Qt::DisplayRole && item.column() == 3) {
+        return m_videos[m_videoNames.at(item.row())]->tags();
     } else if (role == Qt::SizeHintRole) {// && item.column() == 0) {
         //return m_videos[m_videoNames.at(item.row())]->cover(Config::maxCoverSize()).size();
         return QSize(128, 128);
@@ -148,9 +150,13 @@ void Collection::rescan()
     scan(QDir(Config::collectionPath()));
     qSort(m_videoNames);
 
+    writeCache();
     emit updated();
     emit statusUpdated("Scan finished.");
+}
 
+void Collection::writeCache()
+{
     QString path = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
     QDir(path).mkpath(path);
     QFile file(path + "/videos.db");
@@ -240,4 +246,15 @@ void Collection::coverLoaded(const QString &videoName)
     int row = m_videoNames.indexOf(videoName);
     //emit repaintCover(row, createIndex(row, 0, row));
     emit dataChanged(createIndex(row, 0, row), createIndex(row, 0, row));
+}
+
+void Collection::replaceTag(const QString &oldTag, const QString &newTag)
+{
+    foreach(Video *video, m_videos) {
+        if (video->tags().contains(oldTag)) {
+            qWarning() << "replacing tags for video: " << video->name() << oldTag << newTag;
+            video->removeTag(oldTag);
+            video->addTag(newTag);
+        }
+    }
 }

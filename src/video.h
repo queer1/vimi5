@@ -15,6 +15,7 @@ class Video : public QObject
     Q_OBJECT
 public:
     Video (Collection *parent, QString path, QString tags, QString coverPath);
+    ~Video();
 
     QPixmap cover(int maxSize);
     const QPixmap &thumbnail();

@@ -16,6 +16,10 @@ public:
 public slots:
     void getCollectionPath();
     void showSettings();
+    void showTagReplacementDialog();
+
+signals:
+    void updatedTags();
 
 private slots:
     void showAboutDialog();

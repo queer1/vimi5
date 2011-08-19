@@ -100,7 +100,7 @@ void InfoPanel::openDirectory(const QString &directory)
         QDesktopServices::openUrl(url);//QUrl::fromPercentEncoding(file.toLocal8Bit()));
     } else {
         QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(directory.toLocal8Bit()));
-        QProcess::execute(Config::dirExplorer(), QStringList(url.toLocalFile()));
+        QProcess::startDetached(Config::dirExplorer(), QStringList(url.toLocalFile()));
     }}
 
 void InfoPanel::openVideo(const QString &file)
@@ -112,6 +112,6 @@ void InfoPanel::openVideo(const QString &file)
         QDesktopServices::openUrl(url);//QUrl::fromPercentEncoding(file.toLocal8Bit()));
     } else {
         QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(file.toLocal8Bit()));
-        QProcess::execute(Config::moviePlayer(), QStringList(url.toLocalFile()));
+        QProcess::startDetached(Config::moviePlayer(), QStringList(url.toLocalFile()));
     }
 }

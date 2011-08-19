@@ -26,9 +26,11 @@ public:
 signals:
     void statusUpdated(const QString &text);
 
+public slots:
+    void updateTagModel();
+
 private slots:
     void updateVideoFilter(QStandardItem *tag);
-    void updateTagModel();
     void updateInfoPanel(const QModelIndex&);
     void editTags();
     void fetchTags();

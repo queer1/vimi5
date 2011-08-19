@@ -23,8 +23,9 @@ bool VideoFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &s
     if (m_tagList.isEmpty())
         return true;
 
+    const QStringList &tagList = sourceModel()->data(sourceModel()->index(sourceRow, 3, sourceParent)).toStringList();
     foreach (const QString &tag, m_tagList) {
-        if (!tags.contains(tag, Qt::CaseInsensitive))
+        if (!tagList.contains(tag, Qt::CaseInsensitive))
             return false;
     }
 
