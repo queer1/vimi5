@@ -50,7 +50,7 @@ void CoverLabel::nextImage()
     QImage image;
 
     {
-        int height, width, ratio;
+        int height = 0, width = 0, ratio = 0;
         // Sanity check sizes
         do {
 

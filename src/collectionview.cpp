@@ -16,6 +16,7 @@
 #include <QFileSystemModel>
 #include <QTimer>
 #include <QApplication>
+#include <QSettings>
 
 CollectionView::CollectionView(MainWindow *parent) :
     QSplitter(parent)

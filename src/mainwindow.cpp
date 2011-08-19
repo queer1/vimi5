@@ -12,6 +12,7 @@
 #include <QApplication>
 #include <QThreadPool>
 #include <QWaitCondition>
+#include <QSettings>
 
 #include <QDebug>
 
@@ -63,6 +64,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QMetaObject::invokeMethod(this, "showMaximized");
     Collection::launched = true;
     Collection::launchWaiter.wakeAll();
+
+    QSettings settings("Cheggit", "Vimi");
+    restoreGeometry(settings.value("geometry").toByteArray());
 }
 
 MainWindow::~MainWindow()
@@ -99,4 +103,11 @@ void MainWindow::showTagReplacementDialog()
     TagReplacementDialog *dialog = new TagReplacementDialog(this);
     dialog->show();
     connect(dialog, SIGNAL(finished(int)), this, SIGNAL(updatedTags()));
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    QSettings settings("Cheggit", "Vimi");
+    settings.setValue("geometry", saveGeometry());
+    QWidget::closeEvent(event);
 }
