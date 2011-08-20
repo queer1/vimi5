@@ -96,7 +96,6 @@ QPixmap Video::cover(int maxSize)
     //QImage cover = m_cover;
     if (m_cover == 0) {
         if (!m_coverPath.isEmpty()) {
-            qWarning() << m_coverPath << m_path;
             m_cover = new QImage(m_coverPath);
             if (m_cover->isNull()) {
                 delete m_cover;
@@ -207,8 +206,6 @@ void Video::generateThumbnail()
 {
     QMutexLocker l(&m_mutex);
 
-    if (!Collection::launched)
-        Collection::launchWaiter.wait(&Collection::launchMutex);
     if (m_coverPath.isEmpty())
         return;
 
@@ -220,7 +217,7 @@ void Video::generateThumbnail()
         float factor = (float)128 / cover.height();//, cover.width();
         m_thumbnailImage = quickScale(cover, cover.width()*factor, cover.height() * factor);
     }
-    QMetaObject::invokeMethod(m_collection, "coverLoaded", Q_ARG(QString, m_name));
+    emit coverLoaded(m_name);
 }
 
 const QPixmap &Video::thumbnail()

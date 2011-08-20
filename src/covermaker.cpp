@@ -5,7 +5,8 @@
 #include <QVBoxLayout>
 #include <QImageWriter>
 
-CoverMaker::CoverMaker(QString videoName, QWidget *parent) : QDialog(parent)
+CoverMaker::CoverMaker(QString videoName, QWidget *parent) : QDialog(parent),
+    m_name(videoName)
 {
     setWindowTitle("Create covers for " + videoName);
     setLayout(new QVBoxLayout(this));
@@ -62,5 +63,6 @@ void CoverMaker::saveFrame()
         filename = newName;
     }
     QImageWriter writer (m_path + "/" + filename + ".jpg");
-    writer.write(frame);
+    if (writer.write(frame))
+        emit coverCreated(m_name);
 }

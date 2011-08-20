@@ -13,6 +13,9 @@ class CoverMaker : public QDialog
 public:
     CoverMaker(QString videoName, QWidget *parent = 0);
 
+signals:
+    void coverCreated(QString name);
+
 private slots:
     void selectVideo(QString);
     void saveFrame();
@@ -22,6 +25,7 @@ private:
     VideoWidget *m_videoWidget;
     QSlider *m_slider;
     QString m_path;
+    QString m_name;
 };
 
 

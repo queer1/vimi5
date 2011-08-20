@@ -16,18 +16,12 @@
 
 #include <QDebug>
 
-bool MainWindow::running;
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
-    running = true;
-
-    //hide();
-    setWindowTitle("vimi alpha");
+    setWindowTitle("vimi");
     setWindowIcon(QIcon(":/images/icon.png"));
 
-    //showMaximized();
     setCentralWidget(&m_tabWidget);
     m_tabWidget.setTabPosition(QTabWidget::West);
     m_tabWidget.addTab(CheggitView::instance(), QIcon(), "Cheggit");
@@ -62,16 +56,15 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(updatedTags()), cv, SLOT(updateTagModel()));
 
     QMetaObject::invokeMethod(this, "showMaximized");
-    Collection::launched = true;
-    Collection::launchWaiter.wakeAll();
 
     QSettings settings("Cheggit", "Vimi");
     restoreGeometry(settings.value("geometry").toByteArray());
+
+    connect(cv->collection(), SIGNAL(scanning(bool)), SLOT(setDisabled(bool)));
 }
 
 MainWindow::~MainWindow()
 {
-    running = false;
     QApplication::quit();
 }
 

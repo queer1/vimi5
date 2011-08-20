@@ -25,7 +25,7 @@ private slots:
     void showAboutDialog();
 
 private:
-        void closeEvent(QCloseEvent *);
+    void closeEvent(QCloseEvent *);
     QTabWidget m_tabWidget;
 };
 

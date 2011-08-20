@@ -12,18 +12,12 @@
 #include "collection.h"
 QHash<QString, Video*> Collection::m_videos;
 QStringList Collection::m_videoNames;
-QMutex Collection::launchMutex;
-QWaitCondition Collection::launchWaiter;
-bool Collection::launched;
 
 Collection::Collection(QObject *parent)
     : QAbstractTableModel(parent)
 {
-    launchMutex.lock();
-    launched = false;
-
     m_coverLoader = new CoverLoader;
-    QThread *thread = new QThread;
+    QThread *thread = new QThread(this);
     m_coverLoader->moveToThread(thread);
     thread->start();
 
@@ -54,7 +48,7 @@ void Collection::loadCache()
         beginInsertRows(QModelIndex(), rowCount(), rowCount() + videos.size() - 1);
         foreach(Video *video, videos) {
             if (m_videos.contains(video->name())) {
-                qWarning() << video->name() << "already in collection";
+                qWarning() << video->name() << "already in collection (" << m_videos[video->name()]->path() << " vs the new:" << video->path() << ").";
             }
             m_videos.insert(video->name(), video);
             m_videoNames.append(video->name());
@@ -70,6 +64,9 @@ void Collection::loadCache()
 
 Collection::~Collection()
 {
+    m_coverLoader->running = false;
+    m_coverLoader->thread()->quit();
+    m_coverLoader->thread()->wait();
 }
 
 QVariant Collection::headerData(int section, Qt::Orientation orientation, int role) const
@@ -108,9 +105,8 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 
 void Collection::addVideo(Video *video)
 {
-    qWarning() << video->name();
     if (m_videos.contains(video->name())) {
-        qWarning() << video->name() << "already in collection";
+        qWarning() << video->name() << "already in collection (" << m_videos[video->name()]->path() << " vs the new:" << video->path() << ").";
         int index = m_videoNames.indexOf(video->name());
         beginRemoveRows(QModelIndex(), index, index);
         m_videos.remove(video->name());
@@ -140,7 +136,7 @@ bool Collection::hasChildren(const QModelIndex &index) const
 void Collection::rescan()
 {
     emit statusUpdated("Starting scan...");
-
+    emit scanning(true);
     m_cachedVideoDirectories.clear();
 
     beginRemoveRows(QModelIndex(), 0, rowCount());
@@ -151,6 +147,7 @@ void Collection::rescan()
     qSort(m_videoNames);
 
     writeCache();
+    emit scanning(false);
     emit updated();
     emit statusUpdated("Scan finished.");
 }
@@ -162,13 +159,12 @@ void Collection::writeCache()
     QFile file(path + "/videos.db");
     QDataStream out(&file);
     if (file.open(QIODevice::WriteOnly)) {
-        qDebug() << "writing cache...";
+        emit statusUpdated("writing cache...");
         foreach(Video *video, m_videos) {
             out << video->path() << video->tags().join(",") << video->coverPath();
-            //file.write(video->path().toUtf8() + "\n");
         }
         file.close();
-        qDebug() << "finished writing cache!";
+        emit statusUpdated("Finished writing cache!");
     } else {
         qWarning() << file.errorString();
     }
@@ -181,6 +177,7 @@ void Collection::scan(QDir dir)
     dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
     if (dir.count() > 0) { // Found movie files
+        emit statusUpdated("Found movie: " + dir.dirName());
         addVideo(Video::makeVideo(this, dir.path()));
     }
 
@@ -238,7 +235,8 @@ QPixmap Collection::getCover(const QString &videoName, int maxSize)
 
 void Collection::scanForCovers(const QString &videoName)
 {
-    m_videos[videoName]->scanForCovers();
+    m_videos[videoName]->rescanForCovers();
+    m_videos[videoName]->generateThumbnail();
 }
 
 void Collection::coverLoaded(const QString &videoName)
@@ -252,7 +250,7 @@ void Collection::replaceTag(const QString &oldTag, const QString &newTag)
 {
     foreach(Video *video, m_videos) {
         if (video->tags().contains(oldTag)) {
-            qWarning() << "replacing tags for video: " << video->name() << oldTag << newTag;
+            qDebug() << "replacing tags for video: " << video->name() << oldTag << newTag;
             video->removeTag(oldTag);
             video->addTag(newTag);
         }

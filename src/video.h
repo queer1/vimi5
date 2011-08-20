@@ -33,9 +33,7 @@ public:
     static QImage quickScale(const QImage &source, int width, int height);
     static Video *makeVideo (Collection *parent, QString path = "");
     void generateThumbnail();
-
-public slots:
-    void scanForCovers() { m_coverPath = scanForCovers(m_path); }
+    void rescanForCovers() { m_coverPath = scanForCovers(m_path); }
 
 signals:
     void coverLoaded(const QString& name);

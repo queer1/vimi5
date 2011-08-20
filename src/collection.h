@@ -30,7 +30,6 @@ public:
     static QStringList getFiles(const QString& videoName);
     static QString getPath(const QString &videoName);
     static QPixmap getCover(const QString &videoName, int maxSize = Config::maxCoverSize());
-    static void scanForCovers(const QString &videoName);
     static void replaceTag(const QString &oldTag, const QString &newTag);
 
     QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
@@ -40,11 +39,8 @@ public:
     bool hasChildren(const QModelIndex &index) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
-    static QMutex launchMutex;
-    static QWaitCondition launchWaiter;
-    static bool launched;
-
 signals:
+    void scanning(bool);
     void updated();
     void statusUpdated(const QString &text);
     void repaintCover(int row, const QModelIndex &parent);
@@ -52,6 +48,7 @@ signals:
 public slots:
     void rescan();
     void writeCache();
+    void scanForCovers(const QString &videoName);
 
 private slots:
     void loadCache();

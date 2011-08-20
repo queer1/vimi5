@@ -76,7 +76,6 @@ CollectionView::CollectionView(MainWindow *parent) :
     // Connect signals
     connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), SLOT(updateVideoFilter(QStandardItem*)));
     connect(m_collection, SIGNAL(updated()), SLOT(updateTagModel()));
-    //connect(m_collection, SIGNAL(repaintCover(int,QModelIndex)), this, SLOT(coverLoaded(int,QModelIndex)));
     connect(m_videoView, SIGNAL(activated(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_videoView, SIGNAL(clicked(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_tagFilterEdit, SIGNAL(textChanged(QString)), m_tagFilterModel, SLOT(setFilterFixedString(QString)));
@@ -173,10 +172,11 @@ void CollectionView::fetchTags()
 void CollectionView::createCovers()
 {
     CoverMaker dialog(m_infoPanel->videoName(), this);
+    connect(&dialog, SIGNAL(coverCreated(QString)), m_collection, SLOT(scanForCovers(QString)));
     dialog.show();
     dialog.raise();
     dialog.exec();
-    Collection::scanForCovers(m_infoPanel->videoName());
+    //Collection::scanForCovers(m_infoPanel->videoName());
     m_videoView->repaint();
     m_infoPanel->setInfo(m_infoPanel->videoName());
 }
