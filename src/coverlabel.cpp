@@ -1,5 +1,6 @@
 #include "coverlabel.h"
 #include "collection.h"
+#include "video.h"
 #include <QDesktopServices>
 #include <QUrl>
 #include <QDebug>

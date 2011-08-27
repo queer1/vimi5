@@ -3,8 +3,13 @@
 #include <QDebug>
 #include <QPainter>
 
+#include "videowidget.h"
+
 extern "C" {
 #include <libswscale/swscale.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+
 }
 
 VideoWidget::VideoWidget(QWidget *parent, QString file)
@@ -234,4 +239,9 @@ void VideoWidget::paintEvent(QPaintEvent *)
 QSize VideoWidget::sizeHint() const
 {
     return QSize(m_videoCodecContext->width, m_videoCodecContext->height);
+}
+
+int VideoWidget::length()
+{
+    return static_cast<int>(m_formatContext->duration * 100 / AV_TIME_BASE);
 }

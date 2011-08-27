@@ -6,8 +6,11 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QSet>
-#include <QThreadPool>
+#include <QThread>
 #include <QApplication>
+#include <QDir>
+#include "video.h"
+#include "coverloader.h"
 
 #include "collection.h"
 QHash<QString, Video*> Collection::m_videos;

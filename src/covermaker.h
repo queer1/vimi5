@@ -2,10 +2,10 @@
 #define COVERMAKER_H
 
 #include <QDialog>
-#include <QSlider>
-#include <QComboBox>
-#include "videowidget.h"
-#include "video.h"
+
+class QComboBox;
+class VideoWidget;
+class QSlider;
 
 class CoverMaker : public QDialog
 {

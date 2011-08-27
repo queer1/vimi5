@@ -17,6 +17,7 @@
 #include <QTimer>
 #include <QApplication>
 #include <QSettings>
+#include <QUrl>
 
 CollectionView::CollectionView(MainWindow *parent) :
     QSplitter(parent)

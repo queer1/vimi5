@@ -6,6 +6,9 @@
 #include <QRegExp>
 #include <QPair>
 #include <QProgressBar>
+#include <QNetworkReply>
+#include <QWebView>
+#include <QToolBar>
 
 CheggitView *CheggitView::m_instance=0;
 
@@ -94,6 +97,10 @@ void CheggitView::parseSearch(QNetworkReply *reply)
         if (!urls.isEmpty()) {
             emit foundMovies(urls);
             return;
+        } else {
+            urls.append(QPair<QString, QUrl>("No matching torrents found.", QUrl()));
+            emit foundMovies(urls);
+            return;
         }
     }
     emit pleaseLogin();
@@ -101,6 +108,9 @@ void CheggitView::parseSearch(QNetworkReply *reply)
 
 void CheggitView::getTags(const QUrl &movie)
 {
+    if (movie.isEmpty())
+        return;
+
     connect(m_movieAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(parseMovie(QNetworkReply*)));
     m_movieAccessManager->get(QNetworkRequest(movie));
 }

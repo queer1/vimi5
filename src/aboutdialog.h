@@ -2,8 +2,9 @@
 #define ABOUTDIALOG_H
 
 #include <QDialog>
-#include <QLabel>
-#include <QPushButton>
+
+class QLabel;
+class QPushButton;
 
 class AboutDialog : public QDialog
 {

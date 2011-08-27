@@ -1,10 +1,13 @@
 #ifndef CHEGGITVIEW_H
 #define CHEGGITVIEW_H
 
-#include <QNetworkReply>
-#include <QWebView>
 #include <QWidget>
-#include <QToolBar>
+#include <QUrl>
+class QWebView;
+class QToolBar;
+class QNetworkAccessManager;
+class QUrl;
+class QNetworkReply;
 
 class CheggitView : public QWidget
 {

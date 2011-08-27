@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QMetaMethod>
 #include <QMessageBox>
+#include <QUrl>
 
 TagFetchDialog::TagFetchDialog(QString movieTitle, QWidget *parent) : QDialog(parent),
     m_movieList(new QListWidget),

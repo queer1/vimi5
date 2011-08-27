@@ -2,12 +2,10 @@
 #define VIDEOWIDGET_H
 
 #include <QWidget>
-
-extern "C" {
-
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-}
+class AVFormatContext;
+class AVFrame;
+class AVPacket;
+class AVCodecContext;
 
 class VideoWidget : public QWidget
 {
@@ -16,7 +14,7 @@ class VideoWidget : public QWidget
 public:
     VideoWidget(QWidget *parent, QString file);
     ~VideoWidget();
-    int length() { return static_cast<int>(m_formatContext->duration * 100 / AV_TIME_BASE); }
+    int length();
     void paintEvent(QPaintEvent *);
     QSize sizeHint() const;
     QImage getFrame() const { return m_activeFrame; }

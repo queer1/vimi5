@@ -2,6 +2,8 @@
 #include "version.h"
 
 #include <QVBoxLayout>
+#include <QLabel>
+#include <QPushButton>
 
 AboutDialog::AboutDialog(QWidget *parent) :
     QDialog(parent)

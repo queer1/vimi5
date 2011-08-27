@@ -4,6 +4,12 @@
 #include "collection.h"
 #include <QVBoxLayout>
 #include <QImageWriter>
+#include <QDir>
+#include <QComboBox>
+#include <QSlider>
+#include "videowidget.h"
+
+
 
 CoverMaker::CoverMaker(QString videoName, QWidget *parent) : QDialog(parent),
     m_name(videoName)
@@ -29,7 +35,6 @@ CoverMaker::CoverMaker(QString videoName, QWidget *parent) : QDialog(parent),
     m_slider->setValue(m_slider->maximum() / 2);
 
     QPushButton *saveButton = new QPushButton("Save");
-
 
     layout()->addWidget(saveButton);
     layout()->addWidget(m_slider);

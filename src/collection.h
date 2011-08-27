@@ -4,16 +4,14 @@
 #define COLLECTION_H
 
 #include "config.h"
-#include "video.h"
-#include "coverloader.h"
-#include <QDir>
-#include <QImage>
+
 #include <QAbstractTableModel>
 #include <QHash>
 #include <QSet>
-#include <QThread>
-#include <QMutex>
-#include <QWaitCondition>
+class QThread;
+class QDir;
+class CoverLoader;
+class Video;
 
 class Collection : public QAbstractTableModel
 {
@@ -67,7 +65,6 @@ private:
 
     QStringList m_cachedVideoDirectories;
     CoverLoader *m_coverLoader;
-    //QHash<int, QModelIndex&> m_indices;
 };
 
 #endif // COLLECTION_H
