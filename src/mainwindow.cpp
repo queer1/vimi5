@@ -47,8 +47,9 @@ MainWindow::MainWindow(QWidget *parent) :
     helpMenu->addAction(QIcon(), "&About Vimi...", this, SLOT(showAboutDialog()));
     menuBar()->addMenu(helpMenu);
 
-    if (Config::collectionPath().isEmpty()) {
+    if (Config::collectionPath().isEmpty() || !QDir(Config::collectionPath()).isReadable()) {
         getCollectionPath();
+        cv->collection()->rescan();
     }
 
     //statusBar()->showMessage(tr("Ready."));

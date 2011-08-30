@@ -12,6 +12,7 @@
 
 int main(int argc, char *argv[])
 {
+    qWarning() << "LAUNCH_ING";
     clock_t start, end;
     start = clock();
 

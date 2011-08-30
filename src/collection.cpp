@@ -180,7 +180,7 @@ void Collection::scan(QDir dir)
     dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
     if (dir.count() > 0) { // Found movie files
-        emit statusUpdated("Found movie: " + dir.dirName());
+        emit statusUpdated("Found video " + dir.dirName());
         addVideo(Video::makeVideo(this, dir.path()));
     }
 
@@ -188,7 +188,7 @@ void Collection::scan(QDir dir)
                                                                       // QDir::AllDirs ignores name filter
 
 
-    foreach(QFileInfo subdir, dir.entryInfoList()) {
+    foreach(const QFileInfo &subdir, dir.entryInfoList()) {
         scan(QDir(subdir.filePath())); // Recursively scan
     }
 }

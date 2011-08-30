@@ -30,13 +30,13 @@ VideoWidget::VideoWidget(QWidget *parent, QString file)
         return;
     }
 
-    if (av_find_stream_info(m_formatContext) < 0) {
+    if (avformat_find_stream_info(m_formatContext, NULL) < 0) {
         qWarning() << "Could not find stream information";
         return;
     }
 
     for (unsigned int i = 0; i < m_formatContext->nb_streams; i++) {
-        if (m_formatContext->streams[i]->codec->codec_type == CODEC_TYPE_VIDEO) {
+        if (m_formatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
             m_videoStream = i;
             break;
         }
