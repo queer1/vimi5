@@ -8,6 +8,7 @@ QString Config::m_collectionPath;
 QString Config::m_dirExplorer;
 QString Config::m_moviePlayer;
 QStringList Config::m_movieSuffixes;
+QStringList Config::m_favouriteTags;
 int Config::m_maxCoverSize;
 bool Config::m_loaded = false;
 
@@ -19,6 +20,7 @@ void Config::load()
     m_maxCoverSize = settings.value("maxCoverSize", 128).toInt();
     m_dirExplorer = settings.value("dirExplorer", "").toString();
     m_moviePlayer = settings.value("moviePlayer", "").toString();
+    m_favouriteTags = settings.value("favouriteTags").toStringList();
 
     QStringList defaultSuffixes;
     defaultSuffixes << "*.mpg"
@@ -43,6 +45,7 @@ void Config::save()
     settings.setValue("maxCoverSize", m_maxCoverSize);
     settings.setValue("moviePlayer", m_moviePlayer);
     settings.setValue("dirExplorer", m_dirExplorer);
+    settings.setValue("favouriteTags", m_favouriteTags);
 
 
 }
@@ -85,6 +88,22 @@ QString Config::moviePlayer()
     return m_moviePlayer;
 }
 
+const QStringList &Config::favouriteTags()
+{
+    if (m_loaded)
+        load();
+
+    return m_favouriteTags;
+}
+
+void Config::addFavouriteTag(const QString &tag)
+{
+    if (!m_loaded)
+        load();
+
+    m_favouriteTags.append(tag);
+    save();
+}
 
 void Config::setCollectionPath(QString path)
 {
@@ -94,3 +113,4 @@ void Config::setCollectionPath(QString path)
     m_collectionPath = path;
     save();
 }
+

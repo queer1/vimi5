@@ -14,7 +14,9 @@ public:
     static int maxCoverSize();
     static QString dirExplorer();
     static QString moviePlayer();
+    static const QStringList &favouriteTags();
 
+    static void addFavouriteTag(const QString&);
     static void setCollectionPath(QString path);
 
     friend class SettingsDialog;
@@ -26,6 +28,7 @@ private:
 
     static QString m_collectionPath;
     static QStringList m_movieSuffixes;
+    static QStringList m_favouriteTags;
     static int m_maxCoverSize;
     static QString m_dirExplorer;
     static QString m_moviePlayer;
