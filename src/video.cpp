@@ -190,14 +190,17 @@ QString Video::scanForCovers(QString path)
     QString coverPath;
     // Try to either find *front*.jpg, *cover*.jpg or just any plain *.jpg
     dir.setFilter(QDir::Files);
-    if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0)
+    if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList("*front*.jpg")).first().absoluteFilePath();
-    else if (dir.entryInfoList(QStringList("*cover*.jpg")).count() > 0)
+    } else if (dir.entryInfoList(QStringList("*cover*.jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList("*cover*.jpg")).first().absoluteFilePath();
-    else if (dir.entryInfoList(QStringList("*" + dir.dirName() + "*.jpg")).count() > 0)
+    } else if (dir.entryInfoList(QStringList(dir.dirName() + ".jpg")).count() > 0) {
+        coverPath = dir.entryInfoList(QStringList(dir.dirName() + ".jpg")).first().absoluteFilePath();
+    } else if (dir.entryInfoList(QStringList("*" + dir.dirName() + "*.jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList("*" + dir.dirName() + "*.jpg")).first().absoluteFilePath();
-    else if (dir.entryInfoList(QStringList("*.jpg")).count() > 0)
+    } else if (dir.entryInfoList(QStringList("*.jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList("*.jpg")).first().absoluteFilePath();
+    }
 
     return coverPath;
 }

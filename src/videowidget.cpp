@@ -29,7 +29,7 @@ VideoWidget::VideoWidget(QWidget *parent, QString file)
         return;
     }
 
-    if (avformat_find_stream_info(m_formatContext, NULL) < 0) {
+    if (av_find_stream_info(m_formatContext) < 0) {
         qWarning() << "Could not find stream information";
         return;
     }
