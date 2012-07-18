@@ -18,7 +18,6 @@ VideoWidget::VideoWidget(QWidget *parent, QString file)
     m_videoStream(-1)
 {
     av_register_all();
-    avcodec_init();
     avcodec_register_all();
 
     QFileInfo fileInfo(file);
@@ -64,7 +63,7 @@ VideoWidget::VideoWidget(QWidget *parent, QString file)
 
     m_videoCodecContext->workaround_bugs = 1;
 
-    if (avcodec_open(m_videoCodecContext, videoCodec) < 0) {
+    if (avcodec_open2(m_videoCodecContext, videoCodec, 0) < 0) {
         qWarning() << "Could not open video codec";
     }
 
