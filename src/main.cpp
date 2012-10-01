@@ -12,7 +12,7 @@
 
 int main(int argc, char *argv[])
 {
-    qWarning() << "LAUNCH_ING";
+    qDebug() << "Starting...";
     clock_t start, end;
     start = clock();
 
@@ -25,7 +25,8 @@ int main(int argc, char *argv[])
     QSplashScreen splash(QPixmap(":/images/splash.png"));
     splash.showMessage("Loading cache and covers...", Qt::AlignBottom);
     splash.show();
-    a.processEvents();
+//    for (int i=0;i<10;i++)// Ugly hack, don't know why I need it
+        a.processEvents(QEventLoop::WaitForMoreEvents | QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
     MainWindow w;
     splash.finish(&w);
     w.show();

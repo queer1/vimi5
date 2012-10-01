@@ -1,7 +1,7 @@
 #include "covermaker.h"
 #include <QFileInfo>
-#include <QDebug>
 #include <QPainter>
+#include <QDebug>
 
 #include "videowidget.h"
 
@@ -18,12 +18,12 @@ VideoWidget::VideoWidget(QWidget *parent, QString file)
     m_videoStream(-1)
 {
     av_register_all();
+
     avcodec_register_all();
 
     QFileInfo fileInfo(file);
     m_formatContext = avformat_alloc_context();
 
-    qWarning() << fileInfo.absoluteFilePath().toUtf8().data();
     if (avformat_open_input(&m_formatContext, fileInfo.absoluteFilePath().toUtf8().constData(), NULL, NULL) != 0) {
         qWarning() <<  "Could not open input file: " << fileInfo.absoluteFilePath();
         return;
@@ -212,7 +212,7 @@ void VideoWidget::decodeVideoFrame()
         sws_freeContext(scaleContext);
 
         av_free(m_frame);
-       // av_free(frameBuffer);
+        av_free(frameBuffer);
 
         m_frame = avFrame;
     }

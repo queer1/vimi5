@@ -1,10 +1,10 @@
 #include "aboutdialog.h"
 #include "mainwindow.h"
 #include "collectionview.h"
-#include "cheggitview.h"
 #include "covermaker.h"
 #include "settingsdialog.h"
 #include "tagreplacementdialog.h"
+#include "favouritetagdialog.h"
 
 #include <QMenuBar>
 #include <QStatusBar>
@@ -22,12 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowTitle("vimi");
     setWindowIcon(QIcon(":/images/icon.png"));
 
-    setCentralWidget(&m_tabWidget);
-    m_tabWidget.setTabPosition(QTabWidget::West);
-    m_tabWidget.addTab(CheggitView::instance(), QIcon(), "Cheggit");
     CollectionView *cv = new CollectionView;
-    m_tabWidget.addTab(cv, QIcon(), "Collection");
-    m_tabWidget.setCurrentIndex(1);
+    setCentralWidget(cv);
 
     // Set up the File menu
     QMenu *fileMenu = new QMenu("&File", this);
@@ -40,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Set up the Tag menu
     QMenu *tagMenu = new QMenu("T&ags", this);
     tagMenu->addAction(QIcon(), "&Replace tags...", this, SLOT(showTagReplacementDialog()));
+    tagMenu->addAction(QIcon(), "&Edit favourite tags...", this, SLOT(showFavouriteTagDialog()));
     menuBar()->addMenu(tagMenu);
 
     // Set up the Help menu
@@ -88,8 +85,9 @@ void MainWindow::getCollectionPath()
 
 void MainWindow::showSettings()
 {
-    SettingsDialog *dialog = new SettingsDialog(this);
-    dialog->show();
+    SettingsDialog dialog;
+    dialog.show();
+    dialog.exec();
 }
 
 void MainWindow::showTagReplacementDialog()
@@ -104,4 +102,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QSettings settings("Cheggit", "Vimi");
     settings.setValue("geometry", saveGeometry());
     QWidget::closeEvent(event);
+}
+
+void MainWindow::showFavouriteTagDialog()
+{
+    FavouriteTagDialog dialog;
+    dialog.show();
+    dialog.exec();
 }

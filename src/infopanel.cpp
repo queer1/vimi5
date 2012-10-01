@@ -29,7 +29,6 @@ InfoPanel::InfoPanel(QWidget *parent) :
     m_files->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     m_path = new QLabel("");
     QPushButton *tagEditButton = new QPushButton("&Edit tags...");
-    QPushButton *tagFetchButton = new QPushButton("&Fetch tags...");
     QPushButton *createCoversButton = new QPushButton("&Create covers...");
 
     setLayout(new QVBoxLayout);
@@ -40,19 +39,19 @@ InfoPanel::InfoPanel(QWidget *parent) :
     layout()->addWidget(m_path);
     layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
     layout()->addWidget(tagEditButton);
-    layout()->addWidget(tagFetchButton);
     layout()->addWidget(createCoversButton);
 
     connect(m_files, SIGNAL(linkActivated(QString)), SLOT(openVideo(QString)));
     connect(m_path, SIGNAL(linkActivated(QString)), SLOT(openDirectory(QString)));
     connect(m_tags, SIGNAL(linkActivated(QString)), SIGNAL(selectedTag(QString)));
     connect(tagEditButton, SIGNAL(clicked()), SIGNAL(editTags()));
-    connect(tagFetchButton, SIGNAL(clicked()), SIGNAL(fetchTags()));
     connect(createCoversButton, SIGNAL(clicked()), SIGNAL(createCovers()));
 }
 
 void InfoPanel::setInfo(const QString &title)
 {
+    if (title.isEmpty()) return;
+
     QFontMetrics m(font());
 
     QStringList tags = Collection::getTags(title);
@@ -105,13 +104,13 @@ void InfoPanel::openDirectory(const QString &directory)
 
 void InfoPanel::openVideo(const QString &file)
 {
-    qWarning() << Config::moviePlayer();
     if (Config::moviePlayer().isEmpty()) {
-        qWarning() << "no video player configured";
+        qWarning() << "No video player configured, using platform default...";
         QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(file.toLocal8Bit()));
         QDesktopServices::openUrl(url);//QUrl::fromPercentEncoding(file.toLocal8Bit()));
     } else {
         QUrl url = QUrl::fromLocalFile(QUrl::fromPercentEncoding(file.toLocal8Bit()));
+        //qDebug() << Config::moviePlayer() << url.toLocalFile();
         QProcess::startDetached(Config::moviePlayer(), QStringList(url.toLocalFile()));
     }
 }

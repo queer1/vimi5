@@ -13,7 +13,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     m_logo->setPixmap(QPixmap(":/images/splash.png"));
 
     m_header = new QLabel("<h2>Vimi v." + VERSION + "</h2>tag based video manager", this);
-    m_text = new QLabel("Copyright 2011 cwk", this);
+    m_text = new QLabel("Copyright 2012 cwk", this);
     m_header->setAlignment(Qt::AlignCenter);
     m_text->setAlignment(Qt::AlignCenter);
 

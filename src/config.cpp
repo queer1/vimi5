@@ -3,6 +3,7 @@
 #include "config.h"
 #include <QDesktopServices>
 #include <QSettings>
+#include <QDebug>
 
 QString Config::m_collectionPath;
 QString Config::m_dirExplorer;
@@ -22,6 +23,7 @@ void Config::load()
     m_moviePlayer = settings.value("moviePlayer", "").toString();
     m_favouriteTags = settings.value("favouriteTags").toStringList();
 
+
     QStringList defaultSuffixes;
     defaultSuffixes << "*.mpg"
                     << "*.wmv"
@@ -35,6 +37,7 @@ void Config::load()
         m_movieSuffixes = defaultSuffixes;
 
     save(); // Save default config
+    m_loaded = true;
 }
 
 void Config::save()
@@ -90,7 +93,7 @@ QString Config::moviePlayer()
 
 const QStringList &Config::favouriteTags()
 {
-    if (m_loaded)
+    if (!m_loaded)
         load();
 
     return m_favouriteTags;
@@ -102,6 +105,15 @@ void Config::addFavouriteTag(const QString &tag)
         load();
 
     m_favouriteTags.append(tag);
+    save();
+}
+
+void Config::removeFavouriteTag(const QString &tag)
+{
+    if (!m_loaded)
+        load();
+
+    m_favouriteTags.removeAll(tag);
     save();
 }
 

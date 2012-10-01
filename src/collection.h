@@ -65,6 +65,7 @@ private:
 
     QStringList m_cachedVideoDirectories;
     CoverLoader *m_coverLoader;
+    static Collection *instance;
 };
 
 #endif // COLLECTION_H

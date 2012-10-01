@@ -17,6 +17,7 @@ public:
     static const QStringList &favouriteTags();
 
     static void addFavouriteTag(const QString&);
+    static void removeFavouriteTag(const QString&);
     static void setCollectionPath(QString path);
 
     friend class SettingsDialog;

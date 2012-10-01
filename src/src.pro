@@ -22,7 +22,6 @@ RCC_DIR = ../build
 
 SOURCES += main.cpp\
            aboutdialog.cpp\
-           cheggitview.cpp\
            collection.cpp\
            collectionview.cpp\
            config.cpp\
@@ -30,7 +29,6 @@ SOURCES += main.cpp\
            infopanel.cpp\
            mainwindow.cpp\
            tagdialog.cpp\
-           tagfetchdialog.cpp\
            videofilterproxymodel.cpp \
     video.cpp \
     covermaker.cpp \
@@ -38,10 +36,10 @@ SOURCES += main.cpp\
     coverlabel.cpp \
     settingsdialog.cpp \
     coverloader.cpp \
-    tagreplacementdialog.cpp
+    tagreplacementdialog.cpp \
+    favouritetagdialog.cpp
 
 HEADERS += aboutdialog.h\
-           cheggitview.h\
            collection.h\
            collectionview.h\
            config.h\
@@ -49,7 +47,6 @@ HEADERS += aboutdialog.h\
            infopanel.h\
            mainwindow.h\
            tagdialog.h\
-           tagfetchdialog.h\
            videofilterproxymodel.h \
     video.h \
     covermaker.h \
@@ -58,12 +55,13 @@ HEADERS += aboutdialog.h\
     version.h \
     settingsdialog.h \
     coverloader.h \
-    tagreplacementdialog.h
+    tagreplacementdialog.h \
+    favouritetagdialog.h
 
 win32 {
-    LIBS += -LC:\ffmpeg\lib -static-libgcc
+    LIBS += -LC:\\ffmpeg\\lib -static-libgcc
     CONFIG += static
-    INCLUDEPATH += C:\ffmpeg\include
+    INCLUDEPATH += C:\\ffmpeg\\include
 }
 
 include(images/images.pro)

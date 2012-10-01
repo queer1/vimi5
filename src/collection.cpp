@@ -15,10 +15,12 @@
 #include "collection.h"
 QHash<QString, Video*> Collection::m_videos;
 QStringList Collection::m_videoNames;
+Collection *Collection::instance = 0;
 
 Collection::Collection(QObject *parent)
     : QAbstractTableModel(parent)
 {
+    instance = this;
     m_coverLoader = new CoverLoader;
     QThread *thread = new QThread(this);
     m_coverLoader->moveToThread(thread);
@@ -29,7 +31,7 @@ Collection::Collection(QObject *parent)
 
 void Collection::loadCache()
 {
-    qDebug() << "loading cache...";
+    qDebug() << "Loading cache...";
     emit(statusUpdated("Loading video cache..."));
     QString path = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
     QDir(path).mkpath(path);
@@ -47,7 +49,6 @@ void Collection::loadCache()
             connect(video, SIGNAL(needToLoadCover(Video*)), m_coverLoader, SLOT(loadVideo(Video*)));
             connect(video, SIGNAL(coverLoaded(QString)), this, SLOT(coverLoaded(QString)));
         }
-        qDebug() << "Loaded" << videos.size() << "videos";
         beginInsertRows(QModelIndex(), rowCount(), rowCount() + videos.size() - 1);
         foreach(Video *video, videos) {
             if (m_videos.contains(video->name())) {
@@ -57,12 +58,12 @@ void Collection::loadCache()
             m_videoNames.append(video->name());
         }
         endInsertRows();
+        qDebug() << "Loaded" << videos.size() << "videos.";
     } else {
-        qWarning() << file.errorString() << path;
+        qWarning() << "Unable to load cache!: " << file.errorString() << " (file path:" << path << ")";
     }
     qSort(m_videoNames);
     emit statusUpdated("Ready!");
-    qDebug() << "finished loading cache";
 }
 
 Collection::~Collection()
@@ -200,11 +201,15 @@ void Collection::addTag(const QString &video, const QString &rawTag)
     if (tag.isEmpty())
         return;
     m_videos[video]->addTag(tag);
+    int row = m_videoNames.indexOf(video);
+    emit instance->dataChanged(instance->createIndex(row, 3), instance->createIndex(row, 3));
 }
 
 void Collection::removeTag(const QString &video, const QString &tag)
 {
     m_videos[video]->removeTag(tag);
+    int row = m_videoNames.indexOf(video);
+    emit instance->dataChanged(instance->createIndex(row, 3), instance->createIndex(row, 3));
 }
 
 QStringList Collection::getTags(const QString &videoName)
@@ -223,16 +228,22 @@ QStringList Collection::getTags(const QString &videoName)
 
 QString Collection::getPath(const QString &videoName)
 {
+    //if (!m_videos.contains(videoName)) return QString();
+
     return m_videos[videoName]->path();
 }
 
 QStringList Collection::getFiles(const QString &videoName)
 {
+    //if (!m_videos.contains(videoName)) return QStringList();
+
     return m_videos[videoName]->files();
 }
 
 QPixmap Collection::getCover(const QString &videoName, int maxSize)
 {
+    //if (!m_videos.contains(videoName)) return QPixmap();
+
     return m_videos[videoName]->cover(maxSize);
 }
 
@@ -246,7 +257,7 @@ void Collection::coverLoaded(const QString &videoName)
 {
     int row = m_videoNames.indexOf(videoName);
     //emit repaintCover(row, createIndex(row, 0, row));
-    emit dataChanged(createIndex(row, 0, row), createIndex(row, 0, row));
+    emit dataChanged(createIndex(row, 0), createIndex(row, 0));
 }
 
 void Collection::replaceTag(const QString &oldTag, const QString &newTag)
@@ -254,8 +265,8 @@ void Collection::replaceTag(const QString &oldTag, const QString &newTag)
     foreach(Video *video, m_videos) {
         if (video->tags().contains(oldTag)) {
             qDebug() << "replacing tags for video: " << video->name() << oldTag << newTag;
-            video->removeTag(oldTag);
-            video->addTag(newTag);
+            removeTag(video->name(), oldTag);
+            addTag(video->name(), newTag);
         }
     }
 }

@@ -17,6 +17,7 @@ public slots:
     void getCollectionPath();
     void showSettings();
     void showTagReplacementDialog();
+    void showFavouriteTagDialog();
 
 signals:
     void updatedTags();
@@ -26,7 +27,6 @@ private slots:
 
 private:
     void closeEvent(QCloseEvent *);
-    QTabWidget m_tabWidget;
 };
 
 #endif // MAINWINDOW_H

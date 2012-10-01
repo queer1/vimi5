@@ -3,9 +3,9 @@
 #include "config.h"
 #include "collectionview.h"
 #include "tagdialog.h"
-#include "tagfetchdialog.h"
 #include "covermaker.h"
 #include "mainwindow.h"
+#include "infopanel.h"
 
 #include <QDebug>
 #include <QGroupBox>
@@ -55,9 +55,19 @@ CollectionView::CollectionView(MainWindow *parent) :
     QGroupBox *tagContainer = new QGroupBox(this);
     tagContainer->setLayout(new QVBoxLayout);
     //tagContainer->setTitle("Tags");
+
+    // Add the favourite tags view
+    m_favouriteTags = new QListView();
+    tagContainer->layout()->addWidget(m_favouriteTags);
+    m_favouriteTagModel = new QStandardItemModel(this);
+    m_favouriteTags->setModel(m_favouriteTagModel);
+
+    // The tag filtering line edit
     m_tagFilterEdit = new QLineEdit(this);
     tagContainer->layout()->addWidget(m_tagFilterEdit);
 
+
+    // The full list of tags
     m_tagView = new QListView(this);
     tagContainer->layout()->addWidget(m_tagView);
     m_tagModel = new QStandardItemModel(this);
@@ -66,6 +76,9 @@ CollectionView::CollectionView(MainWindow *parent) :
     updateTagModel();
     m_tagFilterModel->setSourceModel(m_tagModel);
     m_tagView->setModel(m_tagFilterModel);
+
+
+
     // Set up the info panel
     m_infoPanel = new InfoPanel(this);
 
@@ -76,16 +89,17 @@ CollectionView::CollectionView(MainWindow *parent) :
 
     // Connect signals
     connect(m_tagModel, SIGNAL(itemChanged(QStandardItem*)), SLOT(updateVideoFilter(QStandardItem*)));
+    connect(m_favouriteTagModel, SIGNAL(itemChanged(QStandardItem*)), SLOT(updateVideoFilter(QStandardItem*)));
     connect(m_collection, SIGNAL(updated()), SLOT(updateTagModel()));
     connect(m_videoView, SIGNAL(activated(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_videoView, SIGNAL(clicked(QModelIndex)), SLOT(updateInfoPanel(QModelIndex)));
     connect(m_tagFilterEdit, SIGNAL(textChanged(QString)), m_tagFilterModel, SLOT(setFilterFixedString(QString)));
     connect(m_videoFilterEdit, SIGNAL(textChanged(QString)), m_videoModel, SLOT(setFilterFixedString(QString)));
     connect(m_infoPanel, SIGNAL(editTags()), SLOT(editTags()));
-    connect(m_infoPanel, SIGNAL(fetchTags()), SLOT(fetchTags()));
     connect(m_infoPanel, SIGNAL(createCovers()), SLOT(createCovers()));
     connect(m_collection, SIGNAL(statusUpdated(QString)), SIGNAL(statusUpdated(QString)));
     connect(m_infoPanel, SIGNAL(selectedTag(QString)), SLOT(selectTag(QString)));
+    connect(m_collection, SIGNAL(dataChanged(QModelIndex,QModelIndex)), m_videoView, SLOT(repaint()));
 
     m_videoView->resizeColumnToContents(0);
     //m_videoView->resizeColumnToContents(1);
@@ -119,10 +133,24 @@ void CollectionView::updateTagModel()
             m_videoModel->addTag(tagName);
         } else
             tag->setCheckState(Qt::Unchecked);
-
         m_tagModel->appendRow(tag);
     }
     m_collection->writeCache();
+
+    // Update favourite tag view
+    m_favouriteTagModel->clear();
+
+    foreach(const QString &tagName, Config::favouriteTags()) {
+        tag = new QStandardItem(tagName);
+        tag->setCheckable(true);
+
+        if (activeTags.contains(tagName))
+            tag->setCheckState(Qt::Checked);
+        else
+            tag->setCheckState(Qt::Unchecked);
+
+        m_favouriteTagModel->appendRow(tag);
+    }
 }
 
 void CollectionView::updateVideoFilter(QStandardItem *tag)
@@ -160,16 +188,6 @@ void CollectionView::editTags()
     updateInfoPanel(m_videoView->currentIndex());
 }
 
-void CollectionView::fetchTags()
-{
-    TagFetchDialog dialog(m_infoPanel->videoName(), this);
-    dialog.show();
-    dialog.raise();
-    dialog.exec();
-    updateTagModel();
-    updateInfoPanel(m_videoView->currentIndex());
-}
-
 void CollectionView::createCovers()
 {
     CoverMaker dialog(m_infoPanel->videoName(), this);
@@ -177,7 +195,7 @@ void CollectionView::createCovers()
     dialog.show();
     dialog.raise();
     dialog.exec();
-    //Collection::scanForCovers(m_infoPanel->videoName());
+
     m_videoView->repaint();
     m_infoPanel->setInfo(m_infoPanel->videoName());
 }
