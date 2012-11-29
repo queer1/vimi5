@@ -1,1 +1,0 @@
-RESOURCES += images/images.qrc
