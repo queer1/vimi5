@@ -18,7 +18,6 @@ set(sources
     src/collection.cpp
     src/collectionview.cpp
     src/config.cpp
-    src/cookiestorage.cpp
     src/coverlabel.cpp
     src/coverloader.cpp
     src/covermaker.cpp
@@ -38,7 +37,6 @@ set(moc_hdrs
     src/aboutdialog.h
     src/collection.h
     src/collectionview.h
-    src/cookiestorage.h
     src/coverlabel.h
     src/coverloader.h
     src/covermaker.h
