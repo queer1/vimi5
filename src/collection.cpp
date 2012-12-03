@@ -35,17 +35,26 @@ Collection::Collection()
     : QAbstractTableModel()
 {
     m_coverLoader = new CoverLoader;
-    QThread *thread = new QThread(this);
+    QThread *thread = new QThread;
     m_coverLoader->moveToThread(thread);
     thread->start();
 
     loadCache();
 }
 
+Collection::~Collection()
+{
+    m_coverLoader->running = false;
+    m_coverLoader->thread()->quit();
+    m_coverLoader->thread()->wait();
+    qWarning() << "thread exited";
+}
+
+
 Collection *Collection::instance()
 {
-    static Collection instance;
-    return &instance;
+    static Collection inst;
+    return &inst;
 }
 
 void Collection::loadCache()
@@ -83,13 +92,6 @@ void Collection::loadCache()
     }
     qSort(m_videoNames);
     emit statusUpdated("Ready!");
-}
-
-Collection::~Collection()
-{
-    m_coverLoader->running = false;
-    m_coverLoader->thread()->quit();
-    m_coverLoader->thread()->wait();
 }
 
 QVariant Collection::headerData(int section, Qt::Orientation orientation, int role) const

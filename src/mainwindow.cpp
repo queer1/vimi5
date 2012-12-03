@@ -18,13 +18,13 @@
 
 #include "aboutdialog.h"
 #include "mainwindow.h"
-#include "collectionview.h"
 #include "covermaker.h"
 #include "settingsdialog.h"
 #include "tagreplacementdialog.h"
 #include "favouritetagdialog.h"
 #include "infopanel.h"
 #include "tagdialog.h"
+#include "videofilterproxymodel.h"
 
 #include <QMenuBar>
 #include <QStatusBar>
@@ -35,6 +35,9 @@
 #include <QSettings>
 #include <QGroupBox>
 #include <QVBoxLayout>
+#include <QTreeView>
+#include <QStandardItemModel>
+#include <QSplitter>
 
 #include <QDebug>
 
@@ -44,7 +47,6 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowTitle("vimi");
     setWindowIcon(QIcon(":/images/icon.png"));
 
-    Collection::instance()->setParent(this);
     if (Collection::instance()->rowCount() == 0) {
         if (Config::collectionPath() == "") {
             getCollectionPath();
@@ -161,7 +163,7 @@ MainWindow::MainWindow(QWidget *parent) :
         Collection::instance()->rescan();
     }
 
-    //statusBar()->showMessage(tr("Ready."));
+    statusBar()->showMessage(tr("Ready."));
     connect(Collection::instance(), SIGNAL(statusUpdated(QString)), statusBar(), SLOT(showMessage(QString)));
     connect(this, SIGNAL(updatedTags()), Collection::instance(), SLOT(updateTagModel()));
 
