@@ -19,8 +19,17 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QTabWidget>
 #include <QMainWindow>
+
+class QModelIndex;
+class QListView;
+class QTreeView;
+class QStandardItemModel;
+class QSortFilterProxyModel;
+class QLineEdit;
+class VideoFilterProxyModel;
+class InfoPanel;
+class QStandardItem;
 
 class MainWindow : public QMainWindow
 {
@@ -42,9 +51,26 @@ signals:
 
 private slots:
     void showAboutDialog();
+    void updateTagModel();
+    void updateVideoFilter(QStandardItem *tag);
+    void updateInfoPanel(const QModelIndex&);
+    void editTags();
+    void createCovers();
+    void selectTag(const QString &tag);
 
 private:
     void closeEvent(QCloseEvent *);
+
+    QListView *m_tagView;
+    QTreeView *m_videoView;
+    QStandardItemModel *m_tagModel;
+    QStandardItemModel *m_favouriteTagModel;
+    QSortFilterProxyModel *m_tagFilterModel;
+    QLineEdit *m_tagFilterEdit;
+    QLineEdit *m_videoFilterEdit;
+    VideoFilterProxyModel *m_videoModel;
+    InfoPanel *m_infoPanel;
+    QListView *m_favouriteTags;
 };
 
 #endif // MAINWINDOW_H

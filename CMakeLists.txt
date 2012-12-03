@@ -16,7 +16,6 @@ add_definitions(-D__STDC_CONSTANT_MACROS)
 set(sources
     src/aboutdialog.cpp
     src/collection.cpp
-    src/collectionview.cpp
     src/config.cpp
     src/coverlabel.cpp
     src/coverloader.cpp
@@ -36,7 +35,6 @@ set(sources
 set(moc_hdrs
     src/aboutdialog.h
     src/collection.h
-    src/collectionview.h
     src/coverlabel.h
     src/coverloader.h
     src/covermaker.h
