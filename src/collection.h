@@ -34,8 +34,11 @@ class Collection : public QAbstractTableModel
 
     Q_OBJECT
 
+private:
+    Collection();
+
 public:
-    Collection(QObject *parent);
+    static Collection *instance();
     ~Collection();
 
     static void addTag(const QString &video, const QString &tag);
@@ -81,7 +84,6 @@ private:
 
     QStringList m_cachedVideoDirectories;
     CoverLoader *m_coverLoader;
-    static Collection *instance;
 };
 
 #endif // COLLECTION_H

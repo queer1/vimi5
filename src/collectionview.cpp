@@ -38,7 +38,8 @@
 CollectionView::CollectionView(MainWindow *parent) :
     QSplitter(parent)
 {
-    m_collection = new Collection(this);
+    m_collection = Collection::instance();
+    Collection::instance()->setParent(this);
     if (m_collection->rowCount() == 0) {
         if (Config::collectionPath() == "") {
             parent->getCollectionPath();

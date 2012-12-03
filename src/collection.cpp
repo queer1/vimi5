@@ -30,18 +30,22 @@
 #include "collection.h"
 QHash<QString, Video*> Collection::m_videos;
 QStringList Collection::m_videoNames;
-Collection *Collection::instance = 0;
 
-Collection::Collection(QObject *parent)
-    : QAbstractTableModel(parent)
+Collection::Collection()
+    : QAbstractTableModel()
 {
-    instance = this;
     m_coverLoader = new CoverLoader;
     QThread *thread = new QThread(this);
     m_coverLoader->moveToThread(thread);
     thread->start();
 
     loadCache();
+}
+
+Collection *Collection::instance()
+{
+    static Collection instance;
+    return &instance;
 }
 
 void Collection::loadCache()
@@ -217,14 +221,14 @@ void Collection::addTag(const QString &video, const QString &rawTag)
         return;
     m_videos[video]->addTag(tag);
     int row = m_videoNames.indexOf(video);
-    emit instance->dataChanged(instance->createIndex(row, 3), instance->createIndex(row, 3));
+    emit instance()->dataChanged(instance()->createIndex(row, 3), instance()->createIndex(row, 3));
 }
 
 void Collection::removeTag(const QString &video, const QString &tag)
 {
     m_videos[video]->removeTag(tag);
     int row = m_videoNames.indexOf(video);
-    emit instance->dataChanged(instance->createIndex(row, 3), instance->createIndex(row, 3));
+    emit instance()->dataChanged(instance()->createIndex(row, 3), instance()->createIndex(row, 3));
 }
 
 QStringList Collection::getTags(const QString &videoName)
