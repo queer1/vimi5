@@ -74,12 +74,6 @@ VideoWidget::VideoWidget(QWidget *parent, QString file)
         return;
     }
 
-    // Inform the codec that we can handle truncated bitstreams -- i.e.,
-    // bitstreams where frame boundaries can fall in the middle of packets
-//    if(videoCodec->capabilities & CODEC_CAP_TRUNCATED)
-//        m_videoCodecContext->flags|=CODEC_FLAG_TRUNCATED;
-
-    m_videoCodecContext->workaround_bugs = 1;
 
     if (avcodec_open2(m_videoCodecContext, videoCodec, 0) < 0) {
         qWarning() << "Could not open video codec";
@@ -110,19 +104,19 @@ VideoWidget::~VideoWidget()
 
 void VideoWidget::seek(int halfSeconds)
 {
-    qint64 timestamp = (AV_TIME_BASE/100) * static_cast<qint64>(halfSeconds);
+    qint64 timestamp = AV_TIME_BASE * static_cast<qint64>(halfSeconds);
     if (timestamp < 0) {
         timestamp = 0;
     }
 
 
     int ret = av_seek_frame(m_formatContext, -1, timestamp, 0);
-    if (ret >= 0) {
-        avcodec_flush_buffers(m_formatContext->streams[m_videoStream]->codec);
-    } else {
+    if (ret < 0) {
         qWarning() << "Seeking in video failed";
         return;
     }
+
+    avcodec_flush_buffers(m_formatContext->streams[m_videoStream]->codec);
 
     int keyFrameAttempts = 0;
     bool gotFrame = false;
@@ -132,8 +126,7 @@ void VideoWidget::seek(int halfSeconds)
         gotFrame = 0;
 
         while (!gotFrame && count < 20) {
-            getVideoPacket();
-            gotFrame = decodeVideoPacket();
+            gotFrame = getVideoPacket() && decodeVideoPacket();
             ++count;
         }
 
@@ -142,6 +135,7 @@ void VideoWidget::seek(int halfSeconds)
 
     if (gotFrame == 0) {
         qWarning() << "Seeking in video failed";
+        return;
     }
     decodeVideoFrame();
     repaint();
@@ -197,7 +191,6 @@ bool VideoWidget::getVideoPacket()
 void VideoWidget::decodeVideoFrame()
 {
     bool frameFinished = false;
-
     while (!frameFinished && getVideoPacket()) {
         frameFinished = decodeVideoPacket();
     }
@@ -216,7 +209,7 @@ void VideoWidget::decodeVideoFrame()
         SwsContext* scaleContext = sws_getContext(m_videoCodecContext->width, m_videoCodecContext->height,
                                                   m_videoCodecContext->pix_fmt,
                                                   m_videoCodecContext->width, m_videoCodecContext->height,
-                                                  PIX_FMT_RGB24, SWS_BICUBIC, NULL, NULL, NULL);
+                                                  PIX_FMT_RGB24, SWS_BICUBLIN, NULL, NULL, NULL);
 
         AVFrame *avFrame = avcodec_alloc_frame();
 
@@ -260,5 +253,5 @@ QSize VideoWidget::sizeHint() const
 
 int VideoWidget::length()
 {
-    return static_cast<int>(m_formatContext->duration * 100 / AV_TIME_BASE);
+    return static_cast<int>(m_formatContext->duration / AV_TIME_BASE);
 }
