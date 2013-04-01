@@ -1,10 +1,11 @@
 # cmake stuff
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.8)
 project(Vimi)
+set(CMAKE_AUTOMOC ON)
 
 # Qt stuff
-find_package(Qt4 REQUIRED QtCore QtGui QtNetwork)
-include(${QT_USE_FILE})
+find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5Widgets REQUIRED)
 
 # ffmpeg stuff
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -32,28 +33,11 @@ set(sources
     src/videowidget.cpp
     )
 
-set(moc_hdrs
-    src/aboutdialog.h
-    src/collection.h
-    src/coverlabel.h
-    src/coverloader.h
-    src/covermaker.h
-    src/favouritetagdialog.h
-    src/infopanel.h
-    src/mainwindow.h
-    src/settingsdialog.h
-    src/tagdialog.h
-    src/tagreplacementdialog.h
-    src/videofilterproxymodel.h
-    src/video.h
-    src/videowidget.h
-    )
-
-# magical Qt tools
-qt4_wrap_cpp(moc_sources ${moc_hdrs})
-qt4_add_resources(qrc_sources images/images.qrc)
+# create our resource file
+qt5_add_resources(qrc_sources images/images.qrc)
 
 # actually put together our executable
-add_executable(vimi ${sources} ${moc_sources} ${qrc_sources})
-target_link_libraries(vimi ${QT_LIBRARIES} ${FFMPEG_LIBRARIES})
-    
+add_executable(vimi ${sources} ${qrc_sources})
+target_link_libraries(vimi ${FFMPEG_LIBRARIES})
+qt5_use_modules(vimi Widgets Concurrent)
+

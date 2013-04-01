@@ -17,7 +17,7 @@
  */
 
 #include "config.h"
-#include <QDesktopServices>
+#include <QStandardPaths>
 #include <QSettings>
 #include <QDebug>
 
@@ -33,7 +33,7 @@ void Config::load()
 {
     QSettings settings;
 
-    m_collectionPath = settings.value("collectionPath", QDesktopServices::storageLocation(QDesktopServices::MoviesLocation)).toString();
+    m_collectionPath = settings.value("collectionPath", QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).first()).toString();
     m_maxCoverSize = settings.value("maxCoverSize", 128).toInt();
     m_dirExplorer = settings.value("dirExplorer", "").toString();
     m_moviePlayer = settings.value("moviePlayer", "").toString();

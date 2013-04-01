@@ -25,7 +25,7 @@
 #include <QPixmap>
 #include <QSet>
 #include <QWaitCondition>
-#include <QtCore/QtConcurrentRun>
+#include <QtConcurrent>
 #include <cstdlib>
 #include <QMutexLocker>
 
@@ -77,7 +77,7 @@ Video::Video(Collection *parent, QString path, QString tags, QString coverPath) 
 }
 Video::~Video()
 {
-    m_mutex.lock();
+    m_mutex.unlock();
 }
 
 QStringList Video::files() const

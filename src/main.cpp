@@ -17,7 +17,7 @@
  */
 
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <QDebug>
 #include <QSplashScreen>
 #include <QLabel>

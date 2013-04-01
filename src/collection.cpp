@@ -18,7 +18,7 @@
 
 #include <QByteArray>
 #include <QDebug>
-#include <QDesktopServices>
+#include <QStandardPaths>
 #include <QMessageBox>
 #include <QSet>
 #include <QThread>
@@ -61,7 +61,7 @@ void Collection::loadCache()
 {
     qDebug() << "Loading cache...";
     emit(statusUpdated("Loading video cache..."));
-    QString path = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
+    QString path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     QDir(path).mkpath(path);
     QFile file(path + "/videos.db");
     QDataStream in(&file);
@@ -179,7 +179,7 @@ void Collection::rescan()
 
 void Collection::writeCache()
 {
-    QString path = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
+    QString path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     QDir(path).mkpath(path);
     QFile file(path + "/videos.db");
     QDataStream out(&file);

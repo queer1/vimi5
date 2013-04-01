@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     videoContainer->layout()->addWidget(m_videoView);
 
-    m_videoModel = new VideoFilterProxyModel;
+    m_videoModel = new VideoFilterProxyModel(this);
     m_videoModel->setSourceModel(Collection::instance());
     m_videoView->setModel(m_videoModel);
 
