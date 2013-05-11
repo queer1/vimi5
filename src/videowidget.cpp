@@ -230,10 +230,18 @@ void VideoWidget::decodeVideoFrame()
 
     QImage frame(m_videoCodecContext->width, m_videoCodecContext->height, QImage::Format_RGB888);
 
-    //memcpy(frame.bits(), &m_frame[0], m_frame->linesize[m_frame->height] * m_frame->height);
+//    memcpy(frame.bits(), &m_frame->data[0][0], frame.byteCount());//m_frame->linesize[m_frame->height] * m_frame->height);
 
+    // We have to this to avoid artifacts (alignment issues? who knows)
     for (int y=0; y<m_videoCodecContext->height; y++) {
-        memcpy(frame.scanLine(y), &m_frame->data[0][y*m_frame->linesize[0]], m_frame->linesize[0]);
+        for (int x=0;x<m_videoCodecContext->width; x++) {
+            unsigned int r=m_frame->data[0][y*m_frame->linesize[0] + x*3 + 0];
+            unsigned int g=m_frame->data[0][y*m_frame->linesize[0] + x*3 + 1];
+            unsigned int b=m_frame->data[0][y*m_frame->linesize[0] + x*3 + 2];
+            unsigned int rgb = (0xffu << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+            frame.setPixel(x, y, rgb);
+        }
+//        memcpy(frame.scanLine(y), &m_frame->data[0][y*m_frame->linesize[0]], m_frame->linesize[0]);
     }
 
     m_activeFrame = frame;
