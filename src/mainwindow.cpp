@@ -145,7 +145,7 @@ MainWindow::MainWindow(QWidget *parent) :
     fileMenu->addAction(QIcon(), "&Rescan...", Collection::instance(), SLOT(rescan()), QKeySequence::Refresh);
     fileMenu->addAction(QIcon(), "&Settings...", this, SLOT(showSettings()), QKeySequence::Preferences);
     fileMenu->addAction(QIcon(), "&Set Path to Collection...", this, SLOT(getCollectionPath()));
-    fileMenu->addAction(QIcon(), "&Quit", qApp, SLOT(quit()), QKeySequence::Quit);
+    fileMenu->addAction(QIcon(), "&Quit", qApp, SLOT(quit()), QKeySequence("Ctrl+Q"));
     menuBar()->addMenu(fileMenu);
 
     // Set up the Tag menu
