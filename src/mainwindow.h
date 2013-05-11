@@ -30,6 +30,7 @@ class QLineEdit;
 class VideoFilterProxyModel;
 class InfoPanel;
 class QStandardItem;
+class QSystemTrayIcon;
 
 class MainWindow : public QMainWindow
 {
@@ -57,6 +58,7 @@ private slots:
     void editTags();
     void createCovers();
     void selectTag(const QString &tag);
+    void trayClicked();
 
 private:
     void closeEvent(QCloseEvent *);
@@ -71,6 +73,7 @@ private:
     VideoFilterProxyModel *m_videoModel;
     InfoPanel *m_infoPanel;
     QListView *m_favouriteTags;
+    QSystemTrayIcon *m_trayIcon;
 };
 
 #endif // MAINWINDOW_H

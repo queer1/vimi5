@@ -38,6 +38,7 @@
 #include <QTreeView>
 #include <QStandardItemModel>
 #include <QSplitter>
+#include <QSystemTrayIcon>
 
 #include <QDebug>
 
@@ -144,7 +145,7 @@ MainWindow::MainWindow(QWidget *parent) :
     fileMenu->addAction(QIcon(), "&Rescan...", Collection::instance(), SLOT(rescan()), QKeySequence::Refresh);
     fileMenu->addAction(QIcon(), "&Settings...", this, SLOT(showSettings()), QKeySequence::Preferences);
     fileMenu->addAction(QIcon(), "&Set Path to Collection...", this, SLOT(getCollectionPath()));
-    fileMenu->addAction(QIcon(), "&Quit", this, SLOT(close()), QKeySequence::Quit);
+    fileMenu->addAction(QIcon(), "&Quit", qApp, SLOT(quit()), QKeySequence::Quit);
     menuBar()->addMenu(fileMenu);
 
     // Set up the Tag menu
@@ -173,6 +174,12 @@ MainWindow::MainWindow(QWidget *parent) :
     restoreGeometry(settings.value("geometry").toByteArray());
 
     connect(Collection::instance(), SIGNAL(scanning(bool)), SLOT(setDisabled(bool)));
+
+    m_trayIcon = new QSystemTrayIcon(this);
+    connect(m_trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), SLOT(trayClicked()));
+    m_trayIcon->setIcon(QIcon(":/images/icon.png"));
+    m_trayIcon->show();
+    m_trayIcon->setContextMenu(fileMenu);
 }
 
 MainWindow::~MainWindow()
@@ -322,4 +329,15 @@ void MainWindow::selectTag(const QString &tag)
     m_videoModel->addTag(tag);
     updateInfoPanel(m_videoView->currentIndex());
     m_videoView->scrollTo(m_videoView->currentIndex());
+}
+
+void MainWindow::trayClicked()
+{
+    if (isHidden()) {
+        show();
+        raise();
+    } else {
+        hide();
+    }
+
 }
