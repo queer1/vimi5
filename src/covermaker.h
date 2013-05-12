@@ -24,6 +24,7 @@
 class QComboBox;
 class VideoWidget;
 class QSlider;
+class QScrollBar;
 
 class CoverMaker : public QDialog
 {
@@ -41,7 +42,7 @@ private slots:
 private:
     QComboBox *m_comboBox;
     VideoWidget *m_videoWidget;
-    QSlider *m_slider;
+    QScrollBar *m_slider;
     QString m_path;
     QString m_name;
 };

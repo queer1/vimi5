@@ -215,9 +215,9 @@ void VideoWidget::decodeVideoFrame()
     AVFrame *avFrame = avcodec_alloc_frame();
 
     int numBytes = avpicture_get_size(PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
-    quint8 *frameBuffer = reinterpret_cast<quint8*>(av_malloc(numBytes));
 
-    avpicture_fill((AVPicture*) avFrame, frameBuffer, PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
+    QImage frame(m_videoCodecContext->width, m_videoCodecContext->height, QImage::Format_RGB888);
+    avpicture_fill((AVPicture*) avFrame, frame.bits(), PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
 
     sws_scale(scaleContext, m_frame->data, m_frame->linesize, 0, m_videoCodecContext->height,
               avFrame->data, avFrame->linesize);
@@ -227,12 +227,7 @@ void VideoWidget::decodeVideoFrame()
 
     m_frame = avFrame;
 
-    QImage frame(m_videoCodecContext->width, m_videoCodecContext->height, QImage::Format_RGB888);
-
-    memcpy(frame.bits(), m_frame->data[0], frame.byteCount());
-
     m_activeFrame = frame;
-    av_free(frameBuffer);
 }
 
 void VideoWidget::paintEvent(QPaintEvent *)

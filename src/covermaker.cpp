@@ -25,6 +25,7 @@
 #include <QDir>
 #include <QComboBox>
 #include <QSlider>
+#include <QScrollBar>
 #include "videowidget.h"
 
 
@@ -46,7 +47,7 @@ CoverMaker::CoverMaker(QString videoName, QWidget *parent) : QDialog(parent),
     m_videoWidget = new VideoWidget(this, m_path + "/" +  Collection::getFiles(videoName).first());
     //m_videoWidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-    m_slider = new QSlider(this);
+    m_slider = new QScrollBar(this);
     m_slider->setMaximum(m_videoWidget->length());
     m_slider->setTracking(true);
     m_slider->setOrientation(Qt::Horizontal);
