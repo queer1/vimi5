@@ -78,6 +78,7 @@ Video::Video(Collection *parent, QString path, QString tags, QString coverPath) 
 Video::~Video()
 {
     m_mutex.unlock();
+    delete m_cover;
 }
 
 QStringList Video::files() const

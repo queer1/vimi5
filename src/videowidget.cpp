@@ -95,7 +95,8 @@ VideoWidget::~VideoWidget()
 
     if (m_packet) {
         av_free_packet(m_packet);
-        //delete m_packet;
+        delete m_packet;
+        m_packet = 0;
     }
 
     if (m_frame)
@@ -171,6 +172,7 @@ bool VideoWidget::getVideoPacket()
     if (m_packet) {
         av_free_packet(m_packet);
         delete m_packet;
+        m_packet = 0;
     }
 
     m_packet = new AVPacket();
@@ -205,47 +207,32 @@ void VideoWidget::decodeVideoFrame()
                               m_videoCodecContext->width, m_videoCodecContext->height);
     }
 
-    {
-        SwsContext* scaleContext = sws_getContext(m_videoCodecContext->width, m_videoCodecContext->height,
-                                                  m_videoCodecContext->pix_fmt,
-                                                  m_videoCodecContext->width, m_videoCodecContext->height,
-                                                  PIX_FMT_RGB24, SWS_BICUBLIN, NULL, NULL, NULL);
+    SwsContext* scaleContext = sws_getContext(m_videoCodecContext->width, m_videoCodecContext->height,
+                                              m_videoCodecContext->pix_fmt,
+                                              m_videoCodecContext->width, m_videoCodecContext->height,
+                                              PIX_FMT_RGB24, SWS_BICUBLIN, NULL, NULL, NULL);
 
-        AVFrame *avFrame = avcodec_alloc_frame();
+    AVFrame *avFrame = avcodec_alloc_frame();
 
-        int numBytes = avpicture_get_size(PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
-        quint8 *frameBuffer = reinterpret_cast<quint8*>(av_malloc(numBytes));
+    int numBytes = avpicture_get_size(PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
+    quint8 *frameBuffer = reinterpret_cast<quint8*>(av_malloc(numBytes));
 
-        avpicture_fill((AVPicture*) avFrame, frameBuffer, PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
+    avpicture_fill((AVPicture*) avFrame, frameBuffer, PIX_FMT_RGB24, m_videoCodecContext->width, m_videoCodecContext->height);
 
-        sws_scale(scaleContext, m_frame->data, m_frame->linesize, 0, m_videoCodecContext->height,
-                  avFrame->data, avFrame->linesize);
-        sws_freeContext(scaleContext);
+    sws_scale(scaleContext, m_frame->data, m_frame->linesize, 0, m_videoCodecContext->height,
+              avFrame->data, avFrame->linesize);
+    sws_freeContext(scaleContext);
 
-        av_free(m_frame);
-        av_free(frameBuffer);
+    av_free(m_frame);
 
-        m_frame = avFrame;
-    }
+    m_frame = avFrame;
 
     QImage frame(m_videoCodecContext->width, m_videoCodecContext->height, QImage::Format_RGB888);
 
-//    memcpy(frame.bits(), &m_frame->data[0][0], frame.byteCount());//m_frame->linesize[m_frame->height] * m_frame->height);
-
-    // We have to this to avoid artifacts (alignment issues? who knows)
-    for (int y=0; y<m_videoCodecContext->height; y++) {
-        for (int x=0;x<m_videoCodecContext->width; x++) {
-            unsigned int r=m_frame->data[0][y*m_frame->linesize[0] + x*3 + 0];
-            unsigned int g=m_frame->data[0][y*m_frame->linesize[0] + x*3 + 1];
-            unsigned int b=m_frame->data[0][y*m_frame->linesize[0] + x*3 + 2];
-            unsigned int rgb = (0xffu << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
-            frame.setPixel(x, y, rgb);
-        }
-//        memcpy(frame.scanLine(y), &m_frame->data[0][y*m_frame->linesize[0]], m_frame->linesize[0]);
-    }
+    memcpy(frame.bits(), m_frame->data[0], frame.byteCount());
 
     m_activeFrame = frame;
-
+    av_free(frameBuffer);
 }
 
 void VideoWidget::paintEvent(QPaintEvent *)
