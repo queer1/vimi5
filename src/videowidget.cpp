@@ -251,7 +251,12 @@ void VideoWidget::decodeVideoFrame()
 void VideoWidget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    painter.drawImage(rect(), m_activeFrame);
+    painter.fillRect(rect(), Qt::black);
+
+    QImage im = m_activeFrame.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    QRect targetRect = im.rect();
+    painter.translate(qAbs(targetRect.width() - width()) / 2, qAbs(targetRect.height() - height()) / 2);
+    painter.drawImage(QRect(QPoint(0,0), im.size()), im);
 }
 
 QSize VideoWidget::sizeHint() const
