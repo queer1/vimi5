@@ -100,10 +100,6 @@ Item {
                     anchors.right: undefined
                 }
                 PropertyChanges {
-                    target: tagList
-                    opacity: 0
-                }
-                PropertyChanges {
                     target: rect
                     radius: 0
                 }
@@ -131,10 +127,6 @@ Item {
                     height: gridItem.height
                     x: gridItem.x
                     y: gridItem.y
-                }
-                PropertyChanges {
-                    target: tagList
-                    opacity: 1
                 }
                 PropertyChanges {
                     target: titleText
@@ -204,14 +196,16 @@ Item {
             hoverEnabled: true
 
             onMouseXChanged: {
-                if (mouse.y > rect.height - seekbar.height)
-                    seekbar.opacity = 0.5
-                else if (mouse.x < 300) {
+                if (rect.state == "normal")
+                    return
+                if (mouse.y > rect.height - seekbar.height || mouse.y < toolbar.maxHeight || mouse.x < 200) {
                     toolbar.state = "shown"
                     seekbar.opacity = 0.5
+                    tagList.state = "maximized"
                 } else {
                     toolbar.state = "hidden"
                     seekbar.opacity = 0
+                    tagList.state = "hidden"
                 }
             }
 
@@ -221,10 +215,13 @@ Item {
 
                         player.seek(mouse.x * player.duration / seekbar.width)
                         modelData.setLastPosition(player.position)
-                    } else
+                    } else {
                         rect.state = "normal"
+                        tagList.state = "normal"
+                    }
                 } else {
                     rect.state = "maximized"
+                    tagList.state = "hidden"
                     if (player.status == MediaPlayer.NoMedia)
                         player.source = encodeURIComponent(modelData.path + "/" + modelData.lastFile)
                 }
@@ -234,7 +231,6 @@ Item {
         Rectangle {
             id: seekbar
             anchors.bottom: parent.bottom
-            //anchors.bottomMargin: 10
             anchors.right: parent.right
             anchors.left: parent.left
             height: 30
@@ -257,79 +253,20 @@ Item {
             }
         }
 
-        Rectangle {
+        Toolbar {
             id: toolbar
-            width: 0
-            anchors.top: rect.top
-            anchors.left: rect.left
-            anchors.bottom: seekbar.top
-            color: "black"
-            state: "hidden"
-
-            ComboBox {
-                id: fileSelector
-                model: modelData.files
-                width: parent.width
-                onCurrentTextChanged: {
-                    var newUrl = encodeURIComponent(modelData.path + "/" + currentText)
-                    if (newUrl !== player.source && player.source != "") {
-                        modelData.setLastFile(currentText)
-                        player.source = newUrl
-                    }
+            model: modelData.files
+            onVideoChanged: {
+                var newUrl = encodeURIComponent(modelData.path + "/" + toolbar.video)
+                if (newUrl !== player.source && player.source != "") {
+                    setLastFile(toolbar.video)
+                    player.source = newUrl
                 }
             }
-            states: [
-                State {
-                    name: "shown"
-                    PropertyChanges {
-                        target: toolbar
-                        width: 300
-                        opacity: 0.75
-                    }
-                },
-                State {
-                    name: "hidden"
-                    PropertyChanges {
-                        target: toolbar
-                        width: 0
-                        opacity: 0
-                    }
-                }
-            ]
-
-            Behavior on opacity { NumberAnimation { duration: 1000 } }
-            Behavior on width { SmoothedAnimation { duration: 1000 } }
         }
 
-
-        Rectangle {
+        TagList {
             id: tagList
-            anchors.top: titleText.bottom
-            height: Math.min(taglistlist.count * 8 + 20, parent.height - titleText.height - 10)
-            anchors.right: parent.right
-            anchors.left: parent.left
-            anchors.margins: 5
-
-            color: "#80000000"
-            radius: 10
-            ListView {
-                id: taglistlist
-                anchors.fill: parent
-                interactive: false
-
-                anchors.margins: 10
-                model: modelData.tags
-                delegate: Text {
-                    text: modelData;
-                    color: "white";
-                    styleColor: "black"
-                    font.bold: true
-                    font.pointSize: 8
-                    renderType: Text.NativeRendering
-                    style: Text.Outline
-                }
-            }
-            Behavior on opacity { NumberAnimation { duration: 1000 } }
         }
     }
 }

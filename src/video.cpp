@@ -99,6 +99,7 @@ void Video::addTag(QString tag)
     writeTagCache();
 
     m_tagList = m_tags.join(", ");
+    emit tagsUpdated();
 }
 
 void Video::removeTag(QString tag)
@@ -107,6 +108,7 @@ void Video::removeTag(QString tag)
     writeTagCache();
 
     m_tagList = m_tags.join(", ");
+    emit tagsUpdated();
 }
 
 QPixmap Video::cover(int maxSize)
