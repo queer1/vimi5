@@ -69,13 +69,14 @@ void Collection::loadCache()
     if (file.open(QIODevice::ReadOnly)) {
         QVector<Video*> videos;
         while (!file.atEnd()) {
-            QString path, tags, coverPath;
+            QString path, tags, coverPath, lastFile;
             int lastPosition;
             in >> path;
             in >> tags;
             in >> coverPath;
             in >> lastPosition;
-            Video *video = new Video(this, path, tags, coverPath, lastPosition);
+            in >> lastFile;
+            Video *video = new Video(this, path, tags, coverPath, lastPosition, lastFile);
             videos.append(video);
             connect(video, SIGNAL(needToLoadCover(Video*)), m_coverLoader, SLOT(loadVideo(Video*)));
             connect(video, SIGNAL(coverLoaded(QString)), this, SLOT(coverLoaded(QString)));
@@ -189,7 +190,7 @@ void Collection::writeCache()
     if (file.open(QIODevice::WriteOnly)) {
         emit statusUpdated("writing cache...");
         foreach(Video *video, m_videos) {
-            out << video->path() << video->tags().join(",") << video->coverPath() << video->lastPosition();
+            out << video->path() << video->tags().join(",") << video->coverPath() << video->lastPosition() << video->lastFile();
         }
         file.close();
         emit statusUpdated("Finished writing cache!");

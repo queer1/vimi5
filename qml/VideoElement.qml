@@ -4,42 +4,51 @@ import QtQuick.Controls 1.0
 
 Item {
     id: gridItem
-    width: 300
-    height: 200
-    Image {
-        source: "images/bg.png"
-        fillMode: Image.Tile
+    width: gridView.cellWidth
+    height: gridView.cellHeight
+
+    Rectangle {
+        //source: "images/bg.png"
+        //fillMode: Image.Tile
         id: rect
         anchors.top: gridItem.top
         anchors.bottom: gridItem.bottom
         anchors.left: gridItem.left
         anchors.right: gridItem.right
         anchors.margins: 5
+        color: "black"
+        radius: 10
 
         Text {
             z: 1
             id: titleText
             text: modelData.name
+            horizontalAlignment: Text.AlignHCenter
             color: "white"
             styleColor: "black"
             style: Text.Outline
             font.bold: true
-            smooth: true
+            renderType: Text.NativeRendering
 
             elide: Text.ElideRight
             width: parent.width
             Behavior on color { ColorAnimation { duration: 500 } }
             anchors.top: rect.top
+            anchors.left: rect.left
+            anchors.right: rect.right
+            anchors.margins: 5
         }
 
 
         Text {
             z: 1
             id: tagText
+            visible: false
             text: modelData.tagList
             color: "white"
             styleColor: "black"
             style: Text.Outline
+            renderType: Text.NativeRendering
 
             elide: Text.ElideRight
             width: parent.width
@@ -50,39 +59,45 @@ Item {
 
         MediaPlayer {
             id: player
-            source: modelData.path + "/" + modelData.files[0]
-            autoPlay: false
-            autoLoad: false
-            onSeekableChanged: {
-                if (modelData.lastPosition > 0)
-                    seek(modelData.lastPosition)
-                else
-                    seek(duration / 2)
+            autoPlay: true
+            //onAvailabilityChanged: console.log(availability)
+            /*            onSeekableChanged: {
 
                 if (!playing()) {
                     pause()
                 }
-            }
+            }*/
+
             onStatusChanged: {
-                if (status != MediaPlayer.Loaded && status != MediaPlayer.Buffered) {
-                    video.visible = false
-                    cover.visible = true
-                } else {
+                if (status == MediaPlayer.Loaded || status == MediaPlayer.Buffered) {
                     video.visible = true
                     cover.visible = false
+
+                    if (!seekable)
+                        return
+
+                    if (modelData.lastPosition > 0)
+                        seek(modelData.lastPosition)
+                    else
+                        seek(duration / 2)
+                } else {
+                    video.visible = false
+                    cover.visible = true
                 }
             }
-            onPositionChanged: {
-                if (position > 0)
-                    modelData.setLastPosition(position)
-            }
+            onPaused: modelData.setLastPosition(position)
         }
 
         Image {
             id: cover
-            anchors.fill: parent
-            visible: false
-            source: modelData.coverPath
+            anchors.bottom: parent.bottom
+            anchors.top: titleText.bottom
+            anchors.right: parent.right
+            anchors.left: parent.left
+
+            source: encodeURIComponent(modelData.coverPath)
+            asynchronous: true
+            fillMode: Image.PreserveAspectCrop
         }
 
         state: "normal"
@@ -110,18 +125,23 @@ Item {
                     styleColor: "transparent"
                 }
                 PropertyChanges {
+                    target: rect
+                    radius: 0
+                }
+                PropertyChanges {
                     target: titleText
                     color: "transparent"
                     styleColor: "transparent"
                 }
                 PropertyChanges {
-                    target: seekbar
-                    opacity: 0
-                }
-                PropertyChanges {
                     target: toolbar
                     shown: true
                     visible: true
+                }
+                PropertyChanges {
+                    target: seekbar
+                    opacity: 0
+                    height: 50
                 }
             },
             State {
@@ -145,13 +165,18 @@ Item {
                     styleColor: "black"
                 }
                 PropertyChanges {
-                    target: seekbar
-                    opacity: 1
-                }
-                PropertyChanges {
                     target: toolbar
                     shown: false
                     visible: false
+                }
+                PropertyChanges {
+                    target: rect
+                    radius: 10
+                }
+                PropertyChanges {
+                    target: seekbar
+                    opacity: 0
+                    height: 20
                 }
             }
         ]
@@ -165,13 +190,10 @@ Item {
         }
 
         VideoOutput {
+            visible: false
             id: video
             source: player
             anchors.fill: rect
-
-            property bool isVisible : y + height <= gridView.contentBottom
-
-            onIsVisibleChanged: player.autoLoad = true
 
             Keys.onPressed: {
                 var seekAmount = 0
@@ -194,12 +216,23 @@ Item {
             hoverEnabled: true
 
             onEntered: {
+                //player.autoLoad = true
+                if (player.status == MediaPlayer.NoMedia)
+                    player.source = encodeURIComponent(modelData.path + "/" + modelData.lastFile)
+
                 player.play()
                 parent.focus = true
+                if (rect.state == "normal")
+                    seekbar.opacity = 0.5
+                tagText.visible = true
+                tagList.visible = false
             }
             onExited: {
                 if (rect.state == "normal") {
                     pauseTimer.restart()
+                    seekbar.opacity = 0
+                    tagText.visible = false
+                    tagList.visible = true
                 }
             }
             onClicked: {
@@ -211,14 +244,13 @@ Item {
             }
 
             onMouseYChanged: {
-                //transparentStop.position = (parent.height - mouse.y) / parent.height
                 toolbar.opacity = (toolbar.height - mouse.y) / toolbar.height
             }
 
             Timer {
                 id: pauseTimer
                 interval: 100
-                running: true
+                running: false
                 onTriggered: {
                     if (!videoMouseArea.containsMouse && !seekbarMouseArea.containsMouse) {
                         player.pause()
@@ -231,17 +263,20 @@ Item {
         Rectangle {
             id: seekbar
             anchors.bottom: parent.bottom
+            //anchors.bottomMargin: 10
             anchors.right: parent.right
             anchors.left: parent.left
-            height: 20
-            color: "white"
-            opacity: 1
+            height: 30
+            color: "black"
+            radius: 10
+            opacity: 0
 
             Rectangle {
-                anchors.bottom: parent.bottom
+                //radius: 10
                 anchors.left: parent.left
-                anchors.top: parent.top
-                color:"black"
+                anchors.verticalCenter: parent.verticalCenter
+                height: parent.height/3
+                color:"white"
                 width: player.position * parent.width / player.duration
 
             }
@@ -251,15 +286,18 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 onEntered: {
-                    seekbar.opacity = 1
+                    seekbar.opacity = 0.5
                 }
                 onExited: {
-                    if (rect.state == "maximized") {
+                    if (rect.state == "maximized" || !player.playing()) {
                         seekbar.opacity = 0
                     }
                 }
 
-                onClicked: player.seek(mouse.x * player.duration / seekbar.width)
+                onClicked: {
+                    player.seek(mouse.x * player.duration / seekbar.width)
+                    modelData.setLastPosition(player.position)
+                }
             }
             Behavior on opacity {
                 NumberAnimation { duration: 1000 }
@@ -268,7 +306,6 @@ Item {
 
         Rectangle {
             id: toolbar
-            width: 100
             height: 100
             anchors.top: rect.top
             anchors.left: rect.left
@@ -290,9 +327,12 @@ Item {
                 id: fileSelector
                 model: modelData.files
                 width: parent.width
-                onCurrentIndexChanged: {
-                    if (currentText.length > 0)
-                        player.source = modelData.path + "/" + currentText
+                onCurrentTextChanged: {
+                    var newUrl = encodeURIComponent(modelData.path + "/" + currentText)
+                    if (newUrl !== player.source && player.source != "") {
+                        modelData.setLastFile(currentText)
+                        player.source = newUrl
+                    }
                 }
             }
 
@@ -302,15 +342,33 @@ Item {
         }
 
 
-        /*Column {
-        id: tagText
-        anchors.bottom: parent.bottom
-        property color col: "white";
-        Repeater {
-            model: modelData.tags
-            delegate: Text { text: modelData; color: parent.col;}
+        Rectangle {
+            id: tagList
+            anchors.top: titleText.bottom
+            height: Math.min(taglistlist.count * 8 + 20, parent.height - titleText.height - 10)
+            anchors.right: parent.right
+            anchors.left: parent.left
+            anchors.margins: 5
+
+            color: "#80000000"
+            radius: 10
+            ListView {
+                id: taglistlist
+                anchors.fill: parent
+
+                anchors.margins: 10
+                model: modelData.tags
+                delegate: Text {
+                    text: modelData;
+                    color: "white";
+                    styleColor: "black"
+                    font.bold: true
+                    font.pointSize: 8
+                    renderType: Text.NativeRendering
+                    style: Text.Outline
+                }
+
+            }
         }
-        Behavior on col { ColorAnimation { duration: 500 } }
-    }*/
     }
 }

@@ -40,9 +40,10 @@ class Video : public QObject
     Q_PROPERTY(QStringList files READ files NOTIFY filesUpdated)
     Q_PROPERTY(QString path READ path NOTIFY pathChanged)
     Q_PROPERTY(int lastPosition READ lastPosition WRITE setLastPosition)
+    Q_PROPERTY(QString lastFile READ lastFile WRITE setLastFile)
 
 public:
-    Video (Collection *parent, QString path, QString tags, QString coverPath, int lastPosition);
+    Video (Collection *parent, QString path, QString tags, QString coverPath, int lastPosition, QString lastFile);
     ~Video();
 
 public slots:
@@ -53,6 +54,7 @@ public slots:
     QString path() const { return m_path; }
     QString name() const { return m_name; }
     QString tagList() const { return m_tagList; }
+    QString lastFile() { if (m_lastFile.isEmpty()) m_lastFile = files().first(); return m_lastFile; }
     int lastPosition() const { return m_lastPosition; }
 
     QStringList files() const;
@@ -65,6 +67,7 @@ public slots:
     void generateThumbnail();
     void rescanForCovers() { m_coverPath = scanForCovers(m_path); }
     void setLastPosition(int position) { m_lastPosition = position; }
+    void setLastFile(QString file) { m_lastFile = file; }
 
 signals:
     void coverLoaded(const QString& name);
@@ -81,6 +84,7 @@ private:
     QString m_path;
     QString m_name;
     QString m_coverPath;
+    QString m_lastFile;
     QStringList m_tags;
     QString m_tagList;
     QImage m_thumbnailImage;

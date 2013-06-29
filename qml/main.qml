@@ -9,14 +9,15 @@ Image {
     source: "images/bg2.png"
     fillMode: Image.Tile
 
+
     ScrollView {
         anchors.fill: parent
         GridView {
             id: gridView
             anchors.fill: parent
             model: videoModel
-            cellHeight: 200
-            cellWidth: 300
+            cellHeight: 300
+            cellWidth: 200
             delegate: VideoElement {}
             property real contentBottom: contentY + height
         }

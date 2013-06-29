@@ -46,15 +46,16 @@ Video *Video::makeVideo(Collection *parent, QString path)
                 tags.append(QString::fromUtf8(file.readLine().simplified().toLower())); // One tag per line
         }
     }
-    return new Video(parent, path, tags.join(","), scanForCovers(path), 0);
+    return new Video(parent, path, tags.join(","), scanForCovers(path), -1, QString());
 }
 
-Video::Video(Collection *parent, QString path, QString tags, QString coverPath, int lastPosition) : QObject(parent),
+Video::Video(Collection *parent, QString path, QString tags, QString coverPath, int lastPosition, QString lastFile) : QObject(parent),
     m_path(path),
     m_coverPath(coverPath),
     m_collection(parent),
     m_cover(0),
-    m_lastPosition(lastPosition)
+    m_lastPosition(lastPosition),
+    m_lastFile(lastFile)
 {
     QStringList tagList = tags.split(',');
     foreach(QString tag, tagList) {
