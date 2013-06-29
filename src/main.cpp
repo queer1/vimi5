@@ -46,7 +46,8 @@ int main(int argc, char *argv[])
 
     qDebug() << QT_VERSION_STR;
     QQuickView view;
-    view.rootContext()->setContextProperty("videoModel", QVariant::fromValue(Collection::instance()->videos()));
+    Collection collection;
+    view.rootContext()->setContextProperty("videoModel", &collection);
     view.setSource(QUrl::fromLocalFile("../qml/main.qml"));
     view.setResizeMode(QQuickView::SizeRootObjectToView);
 //    view.showMaximized();

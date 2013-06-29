@@ -21,7 +21,7 @@ Item {
         Text {
             z: 1
             id: titleText
-            text: modelData.name
+            text: name
             horizontalAlignment: Text.AlignHCenter
             color: "white"
             styleColor: "black"
@@ -50,8 +50,8 @@ Item {
                     if (!seekable)
                         return
 
-                    if (modelData.lastPosition > 0)
-                        seek(modelData.lastPosition)
+                    if (lastPosition > 0)
+                        seek(lastPosition)
                     else
                         seek(duration / 2)
                 } else {
@@ -59,8 +59,8 @@ Item {
                     cover.opacity = 1
                 }
             }
-            Component.onDestruction: modelData.setLastPosition(position)
-            onPaused: modelData.setLastPosition(position)
+            //Component.onDestruction: videoModel.setLastPosition(index, position)
+            onPaused: videoModel.setLastPosition(index, position)
         }
 
         Image {
@@ -70,7 +70,7 @@ Item {
             anchors.right: parent.right
             anchors.left: parent.left
 
-            source: encodeURIComponent(modelData.coverPath)
+            source: encodeURIComponent(coverPath)
             asynchronous: true
             fillMode: Image.PreserveAspectCrop
             onOpacityChanged: {
@@ -216,7 +216,7 @@ Item {
                     if (mouse.y > rect.height - seekbar.height) {
 
                         player.seek(mouse.x * player.duration / seekbar.width)
-                        modelData.setLastPosition(player.position)
+                        videoModel.setLastPosition(index, player.position)
                     } else {
                         rect.state = "normal"
                         tagList.state = "normal"
@@ -225,7 +225,7 @@ Item {
                     rect.state = "maximized"
                     tagList.state = "hidden"
                     if (player.status == MediaPlayer.NoMedia)
-                        player.source = encodeURIComponent(modelData.path + "/" + modelData.lastFile)
+                        player.source = encodeURIComponent(path + "/" + lastFile)
                 }
             }
         }
@@ -257,11 +257,11 @@ Item {
 
         Toolbar {
             id: toolbar
-            model: modelData.files
+            model: files
             onVideoChanged: {
-                var newUrl = encodeURIComponent(modelData.path + "/" + toolbar.video)
+                var newUrl = encodeURIComponent(path + "/" + toolbar.video)
                 if (newUrl !== player.source && player.source != "") {
-                    setLastFile(toolbar.video)
+                    lastFile = toolbar.video
                     player.source = newUrl
                 }
             }

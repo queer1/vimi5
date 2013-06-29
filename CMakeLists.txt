@@ -16,22 +16,22 @@ add_definitions(-D__STDC_CONSTANT_MACROS)
 
 # our sources
 set(sources
-    src/aboutdialog.cpp
+    #src/aboutdialog.cpp
     src/collection.cpp
     src/config.cpp
-    src/coverlabel.cpp
-    src/coverloader.cpp
-    src/covermaker.cpp
-    src/favouritetagdialog.cpp
-    src/infopanel.cpp
+    #src/coverlabel.cpp
+    #src/coverloader.cpp
+    #src/covermaker.cpp
+    #src/favouritetagdialog.cpp
+    #src/infopanel.cpp
     src/main.cpp
-    src/mainwindow.cpp
-    src/settingsdialog.cpp
-    src/tagdialog.cpp
-    src/tagreplacementdialog.cpp
-    src/video.cpp
-    src/videofilterproxymodel.cpp
-    src/videowidget.cpp
+    #src/mainwindow.cpp
+    #src/settingsdialog.cpp
+    #src/tagdialog.cpp
+    #src/tagreplacementdialog.cpp
+    #src/video.cpp
+    #src/videofilterproxymodel.cpp
+    #src/videowidget.cpp
     )
 
 # create our resource file

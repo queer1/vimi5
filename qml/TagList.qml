@@ -19,7 +19,7 @@ Rectangle {
         interactive: false
 
         anchors.margins: 10
-        model: modelData.tags
+        model: tags
         delegate: Row {
             height:10; width: tagList.width
             spacing: 10
@@ -30,7 +30,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: removeTag(modelData)
+                    onClicked: videoModel.removeTag(rect.index, modelData)
                 }
             }
 
@@ -54,7 +54,7 @@ Rectangle {
         anchors.margins: 10
         height: 16
         color: "#15000000"
-        border.color: white
+        border.color: "white"
         border.width: 0
         TextInput {
             font.pointSize: 8
@@ -71,7 +71,14 @@ Rectangle {
                     newTagRect.border.width = 0
             }
             onAccepted: {
-                addTag(text)
+                /*var newTags = Array()
+                for (var tag in tags)
+                    newTags.push(tags[tag])
+                newTags.push(text)
+                model.tags = newTags
+                console.log(tags)*/
+                videoModel.addTag(index, text)
+
                 text = ""
             }
         }

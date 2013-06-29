@@ -21,70 +21,59 @@
 
 #include "config.h"
 
-#include <QAbstractTableModel>
-#include <QMap>
-#include <QSet>
+#include <QAbstractListModel>
+#include <QHash>
+#include <QDebug>
+
 class QThread;
 class QDir;
-class CoverLoader;
 class Video;
 
-class Collection : public QAbstractTableModel
+class Collection : public QAbstractListModel
 {
 
     Q_OBJECT
 
-private:
-    Collection();
 
 public:
-    static Collection *instance();
+    enum VideoRoles {
+        NameRole = Qt::UserRole + 1,
+        PathRole,
+        CoverRole,
+        FilesRole,
+        TagsRole,
+        LastPositionRole,
+        LastFileRole
+    };
+
+    Collection();
     ~Collection();
 
-    static void addTag(const QString &video, const QString &tag);
-    static void removeTag(const QString &video, const QString &tag);
-    static QStringList getTags(const QString& videoName = QString());
-    static QStringList getFiles(const QString& videoName);
-    static QString getPath(const QString &videoName);
-    static QPixmap getCover(const QString &videoName, int maxSize = Config::maxCoverSize());
-    static void replaceTag(const QString &oldTag, const QString &newTag);
-
     QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
-    int rowCount(const QModelIndex & = QModelIndex()) const { return m_videoNames.size(); }
-    int columnCount(const QModelIndex &) const { return 3; }
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-    bool hasChildren(const QModelIndex &index) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-    QList<QObject*> videos();
-
-signals:
-    void scanning(bool);
-    void updated();
-    void statusUpdated(const QString &text);
-    void repaintCover(int row, const QModelIndex &parent);
+    int rowCount(const QModelIndex & = QModelIndex()) const { return m_names.size(); }
+    bool setData(const QModelIndex &item, QVariant value, int role = Qt::DisplayRole);
+    Qt::ItemFlags flags(const QModelIndex &) const { return Qt::ItemIsEnabled | Qt::ItemIsEditable; }
+    QHash<int, QByteArray> roleNames() const;
 
 public slots:
     void rescan();
     void writeCache();
-    void scanForCovers(const QString &videoName);
-
-private slots:
-    void loadCache();
-
-    void coverLoaded(const QString &name);
-
+    void addTag(int row, QString tag);
+    void removeTag(int row, QString tag);
+    void setLastFile(int row, QString file);
+    void setLastPosition(int row, int position);
 
 private:
     void scan(QDir directory);
-    void addVideo(Video *video);
+    void loadCache();
 
-
-    static QMap<QString, Video*> m_videos;
-    static QStringList m_videoNames;
-    QThread *m_thread;
-
-    QStringList m_cachedVideoDirectories;
-    CoverLoader *m_coverLoader;
+    QStringList m_names;
+    QStringList m_paths;
+    QStringList m_covers;
+    QList<QStringList> m_files;
+    QList<QStringList> m_tags;
+    QList<int> m_lastPositions;
+    QStringList m_lastFile;
 };
 
 #endif // COLLECTION_H

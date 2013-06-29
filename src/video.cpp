@@ -39,13 +39,6 @@ Video *Video::makeVideo(Collection *parent, QString path)
     QDir dir(path);
 
     QStringList tags;
-    if (dir.exists("tags.txt")) { // There is a tag cache here
-        QFile file(dir.filePath("tags.txt"));
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            while (!file.atEnd())
-                tags.append(QString::fromUtf8(file.readLine().simplified().toLower())); // One tag per line
-        }
-    }
     return new Video(parent, path, tags.join(","), scanForCovers(path), -1, QString());
 }
 
@@ -199,36 +192,6 @@ void Video::writeTagCache()
     }
 }
 
-QString Video::scanForCovers(QString path)
-{
-    QDir dir(path);
-
-    // Check if there is a separate folder with covers
-    QStringList names;
-    names << "*cover*" << "*Cover*";
-    dir.setNameFilters(names);
-    dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
-    if (dir.entryList().count() > 0) {
-        dir.cd(dir.entryList().first());
-    }
-
-    QString coverPath;
-    // Try to either find *front*.jpg, *cover*.jpg or just any plain *.jpg
-    dir.setFilter(QDir::Files);
-    if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0) {
-        coverPath = dir.entryInfoList(QStringList("*front*.jpg")).first().absoluteFilePath();
-    } else if (dir.entryInfoList(QStringList("*cover*.jpg")).count() > 0) {
-        coverPath = dir.entryInfoList(QStringList("*cover*.jpg")).first().absoluteFilePath();
-    } else if (dir.entryInfoList(QStringList(dir.dirName() + ".jpg")).count() > 0) {
-        coverPath = dir.entryInfoList(QStringList(dir.dirName() + ".jpg")).first().absoluteFilePath();
-    } else if (dir.entryInfoList(QStringList("*" + dir.dirName() + "*.jpg")).count() > 0) {
-        coverPath = dir.entryInfoList(QStringList("*" + dir.dirName() + "*.jpg")).first().absoluteFilePath();
-    } else if (dir.entryInfoList(QStringList("*.jpg")).count() > 0) {
-        coverPath = dir.entryInfoList(QStringList("*.jpg")).first().absoluteFilePath();
-    }
-
-    return coverPath;
-}
 
 void Video::generateThumbnail()
 {
