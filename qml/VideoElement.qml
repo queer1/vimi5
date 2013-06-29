@@ -4,12 +4,11 @@ import QtQuick.Controls 1.0
 
 Item {
     id: gridItem
-    width: gridView.cellWidth
-    height: gridView.cellHeight
-
+    width: gridView.cellWidth; height: gridView.cellHeight
     Rectangle {
         //source: "images/bg.png"
         //fillMode: Image.Tile
+        parent: gridView
         id: rect
         anchors.top: gridItem.top
         anchors.bottom: gridItem.bottom
@@ -32,46 +31,21 @@ Item {
 
             elide: Text.ElideRight
             width: parent.width
-            Behavior on color { ColorAnimation { duration: 500 } }
+            Behavior on color { ColorAnimation { duration: 1000 } }
             anchors.top: rect.top
             anchors.left: rect.left
             anchors.right: rect.right
             anchors.margins: 5
         }
 
-
-        Text {
-            z: 1
-            id: tagText
-            visible: false
-            text: modelData.tagList
-            color: "white"
-            styleColor: "black"
-            style: Text.Outline
-            renderType: Text.NativeRendering
-
-            elide: Text.ElideRight
-            width: parent.width
-            Behavior on color { ColorAnimation { duration: 500 } }
-            anchors.top: titleText.bottom
-        }
-
-
         MediaPlayer {
             id: player
             autoPlay: true
-            //onAvailabilityChanged: console.log(availability)
-            /*            onSeekableChanged: {
-
-                if (!playing()) {
-                    pause()
-                }
-            }*/
 
             onStatusChanged: {
                 if (status == MediaPlayer.Loaded || status == MediaPlayer.Buffered) {
-                    video.visible = true
-                    cover.visible = false
+                    video.opacity = 1
+                    cover.opacity = 0
 
                     if (!seekable)
                         return
@@ -81,10 +55,11 @@ Item {
                     else
                         seek(duration / 2)
                 } else {
-                    video.visible = false
-                    cover.visible = true
+                    video.opacity = 0
+                    cover.opacity = 1
                 }
             }
+            Component.onDestruction: modelData.setLastPosition(position)
             onPaused: modelData.setLastPosition(position)
         }
 
@@ -98,6 +73,11 @@ Item {
             source: encodeURIComponent(modelData.coverPath)
             asynchronous: true
             fillMode: Image.PreserveAspectCrop
+            onOpacityChanged: {
+                if (opacity == 0) visible = false
+                else visible = true
+            }
+            Behavior on opacity { NumberAnimation { duration: 1000 } }
         }
 
         state: "normal"
@@ -120,9 +100,8 @@ Item {
                     anchors.right: undefined
                 }
                 PropertyChanges {
-                    target: tagText
-                    color: "transparent"
-                    styleColor: "transparent"
+                    target: tagList
+                    opacity: 0
                 }
                 PropertyChanges {
                     target: rect
@@ -135,7 +114,6 @@ Item {
                 }
                 PropertyChanges {
                     target: toolbar
-                    shown: true
                     visible: true
                 }
                 PropertyChanges {
@@ -155,9 +133,8 @@ Item {
                     y: gridItem.y
                 }
                 PropertyChanges {
-                    target: tagText
-                    color: "white"
-                    styleColor: "black"
+                    target: tagList
+                    opacity: 1
                 }
                 PropertyChanges {
                     target: titleText
@@ -166,7 +143,6 @@ Item {
                 }
                 PropertyChanges {
                     target: toolbar
-                    shown: false
                     visible: false
                 }
                 PropertyChanges {
@@ -181,16 +157,27 @@ Item {
             }
         ]
 
-        transitions:
-            Transition {
-            ParentAnimation {
-                via: mainView
-                SmoothedAnimation { properties: "x,y,width,height"; duration: 500 }
+        transitions: [
+            Transition { to: "maximized"
+                ParentAnimation { via: mainView
+                    SequentialAnimation {
+                        ScriptAction { script: player.play() }
+                        SmoothedAnimation { properties: "x,y,width,height,opacity"; duration: 500 }
+                    }
+                }
+            },
+            Transition { to: "normal"
+                ParentAnimation { via: mainView
+                    SequentialAnimation {
+                        SmoothedAnimation { properties: "x,y,width,height,opacity"; duration: 500 }
+                        ScriptAction { script: player.pause() }
+                    }
+                }
             }
-        }
+        ]
 
         VideoOutput {
-            visible: false
+            opacity: 0
             id: video
             source: player
             anchors.fill: rect
@@ -209,53 +196,37 @@ Item {
 
                 player.seek(player.position + seekAmount)
             }
+            Behavior on opacity { NumberAnimation { duration: 1000 } }
         }
         MouseArea {
             id: videoMouseArea
             anchors.fill: parent
             hoverEnabled: true
 
-            onEntered: {
-                //player.autoLoad = true
-                if (player.status == MediaPlayer.NoMedia)
-                    player.source = encodeURIComponent(modelData.path + "/" + modelData.lastFile)
-
-                player.play()
-                parent.focus = true
-                if (rect.state == "normal")
+            onMouseXChanged: {
+                if (mouse.y > rect.height - seekbar.height)
                     seekbar.opacity = 0.5
-                tagText.visible = true
-                tagList.visible = false
-            }
-            onExited: {
-                if (rect.state == "normal") {
-                    pauseTimer.restart()
+                else if (mouse.x < 300) {
+                    toolbar.state = "shown"
+                    seekbar.opacity = 0.5
+                } else {
+                    toolbar.state = "hidden"
                     seekbar.opacity = 0
-                    tagText.visible = false
-                    tagList.visible = true
                 }
             }
+
             onClicked: {
                 if (rect.state == "maximized") {
-                    rect.state = "normal"
+                    if (mouse.y > rect.height - seekbar.height) {
+
+                        player.seek(mouse.x * player.duration / seekbar.width)
+                        modelData.setLastPosition(player.position)
+                    } else
+                        rect.state = "normal"
                 } else {
                     rect.state = "maximized"
-                }
-            }
-
-            onMouseYChanged: {
-                toolbar.opacity = (toolbar.height - mouse.y) / toolbar.height
-            }
-
-            Timer {
-                id: pauseTimer
-                interval: 100
-                running: false
-                onTriggered: {
-                    if (!videoMouseArea.containsMouse && !seekbarMouseArea.containsMouse) {
-                        player.pause()
-                        parent.focus = false
-                    }
+                    if (player.status == MediaPlayer.NoMedia)
+                        player.source = encodeURIComponent(modelData.path + "/" + modelData.lastFile)
                 }
             }
         }
@@ -281,24 +252,6 @@ Item {
 
             }
 
-            MouseArea {
-                id: seekbarMouseArea
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: {
-                    seekbar.opacity = 0.5
-                }
-                onExited: {
-                    if (rect.state == "maximized" || !player.playing()) {
-                        seekbar.opacity = 0
-                    }
-                }
-
-                onClicked: {
-                    player.seek(mouse.x * player.duration / seekbar.width)
-                    modelData.setLastPosition(player.position)
-                }
-            }
             Behavior on opacity {
                 NumberAnimation { duration: 1000 }
             }
@@ -306,22 +259,12 @@ Item {
 
         Rectangle {
             id: toolbar
-            height: 100
+            width: 0
             anchors.top: rect.top
             anchors.left: rect.left
-            anchors.right: rect.right
-            gradient: Gradient {
-                GradientStop { id: transparentStop; position: 1.0; color: "transparent" }
-                GradientStop { position: 0.0; color: "black" }
-            }
-
-            property bool shown: false
-            onShownChanged: {
-                if (shown)
-                    opacity = 0
-                else
-                    opacity = 100
-            }
+            anchors.bottom: seekbar.top
+            color: "black"
+            state: "hidden"
 
             ComboBox {
                 id: fileSelector
@@ -335,10 +278,27 @@ Item {
                     }
                 }
             }
+            states: [
+                State {
+                    name: "shown"
+                    PropertyChanges {
+                        target: toolbar
+                        width: 300
+                        opacity: 0.75
+                    }
+                },
+                State {
+                    name: "hidden"
+                    PropertyChanges {
+                        target: toolbar
+                        width: 0
+                        opacity: 0
+                    }
+                }
+            ]
 
-            Behavior on opacity {
-                NumberAnimation { duration: 250 }
-            }
+            Behavior on opacity { NumberAnimation { duration: 1000 } }
+            Behavior on width { SmoothedAnimation { duration: 1000 } }
         }
 
 
@@ -355,6 +315,7 @@ Item {
             ListView {
                 id: taglistlist
                 anchors.fill: parent
+                interactive: false
 
                 anchors.margins: 10
                 model: modelData.tags
@@ -367,8 +328,8 @@ Item {
                     renderType: Text.NativeRendering
                     style: Text.Outline
                 }
-
             }
+            Behavior on opacity { NumberAnimation { duration: 1000 } }
         }
     }
 }
