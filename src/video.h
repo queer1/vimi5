@@ -23,6 +23,7 @@
 #include <QPixmap>
 #include <QObject>
 #include <QMutex>
+#include <QDebug>
 
 class QString;
 class QDataStream;
@@ -31,10 +32,20 @@ class Collection;
 class Video : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString coverPath READ coverPath NOTIFY coverLoaded)
+    Q_PROPERTY(QString tagList READ tagList NOTIFY tagsUpdated)
+    Q_PROPERTY(QString name READ name NOTIFY nameChanged)
+    Q_PROPERTY(QStringList tags READ tags NOTIFY tagsUpdated)
+    Q_PROPERTY(QStringList files READ files NOTIFY filesUpdated)
+    Q_PROPERTY(QString path READ path NOTIFY pathChanged)
+    Q_PROPERTY(int lastPosition READ lastPosition WRITE setLastPosition)
+
 public:
-    Video (Collection *parent, QString path, QString tags, QString coverPath);
+    Video (Collection *parent, QString path, QString tags, QString coverPath, int lastPosition);
     ~Video();
 
+public slots:
     QPixmap cover(int maxSize);
     const QPixmap &thumbnail();
     //const QImage cover();
@@ -42,6 +53,7 @@ public:
     QString path() const { return m_path; }
     QString name() const { return m_name; }
     QString tagList() const { return m_tagList; }
+    int lastPosition() const { return m_lastPosition; }
 
     QStringList files() const;
     const QStringList &tags() const { return m_tags; }
@@ -52,12 +64,18 @@ public:
     static Video *makeVideo (Collection *parent, QString path = "");
     void generateThumbnail();
     void rescanForCovers() { m_coverPath = scanForCovers(m_path); }
+    void setLastPosition(int position) { m_lastPosition = position; }
 
 signals:
     void coverLoaded(const QString& name);
     void needToLoadCover(Video *me);
+    void nameChanged();
+    void tagsUpdated();
+    void pathChanged();
+    void filesUpdated();
 
 private:
+    Video(const Video&) {}
     void writeTagCache();
 
     QString m_path;
@@ -69,6 +87,7 @@ private:
     QPixmap m_thumbnail;
     Collection *m_collection;
     QImage *m_cover;
+    int m_lastPosition;
 
     static QPixmap *m_defaultCover;
     static QPixmap *m_defaultThumbnail;

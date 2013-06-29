@@ -22,7 +22,7 @@
 #include "config.h"
 
 #include <QAbstractTableModel>
-#include <QHash>
+#include <QMap>
 #include <QSet>
 class QThread;
 class QDir;
@@ -55,6 +55,7 @@ public:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     bool hasChildren(const QModelIndex &index) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+    QList<QObject*> videos();
 
 signals:
     void scanning(bool);
@@ -78,7 +79,7 @@ private:
     void addVideo(Video *video);
 
 
-    static QHash<QString, Video*> m_videos;
+    static QMap<QString, Video*> m_videos;
     static QStringList m_videoNames;
     QThread *m_thread;
 

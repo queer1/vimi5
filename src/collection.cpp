@@ -28,7 +28,7 @@
 #include "coverloader.h"
 
 #include "collection.h"
-QHash<QString, Video*> Collection::m_videos;
+QMap<QString, Video*> Collection::m_videos;
 QStringList Collection::m_videoNames;
 
 Collection::Collection()
@@ -48,6 +48,7 @@ Collection::~Collection()
     m_coverLoader->thread()->quit();
     m_coverLoader->thread()->wait();
     qWarning() << "thread exited";
+    writeCache();
 }
 
 
@@ -69,10 +70,12 @@ void Collection::loadCache()
         QVector<Video*> videos;
         while (!file.atEnd()) {
             QString path, tags, coverPath;
+            int lastPosition;
             in >> path;
             in >> tags;
             in >> coverPath;
-            Video *video = new Video(this, path, tags, coverPath);
+            in >> lastPosition;
+            Video *video = new Video(this, path, tags, coverPath, lastPosition);
             videos.append(video);
             connect(video, SIGNAL(needToLoadCover(Video*)), m_coverLoader, SLOT(loadVideo(Video*)));
             connect(video, SIGNAL(coverLoaded(QString)), this, SLOT(coverLoaded(QString)));
@@ -186,7 +189,7 @@ void Collection::writeCache()
     if (file.open(QIODevice::WriteOnly)) {
         emit statusUpdated("writing cache...");
         foreach(Video *video, m_videos) {
-            out << video->path() << video->tags().join(",") << video->coverPath();
+            out << video->path() << video->tags().join(",") << video->coverPath() << video->lastPosition();
         }
         file.close();
         emit statusUpdated("Finished writing cache!");
@@ -290,4 +293,13 @@ void Collection::replaceTag(const QString &oldTag, const QString &newTag)
             addTag(video->name(), newTag);
         }
     }
+}
+
+QList<QObject*> Collection::videos()
+{
+     QList<Video*> videos = m_videos.values();
+     QList<QObject*> objects;
+     foreach(Video *vid, videos)
+         objects.append(qobject_cast<QObject*>(vid));
+     return objects;
 }

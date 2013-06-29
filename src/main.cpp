@@ -21,10 +21,13 @@
 #include <QDebug>
 #include <QSplashScreen>
 #include <QLabel>
+#include <QQuickView>
+#include <QQmlContext>
+#include <QUrl>
 
 #include <ctime>
 
-#include "mainwindow.h"
+#include "collection.h"
 #include "version.h"
 
 int main(int argc, char *argv[])
@@ -39,7 +42,19 @@ int main(int argc, char *argv[])
     a.setOrganizationName("Cheggit");
     a.setOrganizationDomain("cheggit.net");
 
-    QSplashScreen splash(QPixmap(":/images/splash.png"));
+//    Collection::instance()->rescan();
+
+    qDebug() << QT_VERSION_STR;
+    QQuickView view;
+    view.rootContext()->setContextProperty("videoModel", QVariant::fromValue(Collection::instance()->videos()));
+    view.setSource(QUrl::fromLocalFile("../qml/main.qml"));
+    view.setResizeMode(QQuickView::SizeRootObjectToView);
+//    view.showMaximized();
+    view.show();
+
+//    view.show();
+
+    /*QSplashScreen splash(QPixmap(":/images/splash.png"));
     splash.showMessage("Loading cache and covers...", Qt::AlignBottom);
     splash.show();
 //    for (int i=0;i<10;i++)// Ugly hack, don't know why I need it
@@ -47,8 +62,10 @@ int main(int argc, char *argv[])
     MainWindow w;
     splash.finish(&w);
     w.show();
+
     end = clock();
-    qDebug() << "Startup finished in" << ((float) (end - start) / CLOCKS_PER_SEC) << "seconds.";
+    qDebug() << "Startup finished in" << ((float) (end - start) / CLOCKS_PER_SEC) << "seconds.";*/
+
     return a.exec();
 }
 

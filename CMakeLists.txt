@@ -5,6 +5,7 @@ set(CMAKE_AUTOMOC ON)
 
 # Qt stuff
 find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5Quick REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
 # ffmpeg stuff
@@ -39,5 +40,5 @@ qt5_add_resources(qrc_sources images/images.qrc)
 # actually put together our executable
 add_executable(vimi ${sources} ${qrc_sources})
 target_link_libraries(vimi ${FFMPEG_LIBRARIES})
-qt5_use_modules(vimi Widgets Concurrent)
+qt5_use_modules(vimi Widgets Concurrent Quick)
 
