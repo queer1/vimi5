@@ -198,11 +198,13 @@ Item {
             onMouseXChanged: {
                 if (rect.state == "normal")
                     return
-                if (mouse.y > rect.height - seekbar.height || mouse.y < toolbar.maxHeight || mouse.x < 200) {
-                    toolbar.state = "shown"
+                if (mouse.y > rect.height - seekbar.height)
                     seekbar.opacity = 0.5
+                else if(mouse.y < toolbar.maxHeight)
+                    toolbar.state = "shown"
+                else if (mouse.x < 200)
                     tagList.state = "maximized"
-                } else {
+                else {
                     toolbar.state = "hidden"
                     seekbar.opacity = 0
                     tagList.state = "hidden"
