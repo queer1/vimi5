@@ -29,14 +29,10 @@ class QThread;
 class QDir;
 class Video;
 
-class Collection : public QAbstractListModel
+class Video
 {
-
-    Q_OBJECT
-    Q_PROPERTY(QStringList allTags READ allTags NOTIFY tagsUpdated)
-
 public:
-    enum VideoRoles {
+    enum Roles {
         NameRole = Qt::UserRole + 1,
         PathRole,
         CoverRole,
@@ -47,11 +43,39 @@ public:
         BookmarksRole
     };
 
+    Video(QString name, QString path, QString cover, QStringList files, QStringList tags, int lastPosition, QString lastFile, QVariantMap bookmarks) :
+        m_name(name), m_path(path), m_cover(cover), m_files(files), m_tags(tags), m_lastPosition(lastPosition), m_lastFile(lastFile), m_bookmarks(bookmarks)
+    { }
+
+    Video() {}
+
+    friend class Collection;
+    friend QDataStream &operator<<(QDataStream &, const Video &);
+    friend QDataStream &operator>>(QDataStream &, Video &);
+
+    QString m_name;
+    QString m_path;
+    QString m_cover;
+    QStringList m_files;
+    QStringList m_tags;
+    int m_lastPosition;
+    QString m_lastFile;
+    QVariantMap m_bookmarks;
+};
+
+class Collection : public QAbstractListModel
+{
+
+    Q_OBJECT
+    Q_PROPERTY(QStringList allTags READ allTags NOTIFY tagsUpdated)
+
+public:
+
     Collection();
     ~Collection();
 
     QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
-    int rowCount(const QModelIndex & = QModelIndex()) const { return m_names.size(); }
+    int rowCount(const QModelIndex & = QModelIndex()) const { return m_filteredVideos.size(); }
     QHash<int, QByteArray> roleNames() const;
 
 public slots:
@@ -68,6 +92,12 @@ public slots:
     void setLastFile(int row, QString file);
     void setLastPosition(int row, int position);
 
+    void setFilter(QString text);
+    void addFilterTag(QString tag);
+    void removeFilterTag(QString tag);
+
+    void setTagFilter(QString text) { m_tagFilter = text; emit tagsUpdated(); }
+
     QStringList allTags();
 
 
@@ -79,16 +109,22 @@ private:
     void loadCache();
     void writeTagCache(int index);
     void writeBookmarkCache(int index);
+    void updateFilteredVideos();
 
-    QStringList m_names;
-    QStringList m_paths;
-    QStringList m_covers;
-    QList<QStringList> m_files;
-    QList<QStringList> m_tags;
-    QList<int> m_lastPositions;
-    QStringList m_lastFile;
-    //QList<QMap<QString, QList<int > > > m_bookmarks;
-    QList<QVariantMap> m_bookmarks;
+    QList <Video> m_videos;
+    QList <Video*> m_filteredVideos;
+    QString m_filter;
+    QString m_tagFilter;
+    QStringList m_filterTags;
+//    QStringList m_filteredNames;
+//    QStringList m_filteredPaths;
+//    QStringList m_filteredCovers;
+//    QList<QStringList> m_filteredFiles;
+//    QList<QStringList> m_filteredTags;
+//    QList<int> m_filteredLastPositions;
+//    QStringList m_filteredLastFile;
+//    QList<QVariantMap> m_filteredBookmarks;
 };
 
 #endif // COLLECTION_H
+

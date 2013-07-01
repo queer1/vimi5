@@ -37,10 +37,26 @@ Rectangle {
                 text: modelData;
                 color: "white";
                 styleColor: "black"
-                font.bold: true
                 font.pointSize: 8
                 renderType: Text.NativeRendering
                 style: Text.Outline
+
+                property bool selected: false
+                font.bold: selected
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (parent.selected) {
+                            videoModel.removeFilterTag(modelData)
+                        } else {
+                            videoModel.addFilterTag(modelData)
+                        }
+                        parent.selected = !parent.selected
+                    }
+                }
+
             }
         }
     }

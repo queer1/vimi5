@@ -1,6 +1,4 @@
 import QtQuick 2.0
-import QtQuick.Controls 1.0
-
 
 Image {
     id: mainView
@@ -35,20 +33,69 @@ Image {
         anchors.bottom: mainView.bottom
         anchors.left: mainView.left
         width: 200
-
-        /*ListView {
-            id: selectedTagsView
-            anchors.right: parent.right
+        color: "#99999999"
+        Rectangle {
+            id: textInputBox
             anchors.left: parent.left
+            anchors.right: parent.right
             anchors.top: parent.top
-        }*/
+            height: 30
+            border.color: "steelblue"
+            border.width: 5; radius: 10
+            TextInput {
+                id: searchInput
+                anchors.fill: parent; anchors.leftMargin: 10
+                font.pixelSize: 24
+                onTextChanged: videoModel.setFilter(text)
+            }
+        }
+
+        Rectangle {
+            id: tagInputBox
+            anchors.topMargin: 20
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: textInputBox.bottom
+            height: 30
+            border.color: "steelblue"
+            border.width: 5; radius: 10
+            TextInput {
+                id: tagInput
+                anchors.fill: parent; anchors.leftMargin: 10
+                font.pixelSize: 24
+                onTextChanged: videoModel.setTagFilter(text)
+            }
+        }
 
         ListView {
             id: availableTagsView
-            anchors.fill: parent
+            anchors.topMargin: 5
+            anchors.top: tagInputBox.bottom
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.left: parent.left
             model: videoModel.allTags
             delegate: Text {
                 text: modelData
+                color: "black";
+                styleColor: "white"
+                font.pointSize: 8
+                renderType: Text.NativeRendering
+                style: Text.Outline
+                property bool selected: false
+                font.bold: selected
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (parent.selected) {
+                            videoModel.removeFilterTag(modelData)
+                        } else {
+                            videoModel.addFilterTag(modelData)
+                        }
+                        parent.selected = !parent.selected
+                    }
+                }
             }
         }
 

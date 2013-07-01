@@ -1,6 +1,5 @@
 #include "videoframedumper.h"
 #include <QFileInfo>
-#include <QVideoWidget>
 
 VideoFrameDumper::VideoFrameDumper(QString path, QObject *parent) :
     QAbstractVideoSurface(parent),

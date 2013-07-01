@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     view.setSource(QUrl("qrc:/qml/main.qml"));
     view.setResizeMode(QQuickView::SizeRootObjectToView);
     view.showMaximized();
-    view.show();
+    //view.show();
     //VideoFrameDumper kek("/home/test/Charlie Laine Hardcore.avi");
 
     return a.exec();

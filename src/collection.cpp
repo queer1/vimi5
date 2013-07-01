@@ -23,13 +23,30 @@
 #include <QThread>
 #include <QDir>
 
+#include <ctime>
+#include <algorithm>
+
 #include "collection.h"
+
+
+QDataStream &operator<<(QDataStream &datastream, const Video &video) {
+    datastream << video.m_name << video.m_path << video.m_cover << video.m_files << video.m_tags << video.m_lastPosition << video.m_lastFile << video.m_bookmarks;
+    return datastream;
+}
+
+QDataStream &operator>>(QDataStream &datastream, Video &video) {
+    datastream >> video.m_name >> video.m_path >> video.m_cover >> video.m_files >> video.m_tags >> video.m_lastPosition >> video.m_lastFile >> video.m_bookmarks;
+    return datastream;
+}
+
 
 Collection::Collection()
     : QAbstractListModel()
 {
     loadCache();
-    if (m_names.isEmpty())
+
+    // Check if cache load was successful
+    if (m_videos.count() == 0)
         rescan();
 }
 
@@ -37,14 +54,14 @@ Collection::Collection()
 QHash<int, QByteArray> Collection::roleNames() const
 {
     QHash<int, QByteArray> roleNames;
-    roleNames[NameRole] = "name";
-    roleNames[PathRole] = "path";
-    roleNames[CoverRole] = "coverPath";
-    roleNames[FilesRole] = "files";
-    roleNames[TagsRole] = "tags";
-    roleNames[LastPositionRole] = "lastPosition";
-    roleNames[LastFileRole] = "lastFile";
-    roleNames[BookmarksRole] = "bookmarks";
+    roleNames[Video::NameRole] = "name";
+    roleNames[Video::PathRole] = "path";
+    roleNames[Video::CoverRole] = "coverPath";
+    roleNames[Video::FilesRole] = "files";
+    roleNames[Video::TagsRole] = "tags";
+    roleNames[Video::LastPositionRole] = "lastPosition";
+    roleNames[Video::LastFileRole] = "lastFile";
+    roleNames[Video::BookmarksRole] = "bookmarks";
     return roleNames;
 }
 
@@ -61,7 +78,7 @@ void Collection::writeCache()
     QDataStream out(&file);
 
     if (file.open(QIODevice::WriteOnly)) {
-        out << m_names << m_paths << m_covers << m_files << m_tags << m_lastPositions << m_lastFile << m_bookmarks;
+        out << m_videos;
     } else {
         qWarning() << file.errorString();
     }
@@ -76,19 +93,15 @@ void Collection::loadCache()
 
     if (file.open(QIODevice::ReadOnly)) {
         beginResetModel();
-        in >> m_names;
-        in >> m_paths;
-        in >> m_covers;
-        in >> m_files;
-        in >> m_tags;
-        in >> m_lastPositions;
-        in >> m_lastFile;
-        in >> m_bookmarks;
+        m_videos.clear();
+        in >> m_videos;
+        updateFilteredVideos();
         endResetModel();
     } else {
         qWarning() << "Unable to load cache!: " << file.errorString() << " (file path:" << path << ")";
     }
 }
+
 
 QVariant Collection::data(const QModelIndex &item, int role) const
 {
@@ -99,39 +112,28 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 
     int row = item.row();
 
-    if (row > m_names.count()) {
+    if (row > m_videos.count()) {
         qWarning() << "row out of bounds" << row;
         return QVariant();
     }
 
     switch(role){
-    case NameRole:
-        return m_names[row];
-    case PathRole:
-        return m_paths[row];
-    case CoverRole:
-        return m_covers[row];
-    case FilesRole:
-        return m_files[row];
-    case TagsRole:
-        return m_tags[row];
-    case LastPositionRole:
-        return m_lastPositions[row];
-    case LastFileRole:
-        return m_lastFile[row];
-    case BookmarksRole: {
-     /*   const QMap<QString, QList<int > > &bookmarks = m_bookmarks[row];
-        QVariantMap map;
-        foreach(const QString &key, bookmarks.keys()) {
-            QVariantList list;
-            foreach(int bookmark, bookmarks[key])
-                list.append(bookmark);
-            map[key] = list;
-        }
-
-        return map;*/
-        return m_bookmarks[row];
-    }
+    case Video::NameRole:
+        return m_filteredVideos[row]->m_name;
+    case Video::PathRole:
+        return m_filteredVideos[row]->m_path;
+    case Video::CoverRole:
+        return m_filteredVideos[row]->m_cover;
+    case Video::FilesRole:
+        return m_filteredVideos[row]->m_files;
+    case Video::TagsRole:
+        return m_filteredVideos[row]->m_tags;
+    case Video::LastPositionRole:
+        return m_filteredVideos[row]->m_lastPosition;
+    case Video::LastFileRole:
+        return m_filteredVideos[row]->m_lastFile;
+    case Video::BookmarksRole:
+        return m_filteredVideos[row]->m_bookmarks;
     default:
         qWarning() << "Unknown role" << role;
         return QVariant();
@@ -140,11 +142,11 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 
 void Collection::writeBookmarkCache(int index)
 {
-    QString filename = m_paths[index] + "/bookmarks.dat";
+    QString filename = m_filteredVideos[index]->m_path + "/bookmarks.dat";
     QFile file(filename + ".tmp");
     QDataStream out(&file);
     if (file.open(QIODevice::Append | QIODevice::Text)) {
-        out << m_bookmarks[index];
+        out << m_filteredVideos[index]->m_bookmarks;
         QFile::remove(filename);
         file.rename(filename + ".tmp", filename);
     } else {
@@ -155,9 +157,9 @@ void Collection::writeBookmarkCache(int index)
 
 void Collection::addBookmark(int row, QString file, int bookmark)
 {
-    QList<QVariant> bookmarks = m_bookmarks[row][file].toList();
+    QList<QVariant> bookmarks = m_filteredVideos[row]->m_bookmarks[file].toList();
     bookmarks.append(bookmark);
-    m_bookmarks[row][file] = bookmarks;
+    m_filteredVideos[row]->m_bookmarks[file] = bookmarks;
 
     emit dataChanged(createIndex(row, 0), createIndex(row, 1));
     writeBookmarkCache(row);
@@ -165,13 +167,12 @@ void Collection::addBookmark(int row, QString file, int bookmark)
 
 void Collection::removeBookmark(int row, QString file, int bookmark)
 {
-    qDebug() << row << file << bookmark << m_bookmarks[row];
-    if (!m_bookmarks[row].contains(file))
+    if (!m_filteredVideos[row]->m_bookmarks.contains(file))
         return;
 
-    QList<QVariant> bookmarks = m_bookmarks[row][file].toList();
+    QList<QVariant> bookmarks = m_filteredVideos[row]->m_bookmarks[file].toList();
     bookmarks.removeAll(bookmark);
-    m_bookmarks[row][file] = bookmarks;
+    m_filteredVideos[row]->m_bookmarks[file] = bookmarks;
 
     emit dataChanged(createIndex(row, 0), createIndex(row, 0));
     writeBookmarkCache(row);
@@ -179,10 +180,10 @@ void Collection::removeBookmark(int row, QString file, int bookmark)
 
 void Collection::writeTagCache(int index)
 {
-    QString filename = m_paths[index] + "/tags.txt";
+    QString filename = m_filteredVideos[index]->m_path + "/tags.txt";
     QFile file(filename + ".tmp");
     if (file.open(QIODevice::Append | QIODevice::Text)) {
-        QByteArray data = m_tags[index].join("\n").toUtf8() + "\n";
+        QByteArray data = m_filteredVideos[index]->m_tags.join("\n").toUtf8() + "\n";
         if (file.write(data) == data.size()) {
             QFile::remove(filename);
             file.rename(filename + ".tmp", filename);
@@ -194,10 +195,10 @@ void Collection::writeTagCache(int index)
 
 void Collection::addTag(int row, QString tag)
 {
-    if (m_tags[row].contains(tag))
+    if (m_filteredVideos[row]->m_tags.contains(tag))
         return;
 
-    m_tags[row].append(tag);
+    m_filteredVideos[row]->m_tags.append(tag);
     emit dataChanged(createIndex(row, 0), createIndex(row, 1));
     emit tagsUpdated();
     writeTagCache(row);
@@ -205,7 +206,7 @@ void Collection::addTag(int row, QString tag)
 
 void Collection::removeTag(int row, QString tag)
 {
-    m_tags[row].removeAll(tag);
+    m_filteredVideos[row]->m_tags.removeAll(tag);
     emit dataChanged(createIndex(row, 0), createIndex(row, 0));
     emit tagsUpdated();
     writeTagCache(row);
@@ -214,14 +215,14 @@ void Collection::removeTag(int row, QString tag)
 
 void Collection::setLastFile(int row, QString file)
 {
-    m_lastFile[row] = file;
+    m_filteredVideos[row]->m_lastFile = file;
     emit dataChanged(createIndex(row, 0), createIndex(row, 0));
 }
 
 
 void Collection::setLastPosition(int row, int position)
 {
-    m_lastPositions[row] = position;
+    m_filteredVideos[row]->m_lastPosition = position;
     emit dataChanged(createIndex(row, 0), createIndex(row, 0));
 }
 
@@ -231,13 +232,8 @@ void Collection::rescan()
     qDebug() << "Starting scan...";
 
     beginResetModel();
-    m_names.clear();
-    m_covers.clear();
-    m_files.clear();
-    m_lastFile.clear();
-    m_lastPositions.clear();
-    m_tags.clear();
-    m_paths.clear();
+    m_filteredVideos.clear();
+    m_videos.clear();
     scan(QDir(Config::collectionPath()));
     endResetModel();
 
@@ -277,7 +273,7 @@ static QString scanForCovers(QString path)
 
 void Collection::scan(QDir dir)
 {
-    //qDebug() << "Scanning directory: " << dir.path();
+    qDebug() << "Scanning directory: " << dir.path();
 
     dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
@@ -314,14 +310,8 @@ void Collection::scan(QDir dir)
 
 
 
-        m_names.append(name);
-        m_paths.append(path);
-        m_covers.append(cover);
-        m_files.append(files);
-        m_tags.append(tags);
-        m_lastPositions.append(0);
-        m_lastFile.append(m_files.last().first());
-        m_bookmarks.append(bookmarks);
+        m_videos.append(Video(name, path, cover, files, tags, 0, files.first(), bookmarks));
+        m_filteredVideos.append(&m_videos.last());
     }
 
     dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::AllDirs | QDir::Executable);
@@ -333,15 +323,83 @@ void Collection::scan(QDir dir)
 
 QStringList Collection::allTags()
 {
-    qDebug() << "slow";
-    QSet<QString> allTags;
-    foreach(const QStringList &taglist, m_tags)
-        foreach(const QString &tag, taglist)
-            if (!allTags.contains(tag))
-                allTags.insert(tag);
+    QMap<QString, int> allTags;
+    foreach(const Video &video, m_videos) {
+        foreach(const QString &tag, video.m_tags) {
+            if (!m_tagFilter.isEmpty() && !tag.contains(m_tagFilter)) continue;
 
-    QStringList ret = allTags.toList();
-    qSort(ret);
+            if (!allTags.contains(tag)) allTags[tag] = 0;
+            else allTags[tag]++;
+        }
+    }
+    QMultiMap<int, QString> reverse;
+    foreach(const QString &key, allTags.keys()) {
+        reverse.insert(allTags[key], key);
+    }
+
+    QStringList ret = reverse.values();
+    std::reverse(ret.begin(), ret.end());
     return ret;
 
 }
+bool compareVideos(const Video *a, const Video *b)
+{
+    return a->m_name < b->m_name;
+}
+
+bool videoContainsTags(const Video &video, const QStringList &tags)
+{
+    foreach (const QString &tag, tags)
+        if (!video.m_tags.contains(tag)) return false;
+
+    return true;
+}
+
+void Collection::updateFilteredVideos()
+{
+    clock_t start, end;
+    start = clock();
+
+    QList<Video*> filtered;
+    for (int i=0; i<m_videos.count(); i++) {
+        if (!m_filter.isEmpty() && !m_videos[i].m_name.contains(m_filter))
+            continue;
+
+        if (m_filterTags.isEmpty() || videoContainsTags(m_videos[i], m_filterTags)) {
+            filtered.append(&m_videos[i]);
+        }
+    }
+    if (filtered == m_filteredVideos) {
+        return;
+    }
+
+    qSort(filtered.begin(), filtered.end(), compareVideos);
+
+    //TODO intelligently merge and notify about updates
+    beginResetModel();
+    m_filteredVideos = filtered;
+    endResetModel();
+    end = clock();
+    qDebug() << "update finished in" << ((float) (end - start) / CLOCKS_PER_SEC) << "seconds.";
+}
+
+void Collection::setFilter(QString text)
+{
+    m_filter = text;
+    updateFilteredVideos();
+}
+
+
+void Collection::addFilterTag(QString tag)
+{
+    m_filterTags.append(tag);
+    updateFilteredVideos();
+}
+
+
+void Collection::removeFilterTag(QString tag)
+{
+    m_filterTags.removeAll(tag);
+    updateFilteredVideos();
+}
+

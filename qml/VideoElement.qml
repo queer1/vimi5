@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import QtMultimedia 5.0
-import QtQuick.Controls 1.0
+import QtGraphicalEffects 1.0
 
 Item {
     id: gridItem
@@ -68,6 +68,7 @@ Item {
 
         Image {
             id: cover
+            sourceSize: parent.size
             anchors.bottom: parent.bottom
             anchors.top: titleText.bottom
             anchors.right: parent.right
@@ -260,6 +261,7 @@ Item {
             height: 30
             color: "#55000000"
             opacity: 0
+
 
             Rectangle {
                 //radius: 10

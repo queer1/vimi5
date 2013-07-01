@@ -7,7 +7,7 @@ HEADERS = \
     src/collection.h \
     src/videoframedumper.h
 
-QT += quick qml multimedia multimediawidgets widgets
+QT += quick qml multimedia
 
 RESOURCES += \
     resources.qrc

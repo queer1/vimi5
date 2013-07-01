@@ -29,6 +29,8 @@ Rectangle {
         delegate: Text {
             id: fileEntry
             color: "white"
+            font.bold: player.file == modelData
+            font.pixelSize: 15
             text: modelData
             width: fileList.width
             elide: Text.ElideRight
