@@ -7,6 +7,7 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5Concurrent REQUIRED)
 find_package(Qt5Quick REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Multimedia REQUIRED)
 
 # ffmpeg stuff
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -32,6 +33,7 @@ set(sources
     #src/video.cpp
     #src/videofilterproxymodel.cpp
     #src/videowidget.cpp
+    src/videoframedumper.cpp
     )
 
 # create our resource file
@@ -40,5 +42,5 @@ qt5_add_resources(qrc_sources images/images.qrc)
 # actually put together our executable
 add_executable(vimi ${sources} ${qrc_sources})
 target_link_libraries(vimi ${FFMPEG_LIBRARIES})
-qt5_use_modules(vimi Widgets Concurrent Quick)
+qt5_use_modules(vimi Widgets Concurrent Quick Multimedia)
 

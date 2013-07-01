@@ -33,7 +33,7 @@ class Collection : public QAbstractListModel
 {
 
     Q_OBJECT
-
+    Q_PROPERTY(QStringList allTags READ allTags NOTIFY tagsUpdated)
 
 public:
     enum VideoRoles {
@@ -43,7 +43,8 @@ public:
         FilesRole,
         TagsRole,
         LastPositionRole,
-        LastFileRole
+        LastFileRole,
+        BookmarksRole
     };
 
     Collection();
@@ -51,21 +52,33 @@ public:
 
     QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
     int rowCount(const QModelIndex & = QModelIndex()) const { return m_names.size(); }
-    bool setData(const QModelIndex &item, QVariant value, int role = Qt::DisplayRole);
-    Qt::ItemFlags flags(const QModelIndex &) const { return Qt::ItemIsEnabled | Qt::ItemIsEditable; }
     QHash<int, QByteArray> roleNames() const;
 
 public slots:
     void rescan();
     void writeCache();
+
     void addTag(int row, QString tag);
     void removeTag(int row, QString tag);
+
+    void addBookmark(int row, QString file, int bookmark );
+    void removeBookmark(int row, QString file, int bookmark);
+
+
     void setLastFile(int row, QString file);
     void setLastPosition(int row, int position);
+
+    QStringList allTags();
+
+
+signals:
+    void tagsUpdated();
 
 private:
     void scan(QDir directory);
     void loadCache();
+    void writeTagCache(int index);
+    void writeBookmarkCache(int index);
 
     QStringList m_names;
     QStringList m_paths;
@@ -74,6 +87,8 @@ private:
     QList<QStringList> m_tags;
     QList<int> m_lastPositions;
     QStringList m_lastFile;
+    //QList<QMap<QString, QList<int > > > m_bookmarks;
+    QList<QVariantMap> m_bookmarks;
 };
 
 #endif // COLLECTION_H

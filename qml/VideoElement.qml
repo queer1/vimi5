@@ -40,8 +40,14 @@ Item {
 
         MediaPlayer {
             id: player
-            autoPlay: true
 
+            property string file: ""
+            onFileChanged: {
+                source = "file:" + encodeURIComponent(model.path + "/" + file)
+                videoModel.setLastFile(index, file)
+            }
+            autoPlay: true
+            onPlaying: video.focus = true
             onStatusChanged: {
                 if (status == MediaPlayer.Loaded || status == MediaPlayer.Buffered) {
                     video.opacity = 1
@@ -50,10 +56,7 @@ Item {
                     if (!seekable)
                         return
 
-                    if (lastPosition > 0)
-                        seek(lastPosition)
-                    else
-                        seek(duration / 2)
+                    seek(lastPosition)
                 } else {
                     video.opacity = 0
                     cover.opacity = 1
@@ -70,7 +73,8 @@ Item {
             anchors.right: parent.right
             anchors.left: parent.left
 
-            source: encodeURIComponent(coverPath)
+            source: "file:/" + encodeURIComponent(coverPath)
+
             asynchronous: true
             fillMode: Image.PreserveAspectCrop
             onOpacityChanged: {
@@ -144,7 +148,7 @@ Item {
                 PropertyChanges {
                     target: seekbar
                     opacity: 0
-                    height: 20
+                    height: 0
                 }
             }
         ]
@@ -153,14 +157,20 @@ Item {
             Transition { to: "maximized"
                 ParentAnimation { via: mainView
                     SequentialAnimation {
-                        ScriptAction { script: player.play() }
+                        ScriptAction { script: {
+                                seekbarPeek.running = true
+                                player.play()
+                            }
+                        }
                         SmoothedAnimation { properties: "x,y,width,height,opacity"; duration: 500 }
+                        ScriptAction { script: gridView.visible = false }
                     }
                 }
             },
             Transition { to: "normal"
                 ParentAnimation { via: mainView
                     SequentialAnimation {
+                        ScriptAction { script: gridView.visible = true}
                         SmoothedAnimation { properties: "x,y,width,height,opacity"; duration: 500 }
                         ScriptAction { script: player.pause() }
                     }
@@ -168,26 +178,35 @@ Item {
             }
         ]
 
+        Keys.onPressed: {
+            event.accepted = true;
+            var seekAmount = 0
+            if (event.key == Qt.Key_Left) {
+                seekAmount = -3000
+            } else if (event.key == Qt.Key_Right) {
+                seekAmount = 3000
+            } else if (event.key == Qt.Key_Up) {
+                seekAmount = 60000
+            } else if (event.key == Qt.Key_Down) {
+                seekAmount = -60000
+            } else if (event.key == Qt.Key_PageUp) {
+                seekAmount = 300000
+            } else if (event.key == Qt.Key_PageDown) {
+                seekAmount = -300000
+            } else {
+                event.accepted = false
+                return
+            }
+            seekbarPeek.running = true
+            player.seek(player.position + seekAmount)
+        }
+
         VideoOutput {
             opacity: 0
             id: video
             source: player
             anchors.fill: rect
 
-            Keys.onPressed: {
-                var seekAmount = 0
-                if (event.key == Qt.Key_Left) {
-                    seekAmount = -3000
-                } else if (event.key == Qt.Key_Right) {
-                    seekAmount = 3000
-                } else if (event.key == Qt.Key_Up) {
-                    seekAmount = 30000
-                } else if (event.key == Qt.Key_Down) {
-                    seekAmount = -30000
-                }
-
-                player.seek(player.position + seekAmount)
-            }
             Behavior on opacity { NumberAnimation { duration: 1000 } }
         }
         MouseArea {
@@ -199,15 +218,18 @@ Item {
                 if (rect.state == "normal")
                     return
                 if (mouse.y > rect.height - seekbar.height)
-                    seekbar.opacity = 0.5
+                    seekbar.opacity = 1
                 else if(mouse.y < toolbar.maxHeight)
                     toolbar.state = "shown"
                 else if (mouse.x < 200)
                     tagList.state = "maximized"
+                else if (mouse.x > rect.width - controls.maxWidth)
+                    controls.state = "shown"
                 else {
                     toolbar.state = "hidden"
                     seekbar.opacity = 0
                     tagList.state = "hidden"
+                    controls.state = "hidden"
                 }
             }
 
@@ -225,7 +247,7 @@ Item {
                     rect.state = "maximized"
                     tagList.state = "hidden"
                     if (player.status == MediaPlayer.NoMedia)
-                        player.source = encodeURIComponent(path + "/" + lastFile)
+                        player.file = model.lastFile
                 }
             }
         }
@@ -236,33 +258,79 @@ Item {
             anchors.right: parent.right
             anchors.left: parent.left
             height: 30
-            color: "black"
-            radius: 10
+            color: "#55000000"
             opacity: 0
 
             Rectangle {
                 //radius: 10
+                id: progressbar
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                height: parent.height/3
+                height: 15
                 color:"white"
                 width: player.position * parent.width / player.duration
-
             }
+            Text {
+                text: Math.floor(player.position/(1000*60*60)) + ":" + Math.floor((player.position%(1000*60*60))/(1000*60)) + ":" + Math.floor(((player.position%(1000*60*60))%(1000*60))/1000) + "/" + Math.floor(player.duration/(1000*60*60)) + ":" + Math.floor((player.duration%(1000*60*60))/(1000*60)) + ":" + Math.floor(((player.duration%(1000*60*60))%(1000*60))/1000)
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.leftMargin: 5
+                verticalAlignment: Text.AlignVCenter
+                color: "#aaaaaa"
+                style: Text.Outline
+                renderType: Text.NativeRendering
+
+                styleColor: "black"
+            }
+
+
+            Repeater {
+                id: bookmarkTicks
+                function removeBookmark(bookmark) {
+                    videoModel.removeBookmark(index, player.file, bookmark)
+                }
+
+                model: bookmarks[player.file]
+                Rectangle {
+                    id: bookmarkTick
+                    width: 1
+                    color: "gray"
+                    x: modelData * seekbar.width / player.duration
+                    height: progressbar.height
+                    y: progressbar.y
+                    Text {
+                        anchors.top: parent.bottom
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: "x"
+                        color: "red"
+                        opacity: 1
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: bookmarkTicks.removeBookmark(modelData)
+                        }
+                    }
+                }
+            }
+
+            PropertyAnimation { id: seekbarPeek; target: seekbar; property: "opacity"; from: 1; to: 0; duration: 1000 }
 
             Behavior on opacity {
                 NumberAnimation { duration: 1000 }
             }
         }
 
+        ControlBar {
+            id: controls
+        }
+
         Toolbar {
             id: toolbar
             model: files
             onVideoChanged: {
-                var newUrl = encodeURIComponent(path + "/" + toolbar.video)
-                if (newUrl !== player.source && player.source != "") {
-                    lastFile = toolbar.video
-                    player.source = newUrl
+                if (toolbar.video != player.file && player.file != "") {
+                    player.file = toolbar.video
                 }
             }
         }

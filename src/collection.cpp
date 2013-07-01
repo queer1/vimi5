@@ -19,12 +19,9 @@
 #include <QByteArray>
 #include <QDebug>
 #include <QStandardPaths>
-#include <QMessageBox>
 #include <QSet>
 #include <QThread>
-#include <QApplication>
 #include <QDir>
-#include "video.h"
 
 #include "collection.h"
 
@@ -47,6 +44,7 @@ QHash<int, QByteArray> Collection::roleNames() const
     roleNames[TagsRole] = "tags";
     roleNames[LastPositionRole] = "lastPosition";
     roleNames[LastFileRole] = "lastFile";
+    roleNames[BookmarksRole] = "bookmarks";
     return roleNames;
 }
 
@@ -63,7 +61,7 @@ void Collection::writeCache()
     QDataStream out(&file);
 
     if (file.open(QIODevice::WriteOnly)) {
-        out << m_names << m_paths << m_covers << m_files << m_tags << m_lastPositions << m_lastFile;
+        out << m_names << m_paths << m_covers << m_files << m_tags << m_lastPositions << m_lastFile << m_bookmarks;
     } else {
         qWarning() << file.errorString();
     }
@@ -85,6 +83,7 @@ void Collection::loadCache()
         in >> m_tags;
         in >> m_lastPositions;
         in >> m_lastFile;
+        in >> m_bookmarks;
         endResetModel();
     } else {
         qWarning() << "Unable to load cache!: " << file.errorString() << " (file path:" << path << ")";
@@ -120,77 +119,101 @@ QVariant Collection::data(const QModelIndex &item, int role) const
         return m_lastPositions[row];
     case LastFileRole:
         return m_lastFile[row];
+    case BookmarksRole: {
+     /*   const QMap<QString, QList<int > > &bookmarks = m_bookmarks[row];
+        QVariantMap map;
+        foreach(const QString &key, bookmarks.keys()) {
+            QVariantList list;
+            foreach(int bookmark, bookmarks[key])
+                list.append(bookmark);
+            map[key] = list;
+        }
+
+        return map;*/
+        return m_bookmarks[row];
+    }
     default:
         qWarning() << "Unknown role" << role;
         return QVariant();
     }
 }
 
-bool Collection::setData(const QModelIndex &item, QVariant value, int role)
+void Collection::writeBookmarkCache(int index)
 {
-    qWarning() << item << value << role;
-    if (!item.isValid()) {
-        qWarning() << "Invalid item!";
-        return false;
+    QString filename = m_paths[index] + "/bookmarks.dat";
+    QFile file(filename + ".tmp");
+    QDataStream out(&file);
+    if (file.open(QIODevice::Append | QIODevice::Text)) {
+        out << m_bookmarks[index];
+        QFile::remove(filename);
+        file.rename(filename + ".tmp", filename);
+    } else {
+        qWarning() << "Unable to open tag cache file for writing!:" << filename;
     }
+}
 
-    int row = item.row();
 
-    if (row > m_names.count()) {
-        qWarning() << "row out of bounds" << row;
-        return false;
-    }
+void Collection::addBookmark(int row, QString file, int bookmark)
+{
+    QList<QVariant> bookmarks = m_bookmarks[row][file].toList();
+    bookmarks.append(bookmark);
+    m_bookmarks[row][file] = bookmarks;
 
-    switch(role){
-    case NameRole:
-        m_names[row] = value.toString();
-        return true;
-    case PathRole:
-        m_paths[row] = value.toString();
-        return true;
-    case CoverRole:
-        m_covers[row] = value.toString();
-        return true;
-    case FilesRole:
-        m_files[row] = value.toStringList();
-        return true;
-    case TagsRole:
-        m_tags[row] = value.toStringList();
-        return true;
-    case LastPositionRole:
-        m_lastPositions[row] = value.toInt();
-        return true;
-    case LastFileRole:
-        m_lastFile[row] = value.toString();
-        return true;
-    default:
-        qWarning() << "Unknown role" << role;
-        return false;
+    emit dataChanged(createIndex(row, 0), createIndex(row, 1));
+    writeBookmarkCache(row);
+}
+
+void Collection::removeBookmark(int row, QString file, int bookmark)
+{
+    qDebug() << row << file << bookmark << m_bookmarks[row];
+    if (!m_bookmarks[row].contains(file))
+        return;
+
+    QList<QVariant> bookmarks = m_bookmarks[row][file].toList();
+    bookmarks.removeAll(bookmark);
+    m_bookmarks[row][file] = bookmarks;
+
+    emit dataChanged(createIndex(row, 0), createIndex(row, 0));
+    writeBookmarkCache(row);
+}
+
+void Collection::writeTagCache(int index)
+{
+    QString filename = m_paths[index] + "/tags.txt";
+    QFile file(filename + ".tmp");
+    if (file.open(QIODevice::Append | QIODevice::Text)) {
+        QByteArray data = m_tags[index].join("\n").toUtf8() + "\n";
+        if (file.write(data) == data.size()) {
+            QFile::remove(filename);
+            file.rename(filename + ".tmp", filename);
+        }
+    } else {
+        qWarning() << "Unable to open tag cache file for writing!:" << filename;
     }
 }
 
 void Collection::addTag(int row, QString tag)
 {
-    qDebug() << Q_FUNC_INFO;
     if (m_tags[row].contains(tag))
         return;
 
     m_tags[row].append(tag);
     emit dataChanged(createIndex(row, 0), createIndex(row, 1));
+    emit tagsUpdated();
+    writeTagCache(row);
 }
 
 void Collection::removeTag(int row, QString tag)
 {
-    qDebug() << Q_FUNC_INFO << m_tags[row] << row;
     m_tags[row].removeAll(tag);
-    qDebug() << Q_FUNC_INFO << m_tags[row];
     emit dataChanged(createIndex(row, 0), createIndex(row, 0));
+    emit tagsUpdated();
+    writeTagCache(row);
 }
 
 
 void Collection::setLastFile(int row, QString file)
 {
-    qDebug() << Q_FUNC_INFO;
     m_lastFile[row] = file;
     emit dataChanged(createIndex(row, 0), createIndex(row, 0));
 }
@@ -198,7 +221,6 @@ void Collection::setLastFile(int row, QString file)
 
 void Collection::setLastPosition(int row, int position)
 {
-    qDebug() << Q_FUNC_INFO;
     m_lastPositions[row] = position;
     emit dataChanged(createIndex(row, 0), createIndex(row, 0));
 }
@@ -270,13 +292,27 @@ void Collection::scan(QDir dir)
         QString cover = scanForCovers(path);
         QStringList files = dir.entryList();
         QStringList tags;
-        if (dir.exists("tags.txt")) { // There is a tag cache here
+        QVariantMap bookmarks;
+
+        // Load tag cache
+        if (dir.exists("tags.txt")) {
             QFile file(dir.filePath("tags.txt"));
             if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 while (!file.atEnd())
                     tags.append(QString::fromUtf8(file.readLine().simplified().toLower())); // One tag per line
             }
         }
+
+        // Load tag cache
+        if (dir.exists("bookmarks.dat")) {
+            QFile file(dir.filePath("bookmarks.dat"));
+            QDataStream in(&file);
+            if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                in >> bookmarks;
+            }
+        }
+
+
 
         m_names.append(name);
         m_paths.append(path);
@@ -285,11 +321,27 @@ void Collection::scan(QDir dir)
         m_tags.append(tags);
         m_lastPositions.append(0);
         m_lastFile.append(m_files.last().first());
+        m_bookmarks.append(bookmarks);
     }
 
     dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::AllDirs | QDir::Executable);
-                                                                      // QDir::AllDirs ignores name filter
+    // QDir::AllDirs ignores name filter
     foreach(const QFileInfo &subdir, dir.entryInfoList()) {
         scan(QDir(subdir.filePath())); // Recursively scan
     }
+}
+
+QStringList Collection::allTags()
+{
+    qDebug() << "slow";
+    QSet<QString> allTags;
+    foreach(const QStringList &taglist, m_tags)
+        foreach(const QString &tag, taglist)
+            if (!allTags.contains(tag))
+                allTags.insert(tag);
+
+    QStringList ret = allTags.toList();
+    qSort(ret);
+    return ret;
+
 }

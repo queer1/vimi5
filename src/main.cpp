@@ -17,10 +17,9 @@
  */
 
 
-#include <QApplication>
+#include <QGuiApplication>
+//#include <QtWidgets/QApplication>
 #include <QDebug>
-#include <QSplashScreen>
-#include <QLabel>
 #include <QQuickView>
 #include <QQmlContext>
 #include <QUrl>
@@ -29,43 +28,28 @@
 
 #include "collection.h"
 #include "version.h"
+#include "videoframedumper.h"
 
 int main(int argc, char *argv[])
 {
-    qDebug() << "Starting...";
-    clock_t start, end;
-    start = clock();
-
-    QApplication a(argc, argv);
-    QApplication::setQuitOnLastWindowClosed(true);
+    QGuiApplication a(argc, argv);
+    QGuiApplication::setQuitOnLastWindowClosed(true);
     a.setApplicationName("Vimi");
     a.setOrganizationName("Cheggit");
     a.setOrganizationDomain("cheggit.net");
 
 //    Collection::instance()->rescan();
 
-    qDebug() << QT_VERSION_STR;
     QQuickView view;
+    QObject::connect((QObject*)view.engine(), SIGNAL(quit()), &a, SLOT(quit()));
+
     Collection collection;
     view.rootContext()->setContextProperty("videoModel", &collection);
-    view.setSource(QUrl::fromLocalFile("../qml/main.qml"));
+    view.setSource(QUrl("qrc:/qml/main.qml"));
     view.setResizeMode(QQuickView::SizeRootObjectToView);
-//    view.showMaximized();
+    view.showMaximized();
     view.show();
-
-//    view.show();
-
-    /*QSplashScreen splash(QPixmap(":/images/splash.png"));
-    splash.showMessage("Loading cache and covers...", Qt::AlignBottom);
-    splash.show();
-//    for (int i=0;i<10;i++)// Ugly hack, don't know why I need it
-        a.processEvents(QEventLoop::WaitForMoreEvents | QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
-    MainWindow w;
-    splash.finish(&w);
-    w.show();
-
-    end = clock();
-    qDebug() << "Startup finished in" << ((float) (end - start) / CLOCKS_PER_SEC) << "seconds.";*/
+    //VideoFrameDumper kek("/home/test/Charlie Laine Hardcore.avi");
 
     return a.exec();
 }

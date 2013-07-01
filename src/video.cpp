@@ -177,22 +177,6 @@ QImage Video::quickScale(const QImage &s, int width, int height)
     return dest;
 }
 
-void Video::writeTagCache()
-{
-    QString filename = m_path + "/tags.txt";
-    QFile file(filename + ".tmp");
-    if (file.open(QIODevice::Append | QIODevice::Text)) {
-        QByteArray data = m_tags.join("\n").toUtf8() + "\n";
-        if (file.write(data) == data.size()) {
-            QFile::remove(filename);
-            file.rename(filename + ".tmp", filename);
-        }
-    } else {
-        qWarning() << "Unable to open tag cache file for writing!:" << filename;
-    }
-}
-
-
 void Video::generateThumbnail()
 {
     QMutexLocker l(&m_mutex);

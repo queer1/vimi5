@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/ScrollBar.qml</file>
+        <file>qml/TagList.qml</file>
+        <file>qml/Toolbar.qml</file>
+        <file>qml/VideoElement.qml</file>
+        <file>qml/images/bg.png</file>
+        <file>qml/images/bg2.png</file>
+        <file>qml/ControlBar.qml</file>
+    </qresource>
+</RCC>

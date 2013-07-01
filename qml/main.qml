@@ -9,9 +9,62 @@ Image {
     source: "images/bg2.png"
     fillMode: Image.Tile
 
+    Keys.onEscapePressed: {
+        Qt.quit()
+    }
+
+    Keys.onUpPressed: {
+        if (gridView.contentY > 200)
+            gridView.contentY -= 200
+        else
+            gridView.contentY = 0
+    }
+    Keys.onDownPressed: {
+        if (gridView.contentY < gridView.contentHeight - 200 - gridView.height)
+            gridView.contentY += 200
+        else
+            gridView.contentY = gridView.contentHeight - gridView.height
+    }
+
+    Keys.enabled: true
+    focus: true
+
+    Rectangle {
+        id: tagView
+        anchors.top: mainView.top
+        anchors.bottom: mainView.bottom
+        anchors.left: mainView.left
+        width: 200
+
+        /*ListView {
+            id: selectedTagsView
+            anchors.right: parent.right
+            anchors.left: parent.left
+            anchors.top: parent.top
+        }*/
+
+        ListView {
+            id: availableTagsView
+            anchors.fill: parent
+            model: videoModel.allTags
+            delegate: Text {
+                text: modelData
+            }
+        }
+
+        /*ListModel {
+            id: availableTags
+        }
+        ListModel {
+            id: selectedTags
+        }*/
+    }
+
+
+
     GridView {
         id: gridView
-        anchors.left: mainView.left
+        anchors.left: tagView.right
         anchors.bottom: mainView.bottom
         anchors.top: mainView.top
         anchors.right: scrollbar.left

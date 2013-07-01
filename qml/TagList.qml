@@ -6,19 +6,18 @@ Rectangle {
     anchors.right: parent.right
     anchors.left: parent.left*/
     anchors.margins: 5
-    height: taglistlist.height + newTagRect.height + 30
+    height: Math.min(taglistlist.count * 10 + 30, rect.height)
+
 
     color: "#80000000"
     radius: 10
     ListView {
         id: taglistlist
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: Math.min(taglistlist.count * 10, tagList.parent.height - titleText.height - 60)
+        anchors.fill: parent
         interactive: false
 
         anchors.margins: 10
+        anchors.bottomMargin: 15
         model: tags
         delegate: Row {
             height:10; width: tagList.width
@@ -48,14 +47,20 @@ Rectangle {
 
     Rectangle {
         id: newTagRect
-        anchors.top: taglistlist.bottom
+        anchors.bottom: parent.bottom
         anchors.left: tagList.left
         anchors.right: tagList.right
-        anchors.margins: 10
+        anchors.rightMargin: 10
+        anchors.leftMargin: 10
         height: 16
-        color: "#15000000"
+        color: "#55000000"
         border.color: "white"
         border.width: 0
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.IBeamCursor
+        }
+
         TextInput {
             font.pointSize: 8
             anchors.fill: parent
@@ -71,14 +76,7 @@ Rectangle {
                     newTagRect.border.width = 0
             }
             onAccepted: {
-                /*var newTags = Array()
-                for (var tag in tags)
-                    newTags.push(tags[tag])
-                newTags.push(text)
-                model.tags = newTags
-                console.log(tags)*/
                 videoModel.addTag(index, text)
-
                 text = ""
             }
         }
