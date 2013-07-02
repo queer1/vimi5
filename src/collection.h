@@ -68,6 +68,7 @@ class Collection : public QAbstractListModel
 
     Q_OBJECT
     Q_PROPERTY(QStringList allTags READ allTags NOTIFY tagsUpdated)
+    Q_PROPERTY(QString status READ getStatus NOTIFY statusUpdated)
 
 public:
 
@@ -100,9 +101,11 @@ public slots:
 
     QStringList allTags();
 
+    QString getStatus() { return m_status; }
 
 signals:
     void tagsUpdated();
+    void statusUpdated();
 
 private:
     void scan(QDir directory);
@@ -110,12 +113,15 @@ private:
     void writeTagCache(int index);
     void writeBookmarkCache(int index);
     void updateFilteredVideos();
+    void setStatus(QString status) { m_status = status; emit statusUpdated(); }
 
     QList <Video> m_videos;
     QList <Video*> m_filteredVideos;
     QString m_filter;
     QString m_tagFilter;
     QStringList m_filterTags;
+
+    QString m_status;
 //    QStringList m_filteredNames;
 //    QStringList m_filteredPaths;
 //    QStringList m_filteredCovers;

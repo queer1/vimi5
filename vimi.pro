@@ -18,4 +18,6 @@ OTHER_FILES += \
     qml/main.qml \
     qml/TagList.qml \
     qml/Toolbar.qml \
+    qml/ScrollBar.qml \
+    qml/SideBar.qml
 

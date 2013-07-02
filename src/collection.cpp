@@ -22,6 +22,7 @@
 #include <QSet>
 #include <QThread>
 #include <QDir>
+#include <QGuiApplication>
 
 #include <ctime>
 #include <algorithm>
@@ -39,6 +40,11 @@ QDataStream &operator>>(QDataStream &datastream, Video &video) {
     return datastream;
 }
 
+
+bool compareVideos(const Video *a, const Video *b)
+{
+    return a->m_name < b->m_name;
+}
 
 Collection::Collection()
     : QAbstractListModel()
@@ -230,11 +236,13 @@ void Collection::setLastPosition(int row, int position)
 void Collection::rescan()
 {
     qDebug() << "Starting scan...";
+    setStatus("Starting scan...");
 
     beginResetModel();
     m_filteredVideos.clear();
     m_videos.clear();
     scan(QDir(Config::collectionPath()));
+    qSort(m_filteredVideos.begin(), m_filteredVideos.end(), compareVideos);
     endResetModel();
 
     writeCache();
@@ -274,6 +282,7 @@ static QString scanForCovers(QString path)
 void Collection::scan(QDir dir)
 {
     qDebug() << "Scanning directory: " << dir.path();
+    QGuiApplication::instance()->processEvents();
 
     dir.setNameFilters(Config::movieSuffixes());
     dir.setFilter(QDir::Files);
@@ -312,6 +321,8 @@ void Collection::scan(QDir dir)
 
         m_videos.append(Video(name, path, cover, files, tags, 0, files.first(), bookmarks));
         m_filteredVideos.append(&m_videos.last());
+
+        setStatus(tr("Found video ")  + name);
     }
 
     dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::AllDirs | QDir::Executable);
@@ -341,10 +352,6 @@ QStringList Collection::allTags()
     std::reverse(ret.begin(), ret.end());
     return ret;
 
-}
-bool compareVideos(const Video *a, const Video *b)
-{
-    return a->m_name < b->m_name;
 }
 
 bool videoContainsTags(const Video &video, const QStringList &tags)

@@ -8,5 +8,6 @@
         <file>qml/images/bg.png</file>
         <file>qml/images/bg2.png</file>
         <file>qml/ControlBar.qml</file>
+        <file>qml/SideBar.qml</file>
     </qresource>
 </RCC>

@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
 
     Collection collection;
     view.rootContext()->setContextProperty("videoModel", &collection);
+    view.rootContext()->setContextProperty("mainWindow", &view);
     view.setSource(QUrl("qrc:/qml/main.qml"));
     view.setResizeMode(QQuickView::SizeRootObjectToView);
     view.showMaximized();

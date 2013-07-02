@@ -110,8 +110,7 @@ Item {
                 }
                 PropertyChanges {
                     target: titleText
-                    color: "transparent"
-                    styleColor: "transparent"
+                    opacity: 0
                 }
                 PropertyChanges {
                     target: toolbar
@@ -135,8 +134,7 @@ Item {
                 }
                 PropertyChanges {
                     target: titleText
-                    color: "white"
-                    styleColor: "black"
+                    opacity: 1
                 }
                 PropertyChanges {
                     target: toolbar

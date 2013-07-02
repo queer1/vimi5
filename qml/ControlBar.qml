@@ -6,7 +6,6 @@ Rectangle {
     anchors.right: rect.right
     anchors.top: toolbar.bottom
     anchors.bottom: seekbar.top
-    width: 200
     color: "black"
     property int maxWidth: 50
 

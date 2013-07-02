@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtGraphicalEffects 1.0
 
 Image {
     id: mainView
@@ -27,118 +28,68 @@ Image {
     Keys.enabled: true
     focus: true
 
-    Rectangle {
-        id: tagView
-        anchors.top: mainView.top
-        anchors.bottom: mainView.bottom
-        anchors.left: mainView.left
-        width: 200
-        color: "#99999999"
-        Rectangle {
-            id: textInputBox
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            height: 30
-            border.color: "steelblue"
-            border.width: 5; radius: 10
-            TextInput {
-                id: searchInput
-                anchors.fill: parent; anchors.leftMargin: 10
-                font.pixelSize: 24
-                onTextChanged: videoModel.setFilter(text)
-            }
-        }
-
-        Rectangle {
-            id: tagInputBox
-            anchors.topMargin: 20
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: textInputBox.bottom
-            height: 30
-            border.color: "steelblue"
-            border.width: 5; radius: 10
-            TextInput {
-                id: tagInput
-                anchors.fill: parent; anchors.leftMargin: 10
-                font.pixelSize: 24
-                onTextChanged: videoModel.setTagFilter(text)
-            }
-        }
-
-        ListView {
-            id: availableTagsView
-            anchors.topMargin: 5
-            anchors.top: tagInputBox.bottom
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
-            anchors.left: parent.left
-            model: videoModel.allTags
-            delegate: Text {
-                text: modelData
-                color: "black";
-                styleColor: "white"
-                font.pointSize: 8
-                renderType: Text.NativeRendering
-                style: Text.Outline
-                property bool selected: false
-                font.bold: selected
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (parent.selected) {
-                            videoModel.removeFilterTag(modelData)
-                        } else {
-                            videoModel.addFilterTag(modelData)
-                        }
-                        parent.selected = !parent.selected
-                    }
-                }
-            }
-        }
-
-        /*ListModel {
-            id: availableTags
-        }
-        ListModel {
-            id: selectedTags
-        }*/
+    SideBar {
+        id: sideBar
     }
-
-
 
     GridView {
         id: gridView
-        anchors.left: tagView.right
-        anchors.bottom: mainView.bottom
-        anchors.top: mainView.top
-        anchors.right: scrollbar.left
+        anchors.left: sideBar.right
+        anchors.bottom: parent.bottom
+        anchors.top: parent.top
+        anchors.right: parent.right
         model: videoModel
         cellHeight: 300
         cellWidth: 200
         delegate: VideoElement { }
 
-        Behavior on contentY {
-            SmoothedAnimation { duration: 100 }
+        ScrollBar {
+            id: scrollbar
+            position: parent.visibleArea.yPosition
+            pageSize: parent.visibleArea.heightRatio
         }
     }
-    ScrollBar {
-        id: scrollbar
-        position: gridView.visibleArea.yPosition
-        pageSize: gridView.visibleArea.heightRatio
 
-        MouseArea {
+    Rectangle {
+        id: notification
+        height: 100
+        width: 200
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.bottomMargin: 20
+        anchors.rightMargin: 20
+        color: "black"
+        radius: 25
+        smooth: true
+        opacity: 0
+
+        Text {
+            color: "white"
             anchors.fill: parent
-            onMouseYChanged: {
-                if (mouse.buttons & Qt.LeftButton) {
-                    var pos = mouse.y / height - parent.pageSize/2
-                    if (pos < 0) pos = 0
-                    if (pos + parent.pageSize/2 > 1) pos = 1 - parent.pageSize/2
-                    gridView.contentY = pos * gridView.contentHeight
-                }
-            }
+            anchors.margins: 25
+            font.pointSize: 12
+            text: videoModel.status
+            onTextChanged: notify.running = true
+            wrapMode: Text.WordWrap
+
         }
+
+        RectangularGlow {
+            z:-1
+            anchors.fill: notification
+            glowRadius: 10
+            spread: 0.2
+            color: "white"
+            cornerRadius: notification.radius + glowRadius
+        }
+
+        SequentialAnimation {
+            id: notify
+            PropertyAnimation { target: notification; property: "opacity"; from: 0; to: 1; duration: 500 }
+            PropertyAnimation { target: notification; property: "opacity"; from: 1; to: 0; duration: 3500 }
+        }
+
+
+
     }
 }

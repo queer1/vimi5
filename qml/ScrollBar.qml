@@ -2,11 +2,7 @@ import QtQuick 2.0
 
 Item {
     id: scrollBar
-    // The properties that define the scrollbar's state.
-    // position and pageSize are in the range 0.0 - 1.0.  They are relative to the
-    // height of the page, i.e. a pageSize of 0.5 means that you can see 50%
-    // of the height of the view.
-    // orientation can be either 'Vertical' or 'Horizontal'
+
     property real position
     property real pageSize
     property alias bgColor: background.color
@@ -16,6 +12,20 @@ Item {
     anchors.bottom: parent.bottom
     anchors.top: parent.top
     width: 20
+    smooth: true
+
+    MouseArea {
+        anchors.fill: parent
+        onMouseYChanged: {
+            if (mouse.buttons & Qt.LeftButton) {
+                var pos = mouse.y / height - parent.pageSize/2
+                if (pos < 0) pos = 0
+                if (pos + parent.pageSize/2 > 1) pos = 1 - parent.pageSize/2
+                parent.contentY = pos * parent.contentHeight
+            }
+        }
+    }
+
     // A light, semi-transparent background
     Rectangle {
         id: background
@@ -31,5 +41,6 @@ Item {
         y: scrollBar.position * (scrollBar.height-2) + 1
         width: parent.width-2
         height: scrollBar.pageSize * (scrollBar.height-2)
+        smooth: true
     }
 }
