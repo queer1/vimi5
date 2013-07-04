@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtQuick.Dialogs 1.0
 
 Rectangle {
     id: tagView
@@ -98,6 +99,40 @@ Rectangle {
         }
     }
 
+
+    Rectangle {
+        id: setPathButton
+        height: 25
+        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.bottom: rescanButton.top
+        border.color: "white"
+        border.width: 1
+        color: "black"
+        Text {
+            anchors.fill: parent
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            text: "Set path"
+            color: "white"
+        }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: folderDialog.visible = true
+        }
+
+        FileDialog {
+            id: folderDialog
+            title: "Select collection folder"
+            selectFolder: true
+            folder: config.collectionPath
+            onAccepted: {
+                config.collectionPath = fileUrls[0]
+                videoModel.rescan()
+            }
+        }
+    }
+
     Rectangle {
         id: rescanButton
         height: 25
@@ -137,15 +172,14 @@ Rectangle {
             color: "white"
         }
         MouseArea {
-            property bool fullscreen: false
             anchors.fill: parent
             onClicked: {
-                if (fullscreen) {
+                if (config.fullscreen) {
                     mainWindow.showMaximized()
-                    fullscreen = false
+                    config.fullscreen = false
                 } else {
                     mainWindow.showFullScreen()
-                    fullscreen = true
+                    config.fullscreen = true
                 }
             }
         }

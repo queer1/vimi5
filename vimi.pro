@@ -5,7 +5,8 @@ SOURCES = \
     src/videoframedumper.cpp
 HEADERS = \
     src/collection.h \
-    src/videoframedumper.h
+    src/videoframedumper.h \
+    src/config.h \
 
 QT += quick qml multimedia
 
@@ -20,4 +21,5 @@ OTHER_FILES += \
     qml/Toolbar.qml \
     qml/ScrollBar.qml \
     qml/SideBar.qml
+
 

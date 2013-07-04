@@ -47,23 +47,27 @@ Item {
                 videoModel.setLastFile(index, file)
             }
             autoPlay: true
-            onPlaying: video.focus = true
+            onPlaying: {
+                video.opacity = 1
+                cover.opacity = 0
+                video.focus = true
+            }
             onStatusChanged: {
                 if (status == MediaPlayer.Loaded || status == MediaPlayer.Buffered) {
-                    video.opacity = 1
-                    cover.opacity = 0
 
                     if (!seekable)
                         return
 
                     seek(lastPosition)
                 } else {
-                    video.opacity = 0
-                    cover.opacity = 1
+
                 }
             }
-            //Component.onDestruction: videoModel.setLastPosition(index, position)
-            onPaused: videoModel.setLastPosition(index, position)
+            onPaused: {
+                videoModel.setLastPosition(index, position)
+                video.opacity = 0
+                cover.opacity = 1
+            }
         }
 
         Image {
@@ -162,7 +166,7 @@ Item {
                             }
                         }
                         SmoothedAnimation { properties: "x,y,width,height,opacity"; duration: 500 }
-                        ScriptAction { script: gridView.visible = false }
+                        ScriptAction { script: { gridView.visible = false; sideBar.visible = false } }
                     }
                 }
             },
@@ -171,7 +175,7 @@ Item {
                     SequentialAnimation {
                         ScriptAction { script: gridView.visible = true}
                         SmoothedAnimation { properties: "x,y,width,height,opacity"; duration: 500 }
-                        ScriptAction { script: player.pause() }
+                        ScriptAction { script: { player.pause(); sideBar.visible = true } }
                     }
                 }
             }

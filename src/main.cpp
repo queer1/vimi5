@@ -27,6 +27,7 @@
 #include <ctime>
 
 #include "collection.h"
+#include "config.h"
 #include "version.h"
 #include "videoframedumper.h"
 
@@ -46,9 +47,13 @@ int main(int argc, char *argv[])
     Collection collection;
     view.rootContext()->setContextProperty("videoModel", &collection);
     view.rootContext()->setContextProperty("mainWindow", &view);
+    view.rootContext()->setContextProperty("config", Config::instance());
     view.setSource(QUrl("qrc:/qml/main.qml"));
     view.setResizeMode(QQuickView::SizeRootObjectToView);
-    view.showMaximized();
+    if (Config::instance()->fullscreen())
+        view.showFullScreen();
+    else
+        view.showMaximized();
     //view.show();
     //VideoFrameDumper kek("/home/test/Charlie Laine Hardcore.avi");
 

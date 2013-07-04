@@ -19,36 +19,64 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <QObject>
 #include <QString>
 #include <QStringList>
-class SettingsDialog;
-class Config
+#include <QSize>
+#include <QDebug>
+#include <QUrl>
+
+class Config : public QObject
 {
+    Q_OBJECT
+
+    Q_PROPERTY(QString collectionPath READ collectionPath WRITE setCollectionPath NOTIFY collectionPathChanged)
+    Q_PROPERTY(QStringList movieSuffixes READ movieSuffixes WRITE setMovieSuffixes NOTIFY movieSuffixesChanged)
+    Q_PROPERTY(QSize coverSize READ coverSize WRITE setCoverSize NOTIFY coverSizeChanged)
+    Q_PROPERTY(QStringList favouriteTags READ favouriteTags WRITE setFavouriteTags NOTIFY favouriteTagsChanged)
+    Q_PROPERTY(bool fullscreen READ fullscreen WRITE setFullscreen NOTIFY fullscreenChanged)
+
 public:
-    static QString collectionPath();
-    static QStringList movieSuffixes();
-    static int maxCoverSize();
-    static QString dirExplorer();
-    static QString moviePlayer();
-    static const QStringList &favouriteTags();
+    ~Config();
 
-    static void addFavouriteTag(const QString&);
-    static void removeFavouriteTag(const QString&);
-    static void setCollectionPath(QString path);
+    QString collectionPath() { return m_collectionPath; }
+    //void setCollectionPath(const QString &path) { qDebug() << path; m_collectionPath = path; save(); emit collectionPathChanged(); }
+    void setCollectionPath(const QUrl &url) { qDebug() << "url" << url; m_collectionPath = url.toLocalFile(); save(); emit collectionPathChanged(); }
 
-    friend class SettingsDialog;
+
+    const QStringList &movieSuffixes() { return m_movieSuffixes; }
+    void setMovieSuffixes(const QStringList &suffixes) { m_movieSuffixes = suffixes; save(); emit movieSuffixesChanged(); }
+
+    QSize coverSize() { return m_coverSize; }
+    void setCoverSize(const QSize &size) { m_coverSize = size; save(); emit coverSizeChanged(); }
+
+    const QStringList &favouriteTags() { return m_favouriteTags; }
+    void setFavouriteTags(const QStringList &tags) { m_favouriteTags = tags; save(); emit favouriteTagsChanged(); }
+
+    void addFavouriteTag(const QString &tag) { m_favouriteTags.append(tag); save(); emit favouriteTagsChanged(); }
+    void removeFavouriteTag(const QString &tag) { m_favouriteTags.removeAll(tag); save(); emit favouriteTagsChanged(); }
+
+    bool fullscreen() { return m_fullscreen; }
+    void setFullscreen(bool fullscreen) { m_fullscreen = fullscreen; save(); emit fullscreenChanged(fullscreen); }
+
+    static Config *instance();
+
+signals:
+    void collectionPathChanged();
+    void movieSuffixesChanged();
+    void coverSizeChanged();
+    void favouriteTagsChanged();
+    void fullscreenChanged(bool);
+
 private:
-    static void load();
-    static void save();
+    Config();
+    void save();
 
-    static bool m_loaded;
-
-    static QString m_collectionPath;
-    static QStringList m_movieSuffixes;
-    static QStringList m_favouriteTags;
-    static int m_maxCoverSize;
-    static QString m_dirExplorer;
-    static QString m_moviePlayer;
+    QString m_collectionPath;
+    QStringList m_movieSuffixes;
+    QStringList m_favouriteTags;
+    QSize m_coverSize;
+    bool m_fullscreen;
 };
 
 #endif // CONFIG_H

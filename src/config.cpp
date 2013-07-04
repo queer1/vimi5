@@ -21,24 +21,14 @@
 #include <QSettings>
 #include <QDebug>
 
-QString Config::m_collectionPath;
-QString Config::m_dirExplorer;
-QString Config::m_moviePlayer;
-QStringList Config::m_movieSuffixes;
-QStringList Config::m_favouriteTags;
-int Config::m_maxCoverSize;
-bool Config::m_loaded = false;
-
-void Config::load()
+Config::Config() : QObject()
 {
     QSettings settings;
 
     m_collectionPath = settings.value("collectionPath", QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).first()).toString();
-    m_maxCoverSize = settings.value("maxCoverSize", 128).toInt();
-    m_dirExplorer = settings.value("dirExplorer", "").toString();
-    m_moviePlayer = settings.value("moviePlayer", "").toString();
+    m_coverSize = settings.value("coverSize", QSize(300, 200)).toSize();
     m_favouriteTags = settings.value("favouriteTags").toStringList();
-
+    m_fullscreen = settings.value("fullscreen").toBool();
 
     QStringList defaultSuffixes;
     defaultSuffixes << "*.mpg"
@@ -51,9 +41,17 @@ void Config::load()
         m_movieSuffixes = settingSuffixes;
     else
         m_movieSuffixes = defaultSuffixes;
+}
 
-    save(); // Save default config
-    m_loaded = true;
+Config::~Config()
+{
+    save();
+}
+
+Config *Config::instance()
+{
+    static Config config;
+    return &config;
 }
 
 void Config::save()
@@ -61,84 +59,7 @@ void Config::save()
     QSettings settings;
     settings.setValue("collectionPath", m_collectionPath);
     settings.setValue("movieSuffixes", m_movieSuffixes);
-    settings.setValue("maxCoverSize", m_maxCoverSize);
-    settings.setValue("moviePlayer", m_moviePlayer);
-    settings.setValue("dirExplorer", m_dirExplorer);
+    settings.setValue("coverSize", m_coverSize);
     settings.setValue("favouriteTags", m_favouriteTags);
-
-
+    settings.setValue("fullscreen", m_fullscreen);
 }
-
-QString Config::collectionPath()
-{
-    if (!m_loaded)
-        load();
-    return m_collectionPath;
-}
-
-QStringList Config::movieSuffixes()
-{
-    if (!m_loaded)
-        load();
-    return m_movieSuffixes;
-}
-
-int Config::maxCoverSize()
-{
-    if (!m_loaded)
-        load();
-    return m_maxCoverSize;
-}
-
-QString Config::dirExplorer()
-{
-    if (!m_loaded)
-        load();
-
-    return m_dirExplorer;
-}
-
-
-QString Config::moviePlayer()
-{
-    if (!m_loaded)
-        load();
-
-    return m_moviePlayer;
-}
-
-const QStringList &Config::favouriteTags()
-{
-    if (!m_loaded)
-        load();
-
-    return m_favouriteTags;
-}
-
-void Config::addFavouriteTag(const QString &tag)
-{
-    if (!m_loaded)
-        load();
-
-    m_favouriteTags.append(tag);
-    save();
-}
-
-void Config::removeFavouriteTag(const QString &tag)
-{
-    if (!m_loaded)
-        load();
-
-    m_favouriteTags.removeAll(tag);
-    save();
-}
-
-void Config::setCollectionPath(QString path)
-{
-    if (!m_loaded)
-        load();
-
-    m_collectionPath = path;
-    save();
-}
-

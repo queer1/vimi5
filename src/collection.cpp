@@ -241,7 +241,7 @@ void Collection::rescan()
     beginResetModel();
     m_filteredVideos.clear();
     m_videos.clear();
-    scan(QDir(Config::collectionPath()));
+    scan(QDir(Config::instance()->collectionPath()));
     qSort(m_filteredVideos.begin(), m_filteredVideos.end(), compareVideos);
     endResetModel();
 
@@ -284,7 +284,7 @@ void Collection::scan(QDir dir)
     qDebug() << "Scanning directory: " << dir.path();
     QGuiApplication::instance()->processEvents();
 
-    dir.setNameFilters(Config::movieSuffixes());
+    dir.setNameFilters(Config::instance()->movieSuffixes());
     dir.setFilter(QDir::Files);
 
     ////////////////////

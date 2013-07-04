@@ -69,8 +69,12 @@ Image {
             anchors.margins: 25
             font.pointSize: 12
             text: videoModel.status
-            onTextChanged: notify.running = true
+            onTextChanged: {
+                parent.opacity = 1
+                notifyTimer.restart()
+            }
             wrapMode: Text.WordWrap
+            elide: Text.ElideRight
 
         }
 
@@ -83,13 +87,14 @@ Image {
             cornerRadius: notification.radius + glowRadius
         }
 
-        SequentialAnimation {
-            id: notify
-            PropertyAnimation { target: notification; property: "opacity"; from: 0; to: 1; duration: 500 }
-            PropertyAnimation { target: notification; property: "opacity"; from: 1; to: 0; duration: 3500 }
+        Timer {
+            id: notifyTimer
+            interval: 1000
+            onTriggered: parent.opacity = 0
         }
 
-
-
+        Behavior on opacity { NumberAnimation { duration: 1000; } }
     }
+
+
 }

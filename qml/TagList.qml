@@ -6,6 +6,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.left: parent.left*/
     anchors.margins: 5
+//    anchors.verticalCenter: parent.verticalCenter
     height: Math.min(taglistlist.count * 10 + 30, rect.height)
 
 
@@ -69,7 +70,7 @@ Rectangle {
         anchors.rightMargin: 10
         anchors.leftMargin: 10
         height: 16
-        color: "#55000000"
+        color: "#55ffffff"
         border.color: "white"
         border.width: 0
         MouseArea {
@@ -91,6 +92,16 @@ Rectangle {
                 else
                     newTagRect.border.width = 0
             }
+
+            Text {
+                font.pointSize: parent.font.pointSize
+                anchors.fill: parent
+                verticalAlignment: Text.AlignVCenter
+                text: "New tag..."
+                visible: !(parent.cursorVisible || parent.text != "")
+                color: "white"
+            }
+
             onAccepted: {
                 videoModel.addTag(index, text)
                 text = ""
@@ -110,7 +121,8 @@ Rectangle {
             AnchorChanges {
                 target: tagList
                 anchors.top: toolbar.bottom
-                anchors.bottom: seekbar.top
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.bottom: seekbar.top
                 anchors.left: rect.left
                 anchors.right: undefined
             }
@@ -121,8 +133,10 @@ Rectangle {
             PropertyChanges { target: newTagInput; focus: false }
             AnchorChanges {
                 target: tagList
-                anchors.top: toolbar.bottom
-                anchors.bottom: seekbar.top
+                //anchors.top: rect.top
+                anchors.verticalCenter: tagList.verticalCenter
+                //anchors.top: toolbar.bottom
+                //anchors.bottom: seekbar.top
                 anchors.left: rect.left
                 anchors.right: undefined
             }
@@ -134,6 +148,7 @@ Rectangle {
             AnchorChanges {
                 target: tagList
                 anchors.top: titleText.bottom
+                anchors.verticalCenter: undefined
                 anchors.bottom: undefined
                 anchors.left: rect.left
                 anchors.right: rect.right
