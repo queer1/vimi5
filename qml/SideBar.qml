@@ -68,7 +68,7 @@ Rectangle {
         id: availableTagsView
         anchors.top: tagInputBox.bottom
         anchors.bottom: rescanButton.top
-        anchors.right: parent.right
+        anchors.right: scrollbar.left
         anchors.left: parent.left
         model: videoModel.allTags
         delegate: Text {
@@ -92,12 +92,14 @@ Rectangle {
             }
         }
 
-
-        ScrollBar {
-            position: parent.visibleArea.yPosition
-            pageSize: parent.visibleArea.heightRatio
-        }
     }
+    ScrollBar {
+        id: scrollbar
+        view: availableTagsView
+        anchors.top: availableTagsView.top
+        anchors.bottom: availableTagsView.bottom
+    }
+
 
 
     Rectangle {

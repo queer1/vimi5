@@ -3,10 +3,11 @@ import QtQuick 2.0
 Item {
     id: scrollBar
 
-    property real position
-    property real pageSize
+    property real position: view.visibleArea.yPosition
+    property real pageSize: view.visibleArea.heightRatio
     //property alias bgColor: background.color
     property alias fgColor: thumb.color
+    property var view
     opacity: 0.7
     anchors.right: parent.right
     anchors.bottom: parent.bottom
@@ -21,7 +22,7 @@ Item {
                 var pos = mouse.y / height - parent.pageSize/2
                 if (pos < 0) pos = 0
                 if (pos + parent.pageSize/2 > 1) pos = 1 - parent.pageSize/2
-                scrollBar.parent.contentY = pos * scrollBar.parent.contentHeight
+                view.contentY = pos * view.contentHeight
             }
         }
     }

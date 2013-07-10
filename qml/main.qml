@@ -37,17 +37,16 @@ Image {
         anchors.left: sideBar.right
         anchors.bottom: parent.bottom
         anchors.top: parent.top
-        anchors.right: parent.right
+        anchors.right: scrollbar.left
         model: videoModel
         cellHeight: 300
         cellWidth: 200
         delegate: VideoElement { }
 
-        ScrollBar {
-            id: scrollbar
-            position: parent.visibleArea.yPosition
-            pageSize: parent.visibleArea.heightRatio
-        }
+    }
+    ScrollBar {
+        id: scrollbar
+        view: gridView
     }
 
     Rectangle {
