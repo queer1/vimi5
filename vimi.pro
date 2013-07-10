@@ -20,6 +20,7 @@ OTHER_FILES += \
     qml/TagList.qml \
     qml/Toolbar.qml \
     qml/ScrollBar.qml \
-    qml/SideBar.qml
+    qml/SideBar.qml \
+    qml/SeekBar.qml
 
 
