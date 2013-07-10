@@ -42,9 +42,13 @@ Item {
             id: player
 
             property string file: ""
+            property var screenshots
             onFileChanged: {
                 source = "file:" + encodeURIComponent(model.path + "/" + file)
                 videoModel.setLastFile(index, file)
+                screenshots = model.screenshots
+                screenshots.sort()
+
             }
             autoPlay: true
             onPlaying: {
@@ -54,7 +58,6 @@ Item {
             }
             onStatusChanged: {
                 if (status == MediaPlayer.Loaded || status == MediaPlayer.Buffered) {
-
                     if (!seekable)
                         return
 
@@ -67,6 +70,18 @@ Item {
                 videoModel.setLastPosition(index, position)
                 video.opacity = 0
                 cover.opacity = 1
+            }
+            onPositionChanged: {
+                console.log(screenshots[0])
+                for (var i=screenshots.length-1; i>=0; --i) {
+                    console.log(screenshots[i])
+                    if (screenshots[i].indexOf(file) == -1)
+                        continue
+
+                    if (screenshots[i].split("_")[1] > position) {
+                        seekbar.screenshot = "file:" + encodeURIComponent(model.path + "/" + screenshots[i])
+                    }
+                }
             }
         }
 

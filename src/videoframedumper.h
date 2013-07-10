@@ -8,7 +8,7 @@ class VideoFrameDumper : public QAbstractVideoSurface
 {
     Q_OBJECT
 public:
-    explicit VideoFrameDumper(QString path, QObject *parent = 0);
+    explicit VideoFrameDumper(QUrl path, QObject *parent = 0);
     QList<QVideoFrame::PixelFormat> supportedPixelFormats(
             QAbstractVideoBuffer::HandleType handleType = QAbstractVideoBuffer::NoHandle) const
     {
@@ -23,7 +23,7 @@ public:
     void stop() { QAbstractVideoSurface::stop(); }
 
 signals:
-    void complete();
+    void complete(QString path);
 
 public slots:
     void mediaLoaded();
@@ -31,6 +31,7 @@ public slots:
 
 private:
     QString m_outputPath;
+    QString m_filename;
     QMediaPlayer m_player;
     int m_counter;
     int m_requestedPosition;

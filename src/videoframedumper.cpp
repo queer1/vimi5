@@ -1,20 +1,21 @@
 #include "videoframedumper.h"
 #include <QFileInfo>
 
-VideoFrameDumper::VideoFrameDumper(QString path, QObject *parent) :
+VideoFrameDumper::VideoFrameDumper(QUrl path, QObject *parent) :
     QAbstractVideoSurface(parent),
     m_counter(0),
     m_requestedPosition(0)
 {
-    QFileInfo fileInfo(path);
+    QFileInfo fileInfo(path.toLocalFile());
     if (!fileInfo.exists()) {
         qWarning() << "can't open file" << path;
     }
 
     m_outputPath = fileInfo.canonicalPath();
+    m_filename = fileInfo.fileName();
 
     m_player.setVideoOutput(this);
-    m_player.setMedia(QUrl::fromLocalFile(path));
+    m_player.setMedia(path);
     connect(&m_player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)), SLOT(mediaLoaded()));
     connect(&m_player, SIGNAL(error(QMediaPlayer::Error)), SLOT(handleError()));
     m_player.play();
@@ -28,8 +29,8 @@ bool VideoFrameDumper::present(const QVideoFrame &f)
         frame.map(QAbstractVideoBuffer::ReadOnly);
         {
             QImage image(frame.bits(), frame.width(), frame.height(), QImage::Format_RGB888);
-            image.save(m_outputPath + "/vimiframe_" + QString::number(m_requestedPosition) + ".png");
-            qDebug() << "saved to" << m_outputPath + "/vimiframe_" + QString::number(m_requestedPosition) + ".png";
+            image.save(m_outputPath + "/vimiframe_" + QString::number(m_requestedPosition) + "_" + m_filename + ".png");
+            qDebug() << "saved to" << m_outputPath + "/vimiframe_" + QString::number(m_requestedPosition) + "_" + m_filename + ".png";
         }
         frame.unmap();
     } else {
@@ -52,7 +53,8 @@ void VideoFrameDumper::mediaLoaded()
     }
     else if (m_player.mediaStatus() == QMediaPlayer::EndOfMedia) {
         m_player.stop();
-        emit complete();
+        emit complete(m_outputPath);
+        deleteLater();
     }
 
 }

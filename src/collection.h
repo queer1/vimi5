@@ -40,7 +40,8 @@ public:
         TagsRole,
         LastPositionRole,
         LastFileRole,
-        BookmarksRole
+        BookmarksRole,
+        ScreenshotsRole
     };
 
     Video(QString name, QString path, QString cover, QStringList files, QStringList tags, int lastPosition, QString lastFile, QVariantMap bookmarks) :
@@ -102,6 +103,10 @@ public slots:
     QStringList allTags();
 
     QString getStatus() { return m_status; }
+
+    void createCover(QString file, qint64 position);
+    void createScreenshots(QUrl file);
+    void screenshotsCreated(QString path);
 
 signals:
     void tagsUpdated();

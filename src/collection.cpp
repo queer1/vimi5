@@ -28,7 +28,7 @@
 #include <algorithm>
 
 #include "collection.h"
-
+#include "videoframedumper.h"
 
 QDataStream &operator<<(QDataStream &datastream, const Video &video) {
     datastream << video.m_name << video.m_path << video.m_cover << video.m_files << video.m_tags << video.m_lastPosition << video.m_lastFile << video.m_bookmarks;
@@ -68,6 +68,7 @@ QHash<int, QByteArray> Collection::roleNames() const
     roleNames[Video::LastPositionRole] = "lastPosition";
     roleNames[Video::LastFileRole] = "lastFile";
     roleNames[Video::BookmarksRole] = "bookmarks";
+    roleNames[Video::ScreenshotsRole] = "screenshots";
     return roleNames;
 }
 
@@ -140,6 +141,14 @@ QVariant Collection::data(const QModelIndex &item, int role) const
         return m_filteredVideos[row]->m_lastFile;
     case Video::BookmarksRole:
         return m_filteredVideos[row]->m_bookmarks;
+    case Video::ScreenshotsRole: {
+        QDir dir(m_filteredVideos[row]->m_path);
+        QStringList filter;
+        foreach(const QString &file, m_filteredVideos[row]->m_files)
+            filter << "vimiframe_*_" + file + ".png";
+        return dir.entryList(filter);
+    }
+
     default:
         qWarning() << "Unknown role" << role;
         return QVariant();
@@ -410,3 +419,18 @@ void Collection::removeFilterTag(QString tag)
     updateFilteredVideos();
 }
 
+void Collection::createCover(QString file, qint64 position)
+{
+//TODO
+}
+
+void Collection::createScreenshots(QUrl file)
+{
+    VideoFrameDumper *dumper = new VideoFrameDumper(file);
+    connect(dumper, SIGNAL(complete()), SLOT(screenshotsCreated(QString)));
+}
+
+void Collection::screenshotsCreated(QString path)
+{
+//TODO
+}

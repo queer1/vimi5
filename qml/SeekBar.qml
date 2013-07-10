@@ -5,6 +5,7 @@ Rectangle {
     anchors.bottom: parent.bottom
     anchors.right: parent.right
     anchors.left: parent.left
+    property string screenshot: ""
     height: 30
     color: "#55000000"
     opacity: 0
@@ -65,6 +66,14 @@ Rectangle {
 
     Behavior on opacity {
         NumberAnimation { duration: 1000 }
+    }
+
+    Image {
+        width: 100
+        height: 100
+        anchors.horizontalCenter: progressbar.right
+        anchors.bottom: parent.top
+        source: screenshot
     }
 }
 

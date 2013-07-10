@@ -12,6 +12,67 @@ Rectangle {
 
     Rectangle {
         id: skipButton
+        anchors.bottom: coverButton.top
+        anchors.bottomMargin: 5
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: 50
+        color: "black"
+        border.width: 1
+        border.color: "white"
+        Text {
+            anchors.fill: parent
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            text: "SS"
+            font.bold: true
+            font.pointSize: 20
+            color: "white"
+        }
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                videoModel.createScreenshots(player.source)
+            }
+        }
+    }
+    Rectangle {
+        id: coverButton
+        anchors.bottom: generateScreenshotsButton.top
+        anchors.bottomMargin: 5
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: 50
+        color: "black"
+        border.width: 1
+        border.color: "white"
+        Text {
+            anchors.fill: parent
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            text: "[C]"
+            font.bold: true
+            font.pointSize: 20
+            color: "white"
+        }
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                var bks = bookmarks[player.file]
+                for (var i=0; i<bks.length; i++) {
+                    if (bks[i] > player.position) {
+                        player.seek(bks[i])
+                        return
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        id: generateScreenshotsButton
         anchors.bottom: bookmarkButton.top
         anchors.bottomMargin: 5
         anchors.left: parent.left
@@ -40,7 +101,6 @@ Rectangle {
                         return
                     }
                 }
-
             }
         }
     }
