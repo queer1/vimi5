@@ -8,7 +8,7 @@ class VideoFrameDumper : public QAbstractVideoSurface
 {
     Q_OBJECT
 public:
-    explicit VideoFrameDumper(QUrl path, QObject *parent = 0);
+    explicit VideoFrameDumper(QUrl path, int numberOfFrames, QObject *parent = 0);
     QList<QVideoFrame::PixelFormat> supportedPixelFormats(
             QAbstractVideoBuffer::HandleType handleType = QAbstractVideoBuffer::NoHandle) const
     {
@@ -35,6 +35,8 @@ private:
     QMediaPlayer m_player;
     int m_counter;
     int m_requestedPosition;
+    int m_numberOfFrames;
+    int m_wrongFrameCount;
 };
 
 #endif // VIDEOFRAMEDUMPER_H

@@ -31,12 +31,12 @@
 #include "videoframedumper.h"
 
 QDataStream &operator<<(QDataStream &datastream, const Video &video) {
-    datastream << video.m_name << video.m_path << video.m_cover << video.m_files << video.m_tags << video.m_lastPosition << video.m_lastFile << video.m_bookmarks;
+    datastream << video.m_name << video.m_path << video.m_cover << video.m_files << video.m_tags << video.m_lastPosition << video.m_lastFile << video.m_bookmarks << video.m_screenshots;
     return datastream;
 }
 
 QDataStream &operator>>(QDataStream &datastream, Video &video) {
-    datastream >> video.m_name >> video.m_path >> video.m_cover >> video.m_files >> video.m_tags >> video.m_lastPosition >> video.m_lastFile >> video.m_bookmarks;
+    datastream >> video.m_name >> video.m_path >> video.m_cover >> video.m_files >> video.m_tags >> video.m_lastPosition >> video.m_lastFile >> video.m_bookmarks >> video.m_screenshots;
     return datastream;
 }
 
@@ -141,14 +141,8 @@ QVariant Collection::data(const QModelIndex &item, int role) const
         return m_filteredVideos[row]->m_lastFile;
     case Video::BookmarksRole:
         return m_filteredVideos[row]->m_bookmarks;
-    case Video::ScreenshotsRole: {
-        QDir dir(m_filteredVideos[row]->m_path);
-        QStringList filter;
-        foreach(const QString &file, m_filteredVideos[row]->m_files)
-            filter << "vimiframe_*_" + file + ".png";
-        return dir.entryList(filter);
-    }
-
+    case Video::ScreenshotsRole:
+        return m_filteredVideos[row]->m_screenshots;
     default:
         qWarning() << "Unknown role" << role;
         return QVariant();
@@ -307,6 +301,7 @@ void Collection::scan(QDir dir)
         QStringList files = dir.entryList();
         QStringList tags;
         QVariantMap bookmarks;
+        QStringList screenshots;
 
         // Load tag cache
         if (dir.exists("tags.txt")) {
@@ -326,9 +321,17 @@ void Collection::scan(QDir dir)
             }
         }
 
+        // Look for screenshots
+        QStringList filter;
+        foreach(const QString &file, files)
+            filter << "vimiframe_*_" + file + ".png";
+        QMap <qint64, QString> fileMap;
+        foreach(const QString &file, dir.entryList(filter)) {
+            fileMap[file.split("_")[1].toLong()] = file;
+        }
+        screenshots = fileMap.values();
 
-
-        m_videos.append(Video(name, path, cover, files, tags, 0, files.first(), bookmarks));
+        m_videos.append(Video(name, path, cover, files, tags, 0, files.first(), bookmarks, screenshots));
         m_filteredVideos.append(&m_videos.last());
 
         setStatus(tr("Found video ")  + name);
@@ -426,7 +429,7 @@ void Collection::createCover(QString file, qint64 position)
 
 void Collection::createScreenshots(QUrl file)
 {
-    VideoFrameDumper *dumper = new VideoFrameDumper(file);
+    VideoFrameDumper *dumper = new VideoFrameDumper(file, 50);
     connect(dumper, SIGNAL(complete()), SLOT(screenshotsCreated(QString)));
 }
 

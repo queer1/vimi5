@@ -46,8 +46,6 @@ Item {
                 source = "file:" + encodeURIComponent(model.path + "/" + file)
                 videoModel.setLastFile(index, file)
                 screenshot.screenshots = model.screenshots
-                screenshot.screenshots.sort()
-
             }
             autoPlay: true
             onPlaying: {
@@ -264,20 +262,27 @@ Item {
         Image {
             id: screenshot
             height: 100
-            width: 100
             anchors.bottom: seekbar.top
             opacity: seekbar.opacity
+            fillMode: Image.PreserveAspectFit
             property var screenshots
             onXChanged: {
                 var file = player.file
-                var position = x *player.duration / seekbar.width
-                for (var i=screenshots.length-1; i>=0; --i) {
+                var position = x * player.duration / parent.width
+                var lastScreenshotPos = -1000000000
+                for (var i=0; i<screenshots.length; i++) {
                     if (screenshots[i].indexOf(file) == -1)
                         continue
+                    var screenshotPos = screenshots[i].split("_")[1]
 
-                    if (screenshots[i].split("_")[1] > position) {
-                        screenshot.source = "file:" + encodeURIComponent(model.path + "/" + screenshots[i])
+                    if (screenshotPos > position) {
+                        if (Math.abs(screenshotPos - position) < Math.abs(lastScreenshotPos - position))
+                            screenshot.source = "file:" + encodeURIComponent(model.path + "/" + screenshots[i])
+                        else
+                            screenshot.source = "file:" + encodeURIComponent(model.path + "/" + screenshots[i-1])
+                        return
                     }
+                    lastScreenshotPos = screenshotPos
                 }
             }
         }

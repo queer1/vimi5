@@ -134,7 +134,7 @@ Rectangle {
             AnchorChanges {
                 target: tagList
                 //anchors.top: rect.top
-                anchors.verticalCenter: tagList.verticalCenter
+                anchors.verticalCenter: rect.verticalCenter
                 //anchors.top: toolbar.bottom
                 //anchors.bottom: seekbar.top
                 anchors.left: rect.left

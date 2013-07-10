@@ -44,8 +44,8 @@ public:
         ScreenshotsRole
     };
 
-    Video(QString name, QString path, QString cover, QStringList files, QStringList tags, int lastPosition, QString lastFile, QVariantMap bookmarks) :
-        m_name(name), m_path(path), m_cover(cover), m_files(files), m_tags(tags), m_lastPosition(lastPosition), m_lastFile(lastFile), m_bookmarks(bookmarks)
+    Video(QString name, QString path, QString cover, QStringList files, QStringList tags, int lastPosition, QString lastFile, QVariantMap bookmarks, QStringList screenshots) :
+        m_name(name), m_path(path), m_cover(cover), m_files(files), m_tags(tags), m_lastPosition(lastPosition), m_lastFile(lastFile), m_bookmarks(bookmarks), m_screenshots(screenshots)
     { }
 
     Video() {}
@@ -62,6 +62,7 @@ public:
     int m_lastPosition;
     QString m_lastFile;
     QVariantMap m_bookmarks;
+    QStringList m_screenshots;
 };
 
 class Collection : public QAbstractListModel
