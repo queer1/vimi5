@@ -42,12 +42,11 @@ Item {
             id: player
 
             property string file: ""
-            property var screenshots
             onFileChanged: {
                 source = "file:" + encodeURIComponent(model.path + "/" + file)
                 videoModel.setLastFile(index, file)
-                screenshots = model.screenshots
-                screenshots.sort()
+                screenshot.screenshots = model.screenshots
+                screenshot.screenshots.sort()
 
             }
             autoPlay: true
@@ -72,16 +71,7 @@ Item {
                 cover.opacity = 1
             }
             onPositionChanged: {
-                console.log(screenshots[0])
-                for (var i=screenshots.length-1; i>=0; --i) {
-                    console.log(screenshots[i])
-                    if (screenshots[i].indexOf(file) == -1)
-                        continue
 
-                    if (screenshots[i].split("_")[1] > position) {
-                        seekbar.screenshot = "file:" + encodeURIComponent(model.path + "/" + screenshots[i])
-                    }
-                }
             }
         }
 
@@ -235,9 +225,10 @@ Item {
             onMouseXChanged: {
                 if (rect.state == "normal")
                     return
-                if (mouse.y > rect.height - seekbar.height)
+                if (mouse.y > rect.height - seekbar.height){
                     seekbar.opacity = 1
-                else if(mouse.y < toolbar.maxHeight)
+                    screenshot.x = mouse.x
+                }else if(mouse.y < toolbar.maxHeight)
                     toolbar.state = "shown"
                 else if (mouse.x < 200)
                     tagList.state = "maximized"
@@ -266,6 +257,27 @@ Item {
                     tagList.state = "hidden"
                     if (player.status == MediaPlayer.NoMedia)
                         player.file = model.lastFile
+                }
+            }
+        }
+
+        Image {
+            id: screenshot
+            height: 100
+            width: 100
+            anchors.bottom: seekbar.top
+            opacity: seekbar.opacity
+            property var screenshots
+            onXChanged: {
+                var file = player.file
+                var position = x *player.duration / seekbar.width
+                for (var i=screenshots.length-1; i>=0; --i) {
+                    if (screenshots[i].indexOf(file) == -1)
+                        continue
+
+                    if (screenshots[i].split("_")[1] > position) {
+                        screenshot.source = "file:" + encodeURIComponent(model.path + "/" + screenshots[i])
+                    }
                 }
             }
         }
