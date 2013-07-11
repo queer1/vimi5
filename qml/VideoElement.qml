@@ -5,6 +5,7 @@ import QtGraphicalEffects 1.0
 Item {
     id: gridItem
     width: gridView.cellWidth; height: gridView.cellHeight
+
     Rectangle {
         //source: "images/bg.png"
         //fillMode: Image.Tile
@@ -23,11 +24,11 @@ Item {
             id: titleText
             text: name
             horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
             color: "white"
-            styleColor: "black"
-            style: Text.Outline
             font.bold: true
-            renderType: Text.NativeRendering
+            height: 40
+            wrapMode: Text.WordWrap
 
             elide: Text.ElideRight
             width: parent.width
@@ -54,22 +55,17 @@ Item {
                 video.focus = true
             }
             onStatusChanged: {
-                if (status == MediaPlayer.Loaded || status == MediaPlayer.Buffered) {
-                    if (!seekable)
-                        return
-
-                    seek(lastPosition)
-                } else {
-
+                if (status == MediaPlayer.EndOfMedia) {
+                    seek(0)
+                    play()
                 }
+
             }
             onPaused: {
                 videoModel.setLastPosition(index, position)
                 video.opacity = 0
                 cover.opacity = 1
-            }
-            onPositionChanged: {
-
+                mainView.focus = true
             }
         }
 
@@ -128,6 +124,10 @@ Item {
                     opacity: 0
                     height: 50
                 }
+                PropertyChanges {
+                    target: screenshotMask
+                    visible: true
+                }
             },
             State {
                 name: "normal"
@@ -156,6 +156,11 @@ Item {
                     opacity: 0
                     height: 0
                 }
+                PropertyChanges {
+                    target: screenshotMask
+                    visible: false
+                    opacity: 0
+                }
             }
         ]
 
@@ -176,9 +181,9 @@ Item {
             Transition { to: "normal"
                 ParentAnimation { via: mainView
                     SequentialAnimation {
-                        ScriptAction { script: gridView.visible = true}
+                        ScriptAction { script: {gridView.visible = true; sideBar.visible = true } }
                         SmoothedAnimation { properties: "x,y,width,height,opacity"; duration: 500 }
-                        ScriptAction { script: { player.pause(); sideBar.visible = true } }
+                        ScriptAction { script: { player.pause();  } }
                     }
                 }
             }
@@ -192,9 +197,9 @@ Item {
             } else if (event.key == Qt.Key_Right) {
                 seekAmount = 3000
             } else if (event.key == Qt.Key_Up) {
-                seekAmount = 60000
+                seekAmount = 30000
             } else if (event.key == Qt.Key_Down) {
-                seekAmount = -60000
+                seekAmount = -30000
             } else if (event.key == Qt.Key_PageUp) {
                 seekAmount = 300000
             } else if (event.key == Qt.Key_PageDown) {
@@ -204,7 +209,16 @@ Item {
                 return
             }
             seekbarPeek.running = true
-            player.seek(player.position + seekAmount)
+
+            var newPosition = player.position + seekAmount
+            if (newPosition > player.duration) {
+                newPosition %= player.duration
+            }
+            if (newPosition < 0) {
+                newPosition = player.duration + newPosition
+            }
+
+            player.seek(newPosition)
         }
 
         VideoOutput {
@@ -225,7 +239,7 @@ Item {
                     return
                 if (mouse.y > rect.height - seekbar.height){
                     seekbar.opacity = 1
-                    screenshot.x = mouse.x
+                    screenshot.position = mouse.x
                 }else if(mouse.y < toolbar.maxHeight)
                     toolbar.state = "shown"
                 else if (mouse.x < 200)
@@ -253,8 +267,12 @@ Item {
                 } else {
                     rect.state = "maximized"
                     tagList.state = "hidden"
-                    if (player.status == MediaPlayer.NoMedia)
+                    if (player.status == MediaPlayer.NoMedia) {
                         player.file = model.lastFile
+                        player.seek(model.lastPosition)
+                        screenshot.screenshots = model.screenshots
+                    }
+
                 }
             }
         }
@@ -263,28 +281,56 @@ Item {
             id: screenshot
             height: 100
             anchors.bottom: seekbar.top
-            opacity: seekbar.opacity
             fillMode: Image.PreserveAspectFit
             property var screenshots
+            property int position
+            x: position - (width * (position/parent.width))
             onXChanged: {
+                if (screenshots === undefined) return;
+
                 var file = player.file
-                var position = x * player.duration / parent.width
+                var position = screenshot.position * player.duration / parent.width
                 var lastScreenshotPos = -1000000000
+                var lastScreenshot =""
                 for (var i=0; i<screenshots.length; i++) {
                     if (screenshots[i].indexOf(file) == -1)
                         continue
                     var screenshotPos = screenshots[i].split("_")[1]
 
                     if (screenshotPos > position) {
-                        if (Math.abs(screenshotPos - position) < Math.abs(lastScreenshotPos - position))
+                        if (Math.abs(screenshotPos - position) < Math.abs(lastScreenshotPos - position)) {
                             screenshot.source = "file:" + encodeURIComponent(model.path + "/" + screenshots[i])
-                        else
-                            screenshot.source = "file:" + encodeURIComponent(model.path + "/" + screenshots[i-1])
+                        } else {
+                            screenshot.source = "file:" + encodeURIComponent(model.path + "/" + lastScreenshot)
+                        }
+                        screenshotFade.restart()
                         return
                     }
                     lastScreenshotPos = screenshotPos
+                    lastScreenshot = screenshots[i]
                 }
             }
+
+            PropertyAnimation { id: screenshotFade; target: screenshotMask; property: "opacity"; from: 1; to: 0.2; duration: 1000 }
+
+            visible:false
+            RadialGradient {
+                id: mask
+                anchors.fill: parent
+                visible:false
+                gradient: Gradient {
+                    GradientStop { position: 0.1; color: "white" }
+                    GradientStop { position: 0.5; color: "transparent" }
+                }
+            }
+        }
+
+        OpacityMask {
+            id: screenshotMask
+            source: screenshot
+            maskSource: mask
+            anchors.fill: screenshot
+            opacity: seekbar.opacity
         }
 
         SeekBar {
@@ -301,9 +347,7 @@ Item {
             id: toolbar
             model: files
             onVideoChanged: {
-                if (toolbar.video != player.file && player.file != "") {
                     player.file = toolbar.video
-                }
             }
         }
 

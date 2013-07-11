@@ -6,7 +6,7 @@ Rectangle {
     anchors.right: rect.right
     anchors.top: toolbar.bottom
     anchors.bottom: seekbar.top
-    color: "black"
+    color: "transparent"
     property int maxWidth: 50
 
 
@@ -51,7 +51,7 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: "[C]"
+            text: "C"
             font.bold: true
             font.pointSize: 20
             color: "white"
@@ -60,13 +60,7 @@ Rectangle {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                var bks = bookmarks[player.file]
-                for (var i=0; i<bks.length; i++) {
-                    if (bks[i] > player.position) {
-                        player.seek(bks[i])
-                        return
-                    }
-                }
+                videoModel.createCover(player.source, player.position)
             }
         }
     }
@@ -119,7 +113,7 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: "*"
+            text: "+"
             font.bold: true
             font.pointSize: 20
             color: "white"

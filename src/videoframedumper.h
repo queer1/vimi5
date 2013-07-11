@@ -8,7 +8,9 @@ class VideoFrameDumper : public QAbstractVideoSurface
 {
     Q_OBJECT
 public:
-    explicit VideoFrameDumper(QUrl path, int numberOfFrames, QObject *parent = 0);
+    explicit VideoFrameDumper(QUrl path);
+    void createScreenshots(int numberOfFrames);
+    void createCover(qint64 position);
     QList<QVideoFrame::PixelFormat> supportedPixelFormats(
             QAbstractVideoBuffer::HandleType handleType = QAbstractVideoBuffer::NoHandle) const
     {
@@ -23,7 +25,9 @@ public:
     void stop() { QAbstractVideoSurface::stop(); }
 
 signals:
-    void complete(QString path);
+    void screenshotsCreated(QString path);
+    void coverCreated(QString path);
+    void statusUpdated(QString status);
 
 public slots:
     void mediaLoaded();
@@ -34,7 +38,7 @@ private:
     QString m_filename;
     QMediaPlayer m_player;
     int m_counter;
-    int m_requestedPosition;
+    qint64 m_requestedPosition;
     int m_numberOfFrames;
     int m_wrongFrameCount;
 };

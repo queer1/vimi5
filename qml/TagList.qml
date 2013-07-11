@@ -2,11 +2,7 @@ import QtQuick 2.0
 
 Rectangle {
     id: tagList
-    /*anchors.top: titleText.bottom
-    anchors.right: parent.right
-    anchors.left: parent.left*/
     anchors.margins: 5
-//    anchors.verticalCenter: parent.verticalCenter
     height: Math.min(taglistlist.count * 10 + 30, rect.height)
 
 
@@ -42,7 +38,7 @@ Rectangle {
                 renderType: Text.NativeRendering
                 style: Text.Outline
 
-                property bool selected: false
+                property bool selected: videoModel.filterTagsContains(modelData)
                 font.bold: selected
 
                 MouseArea {
@@ -54,7 +50,9 @@ Rectangle {
                         } else {
                             videoModel.addFilterTag(modelData)
                         }
+                        console.log(parent.selected)
                         parent.selected = !parent.selected
+                        console.log(parent.selected)
                     }
                 }
 
@@ -120,9 +118,7 @@ Rectangle {
             PropertyChanges { target: newTagInput; focus: false }
             AnchorChanges {
                 target: tagList
-                anchors.top: toolbar.bottom
                 anchors.verticalCenter: parent.verticalCenter
-                //anchors.bottom: seekbar.top
                 anchors.left: rect.left
                 anchors.right: undefined
             }
@@ -133,10 +129,7 @@ Rectangle {
             PropertyChanges { target: newTagInput; focus: false }
             AnchorChanges {
                 target: tagList
-                //anchors.top: rect.top
                 anchors.verticalCenter: rect.verticalCenter
-                //anchors.top: toolbar.bottom
-                //anchors.bottom: seekbar.top
                 anchors.left: rect.left
                 anchors.right: undefined
             }

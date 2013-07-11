@@ -1,11 +1,11 @@
 #include "videoframedumper.h"
 #include <QFileInfo>
 
-VideoFrameDumper::VideoFrameDumper(QUrl path, int numberOfFrames, QObject *parent) :
-    QAbstractVideoSurface(parent),
+VideoFrameDumper::VideoFrameDumper(QUrl path) :
+    QAbstractVideoSurface(0),
     m_counter(0),
     m_requestedPosition(0),
-    m_numberOfFrames(numberOfFrames),
+    m_numberOfFrames(-1),
     m_wrongFrameCount(0)
 {
     QFileInfo fileInfo(path.toLocalFile());
@@ -20,6 +20,18 @@ VideoFrameDumper::VideoFrameDumper(QUrl path, int numberOfFrames, QObject *paren
     m_player.setMedia(path);
     connect(&m_player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)), SLOT(mediaLoaded()));
     connect(&m_player, SIGNAL(error(QMediaPlayer::Error)), SLOT(handleError()));
+}
+
+void VideoFrameDumper::createScreenshots(int numberOfFrames)
+{
+    m_numberOfFrames = numberOfFrames;
+    m_player.play();
+}
+
+void VideoFrameDumper::createCover(qint64 position)
+{
+    m_requestedPosition = position;
+    m_player.setPosition(position);
     m_player.play();
 }
 
@@ -27,7 +39,7 @@ bool VideoFrameDumper::present(const QVideoFrame &f)
 {
     QVideoFrame frame(f);
 
-    if (qAbs(m_requestedPosition - frame.startTime()) > 100) {
+    if (qAbs(m_requestedPosition - frame.startTime()) > 1000) {
         qDebug() << "Got wrong frame!: " << m_requestedPosition << frame.startTime();
         m_wrongFrameCount++;
 
@@ -36,21 +48,38 @@ bool VideoFrameDumper::present(const QVideoFrame &f)
             return true;
         }
     } else if (frame.pixelFormat() == QVideoFrame::Format_RGB24) {
-        qDebug() << (frame.startTime()*100 / m_player.duration()) << "%";
         frame.map(QAbstractVideoBuffer::ReadOnly);
         {
             QImage image(frame.bits(), frame.width(), frame.height(), QImage::Format_RGB888);
-            image.save(m_outputPath + "/vimiframe_" + QString::number(frame.startTime()) + "_" + m_filename + ".png");
-            qDebug() << "saved to" << m_outputPath + "/vimiframe_" + QString::number(frame.startTime()) + "_" + m_filename + ".png";
+            QString filename;
+            int height;
+            if (m_numberOfFrames == -1) {
+                filename = m_outputPath + "/.vimicover.jpg";
+                height = 300;
+            } else {
+                filename = m_outputPath + "/.vimiframe_" + QString::number(frame.startTime()) + "_" + m_filename + ".jpg";
+                height = 100;
+            }
+            image.scaledToHeight(height, Qt::SmoothTransformation).save(filename);
+            qDebug() << "saved" << filename;
         }
         frame.unmap();
+        emit statusUpdated(QString("Screenshot progress %1%").arg(frame.startTime()*100 / m_player.duration()));
     } else {
         qWarning() << "wrong pixel format:" << frame.pixelFormat();
     }
 
+
+    // Generatic a single cover
+    if (m_numberOfFrames == -1) {
+        QMetaObject::invokeMethod(&m_player, "stop", Qt::QueuedConnection);
+        emit coverCreated(m_outputPath);
+        deleteLater();
+        return true;
+    }
+
     m_wrongFrameCount = 0;
     m_requestedPosition = m_player.duration()*m_counter++ / m_numberOfFrames;
-    //m_player.play();
     QMetaObject::invokeMethod(&m_player, "setPosition", Qt::QueuedConnection, Q_ARG(qint64, m_requestedPosition));
     if (m_counter <= m_numberOfFrames)
         return true;
@@ -60,15 +89,14 @@ bool VideoFrameDumper::present(const QVideoFrame &f)
 
 void VideoFrameDumper::mediaLoaded()
 {
-    qDebug() << m_player.mediaStatus();
     if (m_player.mediaStatus() == QMediaPlayer::LoadedMedia) {
     }
     else if (m_player.mediaStatus() == QMediaPlayer::EndOfMedia) {
         m_player.stop();
-        emit complete(m_outputPath);
+        emit screenshotsCreated(m_outputPath);
+        emit statusUpdated("Finished creating screenshots");
         deleteLater();
     }
-
 }
 
 void VideoFrameDumper::handleError()

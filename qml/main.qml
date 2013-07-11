@@ -12,21 +12,8 @@ Image {
         Qt.quit()
     }
 
-    Keys.onUpPressed: {
-        if (gridView.contentY > 200)
-            gridView.contentY -= 200
-        else
-            gridView.contentY = 0
-    }
-    Keys.onDownPressed: {
-        if (gridView.contentY < gridView.contentHeight - 200 - gridView.height)
-            gridView.contentY += 200
-        else
-            gridView.contentY = gridView.contentHeight - gridView.height
-    }
-
-    Keys.enabled: true
-    focus: true
+    //Keys.enabled: true
+    //focus: true
 
     SideBar {
         id: sideBar
@@ -42,7 +29,11 @@ Image {
         cellHeight: 300
         cellWidth: 200
         delegate: VideoElement { }
-
+        focus:true
+        highlight: Rectangle {color:"blue";}
+        Keys.priority: Keys.BeforeItem
+        Keys.enabled: true
+        Keys.onEnterPressed: { console.log("maximize"); currentItem.rect.state= "maximized" }
     }
     ScrollBar {
         id: scrollbar
@@ -50,9 +41,10 @@ Image {
     }
 
     Rectangle {
+        z: 100
         id: notification
-        height: 100
-        width: 200
+        height: 150
+        width: 300
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.bottomMargin: 20

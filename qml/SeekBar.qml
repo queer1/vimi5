@@ -20,10 +20,27 @@ Rectangle {
         width: player.position * parent.width / player.duration
     }
     Text {
-        text: Math.floor(player.position/(1000*60*60)) + ":" + Math.floor((player.position%(1000*60*60))/(1000*60)) + ":" + Math.floor(((player.position%(1000*60*60))%(1000*60))/1000) + "/" + Math.floor(player.duration/(1000*60*60)) + ":" + Math.floor((player.duration%(1000*60*60))/(1000*60)) + ":" + Math.floor(((player.duration%(1000*60*60))%(1000*60))/1000)
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
+        // HAHAHA
+        text: (player.position < 10000*60*60 ? "0" : "") +
+              Math.floor(player.position/ (1000*60*60)) +
+              ":" +
+              (player.position%(1000*60*60) < 600000 ? "0" : "") +
+              Math.floor((player.position%(1000*60*60))/ (1000*60)) +
+              ":" +
+              ((player.position%(1000*60*60))%(1000*60) < 10000 ? "0" : "") +
+              Math.floor(((player.position%(1000*60*60))%(1000*60))/1000) +
+              "/" +
+              (player.duration < 10000*60*60 ? "0" : "") +
+              Math.floor(player.duration/ (1000*60*60)) +
+              ":" +
+              (player.duration%(1000*60*60) < 600000 ? "0" : "") +
+              Math.floor((player.duration%(1000*60*60))/ (1000*60)) +
+              ":" +
+              ((player.duration%(1000*60*60))%(1000*60) < 10000 ? "0" : "") +
+              Math.floor(((player.duration%(1000*60*60))%(1000*60))/1000)
+        anchors.top: progressbar.top
+        anchors.bottom: progressbar.bottom
+        anchors.left: progressbar.left
         anchors.leftMargin: 5
         verticalAlignment: Text.AlignVCenter
         color: "#aaaaaa"

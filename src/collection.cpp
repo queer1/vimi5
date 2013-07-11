@@ -267,7 +267,9 @@ static QString scanForCovers(QString path)
     QString coverPath;
     // Try to either find *front*.jpg, *cover*.jpg or just any plain *.jpg
     dir.setFilter(QDir::Files);
-    if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0) {
+    if (dir.exists(".vimicover.jpg")) {
+        coverPath = dir.absoluteFilePath(".vimicover.jpg");
+    } else if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList("*front*.jpg")).first().absoluteFilePath();
     } else if (dir.entryInfoList(QStringList("*cover*.jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList("*cover*.jpg")).first().absoluteFilePath();
@@ -324,9 +326,9 @@ void Collection::scan(QDir dir)
         // Look for screenshots
         QStringList filter;
         foreach(const QString &file, files)
-            filter << "vimiframe_*_" + file + ".png";
+            filter << ".vimiframe_*_" + file + ".jpg";
         QMap <qint64, QString> fileMap;
-        foreach(const QString &file, dir.entryList(filter)) {
+        foreach(const QString &file, dir.entryList(filter, QDir::Files | QDir::Hidden)) {
             fileMap[file.split("_")[1].toLong()] = file;
         }
         screenshots = fileMap.values();
@@ -413,6 +415,7 @@ void Collection::addFilterTag(QString tag)
 {
     m_filterTags.append(tag);
     updateFilteredVideos();
+    emit tagsUpdated();
 }
 
 
@@ -420,20 +423,55 @@ void Collection::removeFilterTag(QString tag)
 {
     m_filterTags.removeAll(tag);
     updateFilteredVideos();
+    emit tagsUpdated();
 }
 
 void Collection::createCover(QString file, qint64 position)
 {
-//TODO
+    VideoFrameDumper *dumper = new VideoFrameDumper(file);
+    qDebug() << "creating cover" << position;
+    connect(dumper, SIGNAL(coverCreated(QString)), SLOT(coverCreated(QString)));
+    connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
+    dumper->createCover(position);
 }
 
 void Collection::createScreenshots(QUrl file)
 {
-    VideoFrameDumper *dumper = new VideoFrameDumper(file, 50);
-    connect(dumper, SIGNAL(complete()), SLOT(screenshotsCreated(QString)));
+    VideoFrameDumper *dumper = new VideoFrameDumper(file);
+    connect(dumper, SIGNAL(screenshotsCreated(QString)), SLOT(screenshotsCreated(QString)));
+    connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
+    dumper->createScreenshots(50);
 }
 
 void Collection::screenshotsCreated(QString path)
 {
-//TODO
+    qDebug() << path;
+    for (int row=0; row<m_filteredVideos.count(); row++) {
+        if (m_filteredVideos[row]->m_path == path) {
+            QDir dir(path);
+            QStringList filter;
+            foreach(const QString &file, m_filteredVideos[row]->m_files)
+                filter << ".vimiframe_*_" + file + ".jpg";
+            QMap <qint64, QString> fileMap;
+            foreach(const QString &file, dir.entryList(filter, QDir::Files | QDir::Hidden)) {
+                fileMap[file.split("_")[1].toLong()] = file;
+            }
+            m_filteredVideos[row]->m_screenshots = fileMap.values();
+            qDebug() << row;
+            emit dataChanged(createIndex(row, 0), createIndex(row, 1));
+            return;
+        }
+    }
+}
+
+void Collection::coverCreated(QString path)
+{
+    for (int row=0; row<m_filteredVideos.count(); row++) {
+        if (m_filteredVideos[row]->m_path == path) {
+            m_filteredVideos[row]->m_cover = scanForCovers(path);
+            emit dataChanged(createIndex(row, 0), createIndex(row, 1));
+            qDebug() << row;
+            return;
+        }
+    }
 }

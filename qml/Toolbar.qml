@@ -26,6 +26,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         height: 200
         model: parent.model
+
         delegate: Text {
             id: fileEntry
             color: "white"

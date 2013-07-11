@@ -98,6 +98,7 @@ public slots:
     void setFilter(QString text);
     void addFilterTag(QString tag);
     void removeFilterTag(QString tag);
+    bool filterTagsContains(QString tag) { return m_filterTags.contains(tag); }
 
     void setTagFilter(QString text) { m_tagFilter = text; emit tagsUpdated(); }
 
@@ -108,10 +109,13 @@ public slots:
     void createCover(QString file, qint64 position);
     void createScreenshots(QUrl file);
     void screenshotsCreated(QString path);
+    void coverCreated(QString path);
 
 signals:
     void tagsUpdated();
     void statusUpdated();
+private slots:
+    void setStatus(QString status) { m_status = status; emit statusUpdated(); }
 
 private:
     void scan(QDir directory);
@@ -119,7 +123,7 @@ private:
     void writeTagCache(int index);
     void writeBookmarkCache(int index);
     void updateFilteredVideos();
-    void setStatus(QString status) { m_status = status; emit statusUpdated(); }
+
 
     QList <Video> m_videos;
     QList <Video*> m_filteredVideos;
@@ -128,15 +132,6 @@ private:
     QStringList m_filterTags;
 
     QString m_status;
-//    QStringList m_filteredNames;
-//    QStringList m_filteredPaths;
-//    QStringList m_filteredCovers;
-//    QList<QStringList> m_filteredFiles;
-//    QList<QStringList> m_filteredTags;
-//    QList<int> m_filteredLastPositions;
-//    QStringList m_filteredLastFile;
-//    QList<QVariantMap> m_filteredBookmarks;
 };
 
 #endif // COLLECTION_H
-

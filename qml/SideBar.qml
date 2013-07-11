@@ -76,7 +76,7 @@ Rectangle {
             color: "white";
             font.pointSize: 8
             renderType: Text.NativeRendering
-            property bool selected: false
+            property bool selected: videoModel.filterTagsContains(modelData)
             font.bold: selected
             MouseArea {
                 anchors.fill: parent
