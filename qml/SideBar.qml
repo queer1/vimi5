@@ -19,6 +19,10 @@ Rectangle {
         border.color: "white"
         border.width: 1
         color: "black"
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.IBeamCursor
+        }
         TextInput {
             id: searchInput
             color: "white"
@@ -47,6 +51,10 @@ Rectangle {
         border.color: "white"
         color: "black"
         border.width: 1
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.IBeamCursor
+        }
         TextInput {
             id: tagInput
             color: "white"
@@ -67,7 +75,7 @@ Rectangle {
     ListView {
         id: availableTagsView
         anchors.top: tagInputBox.bottom
-        anchors.bottom: rescanButton.top
+        anchors.bottom: setPathButton.top
         anchors.right: scrollbar.left
         anchors.left: parent.left
         model: videoModel.allTags

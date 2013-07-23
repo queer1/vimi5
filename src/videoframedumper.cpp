@@ -39,7 +39,7 @@ bool VideoFrameDumper::present(const QVideoFrame &f)
 {
     QVideoFrame frame(f);
 
-    if (qAbs(m_requestedPosition - frame.startTime()) > 1000) {
+    if (qAbs(m_requestedPosition - frame.startTime()) > 10000) {
         qDebug() << "Got wrong frame!: " << m_requestedPosition << frame.startTime();
         m_wrongFrameCount++;
 
@@ -59,12 +59,12 @@ bool VideoFrameDumper::present(const QVideoFrame &f)
             } else {
                 filename = m_outputPath + "/.vimiframe_" + QString::number(frame.startTime()) + "_" + m_filename + ".jpg";
                 height = 100;
+                emit statusUpdated(QString("Screenshot progress %1%").arg(frame.startTime()*100 / m_player.duration()));
             }
             image.scaledToHeight(height, Qt::SmoothTransformation).save(filename);
             qDebug() << "saved" << filename;
         }
         frame.unmap();
-        emit statusUpdated(QString("Screenshot progress %1%").arg(frame.startTime()*100 / m_player.duration()));
     } else {
         qWarning() << "wrong pixel format:" << frame.pixelFormat();
     }
@@ -74,6 +74,14 @@ bool VideoFrameDumper::present(const QVideoFrame &f)
     if (m_numberOfFrames == -1) {
         QMetaObject::invokeMethod(&m_player, "stop", Qt::QueuedConnection);
         emit coverCreated(m_outputPath);
+        deleteLater();
+        return true;
+    }
+
+    if (m_counter > m_numberOfFrames) {
+        QMetaObject::invokeMethod(&m_player, "stop", Qt::QueuedConnection);
+        emit screenshotsCreated(m_outputPath);
+        emit statusUpdated("Finished creating screenshots");
         deleteLater();
         return true;
     }
@@ -93,13 +101,11 @@ void VideoFrameDumper::mediaLoaded()
     }
     else if (m_player.mediaStatus() == QMediaPlayer::EndOfMedia) {
         m_player.stop();
-        emit screenshotsCreated(m_outputPath);
-        emit statusUpdated("Finished creating screenshots");
         deleteLater();
     }
 }
 
 void VideoFrameDumper::handleError()
 {
-    qDebug() << m_player.errorString();
+    qDebug() << Q_FUNC_INFO << m_player.errorString();
 }

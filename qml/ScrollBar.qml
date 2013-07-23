@@ -5,7 +5,6 @@ Item {
 
     property real position: view.visibleArea.yPosition
     property real pageSize: view.visibleArea.heightRatio
-    //property alias bgColor: background.color
     property alias fgColor: thumb.color
     property var view
     opacity: 0.7
@@ -21,18 +20,12 @@ Item {
             if (mouse.buttons & Qt.LeftButton) {
                 var pos = mouse.y / height - parent.pageSize/2
                 if (pos < 0) pos = 0
-                if (pos + parent.pageSize/2 > 1) pos = 1 - parent.pageSize/2
+                if (pos + parent.pageSize > 1) pos = 1 - parent.pageSize
                 view.contentY = pos * view.contentHeight
             }
         }
     }
 
-    // A light, semi-transparent background
-    /*Rectangle {
-        id: background
-        color: "white";
-        anchors.fill: parent
-    }*/
     // Size the bar to the required size, depending upon the orientation.
     Rectangle {
         id: thumb

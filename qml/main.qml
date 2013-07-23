@@ -12,9 +12,6 @@ Image {
         Qt.quit()
     }
 
-    //Keys.enabled: true
-    //focus: true
-
     SideBar {
         id: sideBar
     }
@@ -28,12 +25,10 @@ Image {
         model: videoModel
         cellHeight: 300
         cellWidth: 200
-        delegate: VideoElement { }
+        delegate: VideoElement {
+        }
         focus:true
-        highlight: Rectangle {color:"blue";}
-        Keys.priority: Keys.BeforeItem
-        Keys.enabled: true
-        Keys.onEnterPressed: { console.log("maximize"); currentItem.rect.state= "maximized" }
+        highlight: RectangularGlow {color:"white"; glowRadius: 15; spread:0.001}
     }
     ScrollBar {
         id: scrollbar

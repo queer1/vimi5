@@ -136,7 +136,7 @@ Rectangle {
         },
         State {
             name: "normal"
-            PropertyChanges { target: tagList; opacity: 1; width: undefined }
+            PropertyChanges { target: tagList; width: undefined }
             PropertyChanges { target: newTagInput; focus: false }
             AnchorChanges {
                 target: tagList

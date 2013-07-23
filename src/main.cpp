@@ -18,7 +18,6 @@
 
 
 #include <QGuiApplication>
-//#include <QtWidgets/QApplication>
 #include <QDebug>
 #include <QQuickView>
 #include <QQmlContext>
@@ -39,7 +38,6 @@ int main(int argc, char *argv[])
     a.setOrganizationName("Cheggit");
     a.setOrganizationDomain("cheggit.net");
 
-//    Collection::instance()->rescan();
 
     QQuickView view;
     QObject::connect((QObject*)view.engine(), SIGNAL(quit()), &a, SLOT(quit()));
@@ -54,8 +52,6 @@ int main(int argc, char *argv[])
         view.showFullScreen();
     else
         view.showMaximized();
-    //view.show();
-    //VideoFrameDumper kek("/home/test/Charlie Laine Hardcore.avi");
 
     return a.exec();
 }

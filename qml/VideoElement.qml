@@ -5,7 +5,7 @@ import QtGraphicalEffects 1.0
 Item {
     id: gridItem
     width: gridView.cellWidth; height: gridView.cellHeight
-
+    Keys.onReturnPressed: rect.state = "maximized"
     Rectangle {
         //source: "images/bg.png"
         //fillMode: Image.Tile
@@ -44,7 +44,7 @@ Item {
 
             property string file: ""
             onFileChanged: {
-                source = "file:" + encodeURIComponent(model.path + "/" + file)
+                source = file == "" ? "" : "file:" + encodeURIComponent(model.path + "/" + file)
                 videoModel.setLastFile(index, file)
                 screenshot.screenshots = model.screenshots
             }
@@ -65,7 +65,7 @@ Item {
                 videoModel.setLastPosition(index, position)
                 video.opacity = 0
                 cover.opacity = 1
-                mainView.focus = true
+                gridView.focus = true
             }
         }
 
@@ -77,7 +77,7 @@ Item {
             anchors.right: parent.right
             anchors.left: parent.left
 
-            source: "file:/" + encodeURIComponent(coverPath)
+            source: coverPath == "" ? "": "file:/" + encodeURIComponent(coverPath)
 
             asynchronous: true
             fillMode: Image.PreserveAspectCrop
@@ -169,6 +169,11 @@ Item {
                 ParentAnimation { via: mainView
                     SequentialAnimation {
                         ScriptAction { script: {
+                                if (player.status == MediaPlayer.NoMedia) {
+                                    player.file = model.lastFile
+                                    player.seek(model.lastPosition)
+                                    screenshot.screenshots = model.screenshots
+                                }
                                 seekbarPeek.running = true
                                 player.play()
                             }
@@ -191,6 +196,7 @@ Item {
 
         Keys.onPressed: {
             event.accepted = true;
+
             var seekAmount = 0
             if (event.key == Qt.Key_Left) {
                 seekAmount = -3000
@@ -234,6 +240,14 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
 
+            onEntered: {
+                if (rect.state == "normal") tagList.opacity = 1
+            }
+
+            onExited: {
+                if (rect.state == "normal") tagList.opacity = 0
+            }
+
             onMouseXChanged: {
                 if (rect.state == "normal")
                     return
@@ -257,7 +271,6 @@ Item {
             onClicked: {
                 if (rect.state == "maximized") {
                     if (mouse.y > rect.height - seekbar.height) {
-
                         player.seek(mouse.x * player.duration / seekbar.width)
                         videoModel.setLastPosition(index, player.position)
                     } else {
@@ -267,12 +280,6 @@ Item {
                 } else {
                     rect.state = "maximized"
                     tagList.state = "hidden"
-                    if (player.status == MediaPlayer.NoMedia) {
-                        player.file = model.lastFile
-                        player.seek(model.lastPosition)
-                        screenshot.screenshots = model.screenshots
-                    }
-
                 }
             }
         }
@@ -293,7 +300,7 @@ Item {
                 var lastScreenshotPos = -1000000000
                 var lastScreenshot =""
                 for (var i=0; i<screenshots.length; i++) {
-                    if (screenshots[i].indexOf(file) == -1)
+                    if (screenshots[i].indexOf(file) === -1)
                         continue
                     var screenshotPos = screenshots[i].split("_")[1]
 
@@ -353,6 +360,7 @@ Item {
 
         TagList {
             id: tagList
+            opacity: 0
         }
     }
 }

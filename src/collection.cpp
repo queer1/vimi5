@@ -457,7 +457,7 @@ void Collection::screenshotsCreated(QString path)
                 fileMap[file.split("_")[1].toLong()] = file;
             }
             m_filteredVideos[row]->m_screenshots = fileMap.values();
-            qDebug() << row;
+            qDebug() << fileMap;
             emit dataChanged(createIndex(row, 0), createIndex(row, 1));
             return;
         }
