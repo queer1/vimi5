@@ -16,6 +16,7 @@ Rectangle {
         anchors.margins: 10
         anchors.bottomMargin: 15
         model: tags
+        opacity: 1.0
         delegate: Row {
             height:10; width: tagList.width
             spacing: 10

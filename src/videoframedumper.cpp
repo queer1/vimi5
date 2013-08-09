@@ -58,7 +58,7 @@ bool VideoFrameDumper::present(const QVideoFrame &f)
                 height = 300;
             } else {
                 filename = m_outputPath + "/.vimiframe_" + QString::number(frame.startTime()) + "_" + m_filename + ".jpg";
-                height = 100;
+                height = 200;
                 emit statusUpdated(QString("Screenshot progress %1%").arg(frame.startTime()*100 / m_player.duration()));
             }
             image.scaledToHeight(height, Qt::SmoothTransformation).save(filename);
@@ -78,7 +78,9 @@ bool VideoFrameDumper::present(const QVideoFrame &f)
         return true;
     }
 
-    if (m_counter > m_numberOfFrames) {
+    qDebug() << "hore" << m_counter << m_numberOfFrames;
+
+    if (m_counter >= m_numberOfFrames) {
         QMetaObject::invokeMethod(&m_player, "stop", Qt::QueuedConnection);
         emit screenshotsCreated(m_outputPath);
         emit statusUpdated("Finished creating screenshots");

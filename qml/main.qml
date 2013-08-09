@@ -82,5 +82,55 @@ Image {
         Behavior on opacity { NumberAnimation { duration: 1000; } }
     }
 
+    Rectangle {
+        id: aboutBox
+        anchors.fill: parent
+        visible: false
+        color: "#00000000"
+        Behavior on color {
+            ColorAnimation { duration: 500 }
+        }
+
+        onVisibleChanged: {
+            if (visible) color = "#e0000000"
+            else color = "#00000000"
+        }
+
+        Text {
+            id: aboutLogo
+            //anchors.centerIn: parent
+            anchors.fill: parent
+            text: "Vimi"
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            font.pointSize: 200
+            color: "black"
+            opacity: 1
+        }
+        Glow {
+            id: aboutLogoGlow
+            anchors.fill: aboutLogo
+            radius: 8
+            samples: 8
+            color: "white"
+            source: aboutLogo
+            SequentialAnimation {
+                running: aboutBox.visible
+                loops: Animation.Infinite
+                NumberAnimation { target: aboutLogoGlow; property: "radius"; duration: 5000; from: 8; to:100; easing.type: Easing.InOutQuad }
+                NumberAnimation { target: aboutLogoGlow; property: "radius"; duration: 5000; from: 100; to:8; easing.type: Easing.InOutQuad }
+            }
+        }
+
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                aboutBox.color = "#00000000"
+                aboutBox.visible = false
+            }
+        }
+    }
+
 
 }

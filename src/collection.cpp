@@ -440,7 +440,7 @@ void Collection::createScreenshots(QUrl file)
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
     connect(dumper, SIGNAL(screenshotsCreated(QString)), SLOT(screenshotsCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
-    dumper->createScreenshots(50);
+    dumper->createScreenshots(100);
 }
 
 void Collection::screenshotsCreated(QString path)
@@ -457,8 +457,8 @@ void Collection::screenshotsCreated(QString path)
                 fileMap[file.split("_")[1].toLong()] = file;
             }
             m_filteredVideos[row]->m_screenshots = fileMap.values();
-            qDebug() << fileMap;
-            emit dataChanged(createIndex(row, 0), createIndex(row, 1));
+            //qDebug() << fileMap;
+            emit dataChanged(index(row), index(row));
             return;
         }
     }

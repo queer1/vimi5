@@ -124,7 +124,6 @@ private:
     void writeBookmarkCache(int index);
     void updateFilteredVideos();
 
-
     QList <Video> m_videos;
     QList <Video*> m_filteredVideos;
     QString m_filter;

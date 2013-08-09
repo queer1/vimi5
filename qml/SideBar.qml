@@ -108,8 +108,6 @@ Rectangle {
         anchors.bottom: availableTagsView.bottom
     }
 
-
-
     Rectangle {
         id: setPathButton
         height: 25
@@ -148,7 +146,7 @@ Rectangle {
         height: 25
         anchors.right: parent.right
         anchors.left: parent.left
-        anchors.bottom: fullscreenButton.top
+        anchors.bottom: aboutButton.top
         border.color: "white"
         border.width: 1
         color: "black"
@@ -162,6 +160,30 @@ Rectangle {
         MouseArea {
             anchors.fill: parent
             onClicked: videoModel.rescan();
+        }
+    }
+
+    Rectangle {
+        id: aboutButton
+        height: 25
+        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.bottom: fullscreenButton.top
+        border.color: "white"
+        border.width: 1
+        color: "black"
+        Text {
+            anchors.fill: parent
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            text: "About"
+            color: "white"
+        }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                aboutBox.visible = true
+            }
         }
     }
 

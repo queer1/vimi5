@@ -10,6 +10,15 @@ Rectangle {
     property string video: ""
     property var model
     property int maxHeight: fileList.count * 20 + 20
+    property string videoName
+
+    Text {
+        anchors.right: parent.right
+        anchors.top: parent.top
+        color: "white"
+        text: parent.videoName
+        font.bold: true
+    }
 
     Text {
         id: filesLabel

@@ -10,5 +10,6 @@
         <file>qml/ControlBar.qml</file>
         <file>qml/SideBar.qml</file>
         <file>qml/SeekBar.qml</file>
+        <file>images/defaultcover.png</file>
     </qresource>
 </RCC>

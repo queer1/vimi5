@@ -46,13 +46,13 @@ Item {
             onFileChanged: {
                 source = file == "" ? "" : "file:" + encodeURIComponent(model.path + "/" + file)
                 videoModel.setLastFile(index, file)
-                screenshot.screenshots = model.screenshots
             }
             autoPlay: true
             onPlaying: {
                 video.opacity = 1
                 cover.opacity = 0
                 video.focus = true
+                //screenshot.screenshots = model.screenshots
             }
             onStatusChanged: {
                 if (status == MediaPlayer.EndOfMedia) {
@@ -63,8 +63,6 @@ Item {
             }
             onPaused: {
                 videoModel.setLastPosition(index, position)
-                video.opacity = 0
-                cover.opacity = 1
                 gridView.focus = true
             }
         }
@@ -77,7 +75,7 @@ Item {
             anchors.right: parent.right
             anchors.left: parent.left
 
-            source: coverPath == "" ? "": "file:/" + encodeURIComponent(coverPath)
+            source: coverPath == "" ? "../images/defaultcover.png": "file:/" + encodeURIComponent(coverPath)
 
             asynchronous: true
             fillMode: Image.PreserveAspectCrop
@@ -107,27 +105,13 @@ Item {
                     anchors.left: undefined
                     anchors.right: undefined
                 }
-                PropertyChanges {
-                    target: rect
-                    radius: 0
-                }
-                PropertyChanges {
-                    target: titleText
-                    opacity: 0
-                }
-                PropertyChanges {
-                    target: toolbar
-                    visible: true
-                }
-                PropertyChanges {
-                    target: seekbar
-                    opacity: 0
-                    height: 50
-                }
-                PropertyChanges {
-                    target: screenshotMask
-                    visible: true
-                }
+                PropertyChanges { target: rect; radius: 0 }
+                PropertyChanges { target: titleText; opacity: 0 }
+                PropertyChanges { target: toolbar; visible: true }
+                PropertyChanges { target: seekbar; opacity: 0; height: 50 }
+                PropertyChanges { target: screenshotMask; visible: true }
+                PropertyChanges { target: cover; opacity: 0 }
+                PropertyChanges { target: video; opacity: 1 }
             },
             State {
                 name: "normal"
@@ -139,28 +123,13 @@ Item {
                     x: gridItem.x
                     y: gridItem.y
                 }
-                PropertyChanges {
-                    target: titleText
-                    opacity: 1
-                }
-                PropertyChanges {
-                    target: toolbar
-                    visible: false
-                }
-                PropertyChanges {
-                    target: rect
-                    radius: 10
-                }
-                PropertyChanges {
-                    target: seekbar
-                    opacity: 0
-                    height: 0
-                }
-                PropertyChanges {
-                    target: screenshotMask
-                    visible: false
-                    opacity: 0
-                }
+                PropertyChanges { target: titleText; opacity: 1 }
+                PropertyChanges { target: toolbar; visible: false }
+                PropertyChanges { target: rect; radius: 10 }
+                PropertyChanges { target: seekbar; opacity: 0; height: 0 }
+                PropertyChanges { target: screenshotMask; visible: false; opacity: 0 }
+                PropertyChanges { target: cover; opacity: 1 }
+                PropertyChanges { target: video; opacity: 0 }
             }
         ]
 
@@ -172,13 +141,13 @@ Item {
                                 if (player.status == MediaPlayer.NoMedia) {
                                     player.file = model.lastFile
                                     player.seek(model.lastPosition)
-                                    screenshot.screenshots = model.screenshots
+                       //             screenshot.screenshots = model.screenshots
                                 }
                                 seekbarPeek.running = true
                                 player.play()
                             }
                         }
-                        SmoothedAnimation { properties: "x,y,width,height,opacity"; duration: 500 }
+                        SmoothedAnimation { properties: "x,y,width,height"; duration: 500 }
                         ScriptAction { script: { gridView.visible = false; sideBar.visible = false } }
                     }
                 }
@@ -187,7 +156,7 @@ Item {
                 ParentAnimation { via: mainView
                     SequentialAnimation {
                         ScriptAction { script: {gridView.visible = true; sideBar.visible = true } }
-                        SmoothedAnimation { properties: "x,y,width,height,opacity"; duration: 500 }
+                        SmoothedAnimation { properties: "x,y,width,height"; duration: 500 }
                         ScriptAction { script: { player.pause();  } }
                     }
                 }
@@ -196,6 +165,15 @@ Item {
 
         Keys.onPressed: {
             event.accepted = true;
+
+            if (event.key == Qt.Key_Space) {
+                if (player.playbackState == MediaPlayer.PausedState)
+                    player.play()
+                else
+                    player.pause()
+
+                return
+            }
 
             var seekAmount = 0
             if (event.key == Qt.Key_Left) {
@@ -254,6 +232,7 @@ Item {
                 if (mouse.y > rect.height - seekbar.height){
                     seekbar.opacity = 1
                     screenshot.position = mouse.x
+                    screenshot.y = mouse.y
                 }else if(mouse.y < toolbar.maxHeight)
                     toolbar.state = "shown"
                 else if (mouse.x < 200)
@@ -286,13 +265,13 @@ Item {
 
         Image {
             id: screenshot
-            height: 100
+            height: 200
             anchors.bottom: seekbar.top
             fillMode: Image.PreserveAspectFit
-            property var screenshots
-            property int position
+            property int position: 0
             x: position - (width * (position/parent.width))
             onXChanged: {
+                var screenshots = model.screenshots
                 if (screenshots === undefined) return;
 
                 var file = player.file
@@ -302,14 +281,16 @@ Item {
                 for (var i=0; i<screenshots.length; i++) {
                     if (screenshots[i].indexOf(file) === -1)
                         continue
+
                     var screenshotPos = screenshots[i].split("_")[1]
 
                     if (screenshotPos > position) {
                         if (Math.abs(screenshotPos - position) < Math.abs(lastScreenshotPos - position)) {
                             screenshot.source = "file:" + encodeURIComponent(model.path + "/" + screenshots[i])
-                        } else {
+                        } else if (lastScreenshot !== ""){
                             screenshot.source = "file:" + encodeURIComponent(model.path + "/" + lastScreenshot)
                         }
+
                         screenshotFade.restart()
                         return
                     }
@@ -318,7 +299,7 @@ Item {
                 }
             }
 
-            PropertyAnimation { id: screenshotFade; target: screenshotMask; property: "opacity"; from: 1; to: 0.2; duration: 1000 }
+            PropertyAnimation { id: screenshotFade; target: screenshotMask; property: "opacity"; from: 1; to: 0.2; duration: 5000; }
 
             visible:false
             RadialGradient {
@@ -326,7 +307,7 @@ Item {
                 anchors.fill: parent
                 visible:false
                 gradient: Gradient {
-                    GradientStop { position: 0.1; color: "white" }
+                    GradientStop { position: 0.3; color: "white" }
                     GradientStop { position: 0.5; color: "transparent" }
                 }
             }
@@ -356,6 +337,7 @@ Item {
             onVideoChanged: {
                     player.file = toolbar.video
             }
+            videoName: name
         }
 
         TagList {
