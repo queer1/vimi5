@@ -299,8 +299,6 @@ Item {
                 }
             }
 
-            PropertyAnimation { id: screenshotFade; target: screenshotMask; property: "opacity"; from: 1; to: 0.2; duration: 5000; }
-
             visible:false
             RadialGradient {
                 id: mask

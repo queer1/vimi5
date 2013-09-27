@@ -50,7 +50,6 @@ Rectangle {
         styleColor: "black"
     }
 
-
     Repeater {
         id: bookmarkTicks
         function removeBookmark(bookmark) {
