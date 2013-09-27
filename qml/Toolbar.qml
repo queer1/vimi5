@@ -20,20 +20,11 @@ Rectangle {
         font.bold: true
     }
 
-    Text {
-        id: filesLabel
-        color: "white"
-        text: "files:"
-    }
 
     ListView {
         id: fileList
-        anchors.top: filesLabel.bottom
-        anchors.leftMargin: 15
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        height: 200
+        anchors.fill: parent
+        //height: 200
         model: parent.model
 
         delegate: Text {
@@ -41,8 +32,7 @@ Rectangle {
             color: "white"
             font.bold: player.file == modelData
             font.pixelSize: 15
-            text: modelData
-            width: fileList.width
+            text: " ● " + modelData
             elide: Text.ElideRight
             MouseArea {
                 hoverEnabled: true

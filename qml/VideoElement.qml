@@ -171,8 +171,11 @@ Item {
                     player.play()
                 else
                     player.pause()
-
                 return
+            }
+            if (event.key == Qt.Key_Escape && state == "maximized") {
+                state = "normal";
+                return;
             }
 
             var seekAmount = 0
