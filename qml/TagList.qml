@@ -6,7 +6,7 @@ Rectangle {
     height: Math.min(taglistlist.count * 10 + 30, rect.height)
 
 
-    color: "#80000000"
+    color: "#10000000"
     radius: 10
     ListView {
         id: taglistlist
@@ -21,8 +21,10 @@ Rectangle {
             height:10; width: tagList.width
             spacing: 10
             Text {
+                id: removeTagButton
                 text: "x"
                 color: "red"
+                visible: newTagRect.visible
                 font.pointSize: 8
                 MouseArea {
                     anchors.fill: parent
@@ -45,6 +47,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
+                    visible: !newTagRect.visible
                     onClicked: {
                         if (parent.selected) {
                             videoModel.removeFilterTag(modelData)
@@ -128,6 +131,7 @@ Rectangle {
             name: "maximized"
             PropertyChanges { target: tagList; opacity: 0.75; width: 200 }
             PropertyChanges { target: newTagInput; focus: false }
+            PropertyChanges { target: newTagRect; visible: true }
             AnchorChanges {
                 target: tagList
                 anchors.verticalCenter: rect.verticalCenter
@@ -139,6 +143,7 @@ Rectangle {
             name: "normal"
             PropertyChanges { target: tagList; width: undefined }
             PropertyChanges { target: newTagInput; focus: false }
+            PropertyChanges { target: newTagRect; visible: false }
             AnchorChanges {
                 target: tagList
                 anchors.top: titleText.bottom

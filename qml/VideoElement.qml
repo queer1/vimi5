@@ -219,11 +219,11 @@ Item {
             hoverEnabled: true
 
             onEntered: {
-                if (rect.state == "normal") tagList.opacity = 1
+                //if (rect.state == "normal") tagList.opacity = 1
             }
 
             onExited: {
-                if (rect.state == "normal") tagList.opacity = 0
+                //if (rect.state == "normal") tagList.opacity = 0
             }
 
             onMouseXChanged: {
@@ -291,7 +291,6 @@ Item {
                             screenshot.source = "file:" + encodeURIComponent(model.path + "/" + lastScreenshot)
                         }
 
-                        screenshotFade.restart()
                         return
                     }
                     lastScreenshotPos = screenshotPos
@@ -340,7 +339,7 @@ Item {
 
         TagList {
             id: tagList
-            opacity: 0
+            //opacity: 0
         }
     }
 }
