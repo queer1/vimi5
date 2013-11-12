@@ -114,6 +114,7 @@ public slots:
 signals:
     void tagsUpdated();
     void statusUpdated();
+
 private slots:
     void setStatus(QString status) { m_status = status; emit statusUpdated(); }
 

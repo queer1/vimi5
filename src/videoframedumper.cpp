@@ -78,8 +78,6 @@ bool VideoFrameDumper::present(const QVideoFrame &f)
         return true;
     }
 
-    qDebug() << "hore" << m_counter << m_numberOfFrames;
-
     if (m_counter >= m_numberOfFrames) {
         QMetaObject::invokeMethod(&m_player, "stop", Qt::QueuedConnection);
         emit screenshotsCreated(m_outputPath);

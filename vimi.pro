@@ -21,6 +21,7 @@ OTHER_FILES += \
     qml/Toolbar.qml \
     qml/ScrollBar.qml \
     qml/SideBar.qml \
-    qml/SeekBar.qml
+    qml/SeekBar.qml \
+    qml/ActressPanel.qml
 
 

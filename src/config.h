@@ -35,6 +35,8 @@ class Config : public QObject
     Q_PROPERTY(QSize coverSize READ coverSize WRITE setCoverSize NOTIFY coverSizeChanged)
     Q_PROPERTY(QStringList favouriteTags READ favouriteTags WRITE setFavouriteTags NOTIFY favouriteTagsChanged)
     Q_PROPERTY(bool fullscreen READ fullscreen WRITE setFullscreen NOTIFY fullscreenChanged)
+    Q_PROPERTY(QStringList actresses READ actresses NOTIFY actressesChanged)
+    Q_PROPERTY(QString actressPath READ actressesPath WRITE setActressesPath NOTIFY actressesChanged)
 
 public:
     ~Config();
@@ -59,7 +61,16 @@ public:
     bool fullscreen() { return m_fullscreen; }
     void setFullscreen(bool fullscreen) { m_fullscreen = fullscreen; save(); emit fullscreenChanged(fullscreen); }
 
+    const QStringList &actresses() { return m_actresses; }
+
+    const QString &actressesPath() { return m_actressPath; }
+    void setActressesPath(const QString actressPath) { m_actressPath = actressPath; emit actressesChanged(); }
+
     static Config *instance();
+
+public slots:
+    void addActress(const QString &actress) { m_actresses.append(actress); emit actressesChanged(); }
+    void removeActress(const QString &actress) { m_actresses.removeAll(actress); emit actressesChanged(); }
 
 signals:
     void collectionPathChanged();
@@ -67,6 +78,8 @@ signals:
     void coverSizeChanged();
     void favouriteTagsChanged();
     void fullscreenChanged(bool);
+    void actressesChanged();
+    void actressPathChanged();
 
 private:
     Config();
@@ -77,6 +90,8 @@ private:
     QStringList m_favouriteTags;
     QSize m_coverSize;
     bool m_fullscreen;
+    QStringList m_actresses;
+    QString m_actressPath;
 };
 
 #endif // CONFIG_H

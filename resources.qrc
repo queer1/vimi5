@@ -11,5 +11,7 @@
         <file>qml/SideBar.qml</file>
         <file>qml/SeekBar.qml</file>
         <file>images/defaultcover.png</file>
+        <file>qml/ActressPanel.qml</file>
+        <file>images/defaultactress.png</file>
     </qresource>
 </RCC>

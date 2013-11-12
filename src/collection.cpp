@@ -359,13 +359,13 @@ QStringList Collection::allTags()
     }
     QMultiMap<int, QString> reverse;
     foreach(const QString &key, allTags.keys()) {
+        if (Config::instance()->actresses().contains(key)) continue;
         reverse.insert(allTags[key], key);
     }
 
     QStringList ret = reverse.values();
     std::reverse(ret.begin(), ret.end());
     return ret;
-
 }
 
 bool videoContainsTags(const Video &video, const QStringList &tags)
@@ -414,7 +414,17 @@ void Collection::setFilter(QString text)
 void Collection::addFilterTag(QString tag)
 {
     m_filterTags.append(tag);
-    updateFilteredVideos();
+    for (int i=m_filteredVideos.count()-1; i>=0; --i) {
+        if (!m_filter.isEmpty() && !m_filteredVideos[i]->m_name.contains(m_filter))
+            continue;
+
+        if (!m_filteredVideos[i]->m_tags.contains(tag)) {
+            beginRemoveRows(QModelIndex(), i, i);
+            m_filteredVideos.removeAt(i);
+            endRemoveRows();
+        }
+    }
+
     emit tagsUpdated();
 }
 
@@ -422,7 +432,29 @@ void Collection::addFilterTag(QString tag)
 void Collection::removeFilterTag(QString tag)
 {
     m_filterTags.removeAll(tag);
-    updateFilteredVideos();
+
+    for (int i=m_videos.count()-1; i>=0; --i) {
+        if (!m_filter.isEmpty() && !m_videos[i].m_name.contains(m_filter))
+            continue;
+
+        if (m_filteredVideos.contains(&m_videos[i]))
+            continue;
+
+        if (videoContainsTags(m_videos[i], m_filterTags)) {
+            int idx=0;
+            foreach(Video *video, m_filteredVideos) {
+                if (video->m_name > m_videos[i].m_name)
+                    break;
+                else idx++;
+            }
+
+            beginInsertRows(QModelIndex(), idx, idx);
+            m_filteredVideos.insert(idx, &m_videos[i]);
+            endInsertRows();
+        }
+    }
+
+
     emit tagsUpdated();
 }
 

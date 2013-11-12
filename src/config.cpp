@@ -26,10 +26,11 @@ Config::Config() : QObject()
     QSettings settings;
 
     m_collectionPath = settings.value("collectionPath", QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).first()).toString();
+    m_actressPath = settings.value("actressPath", QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).first() + "/actresses/").toString();
     m_coverSize = settings.value("coverSize", QSize(300, 200)).toSize();
     m_favouriteTags = settings.value("favouriteTags").toStringList();
     m_fullscreen = settings.value("fullscreen").toBool();
-
+    m_actresses = settings.value("actresses").toStringList();
     QStringList defaultSuffixes;
     defaultSuffixes << "*.mpg"
                     << "*.wmv"
@@ -62,4 +63,6 @@ void Config::save()
     settings.setValue("coverSize", m_coverSize);
     settings.setValue("favouriteTags", m_favouriteTags);
     settings.setValue("fullscreen", m_fullscreen);
+    settings.setValue("actresses", m_actresses);
+    settings.setValue("actressPath", m_actressPath);
 }
