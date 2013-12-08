@@ -54,9 +54,7 @@ Rectangle {
                         } else {
                             videoModel.addFilterTag(modelData)
                         }
-                        console.log(parent.selected)
                         parent.selected = !parent.selected
-                        console.log(parent.selected)
                     }
                 }
 

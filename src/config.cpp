@@ -17,9 +17,11 @@
  */
 
 #include "config.h"
+#include "collection.h"
 #include <QStandardPaths>
 #include <QSettings>
 #include <QDebug>
+#include <QDir>
 
 Config::Config() : QObject()
 {
@@ -30,7 +32,6 @@ Config::Config() : QObject()
     m_coverSize = settings.value("coverSize", QSize(300, 200)).toSize();
     m_favouriteTags = settings.value("favouriteTags").toStringList();
     m_fullscreen = settings.value("fullscreen").toBool();
-    m_actresses = settings.value("actresses").toStringList();
     QStringList defaultSuffixes;
     defaultSuffixes << "*.mpg"
                     << "*.wmv"
@@ -63,6 +64,5 @@ void Config::save()
     settings.setValue("coverSize", m_coverSize);
     settings.setValue("favouriteTags", m_favouriteTags);
     settings.setValue("fullscreen", m_fullscreen);
-    settings.setValue("actresses", m_actresses);
     settings.setValue("actressPath", m_actressPath);
 }

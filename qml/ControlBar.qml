@@ -135,6 +135,7 @@ Rectangle {
         anchors.right: parent.right
         height: 50
         color: "black"
+
         border.width: 1
         border.color: "white"
         Text {
@@ -142,7 +143,7 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: "| |"
+            text: (player.playbackState == MediaPlayer.PlayingState) ? "| |" : ">"
             font.bold: true
             font.pointSize: 20
             color: "white"
@@ -153,10 +154,10 @@ Rectangle {
             onClicked: {
                 if (player.playbackState == MediaPlayer.PlayingState) {
                     player.pause()
-                    pauseButtonText.text = ">"
+                    //pauseButtonText.text = ">"
                 } else {
                     player.play()
-                    pauseButtonText.text = "| |"
+                    //pauseButtonText.text = "| |"
                 }
             }
         }

@@ -30,11 +30,11 @@ Item {
     Rectangle {
         id: thumb
         color: "white"
-        radius: width/2 - 1
+        radius: 2
         x: 1
         y: scrollBar.position * (scrollBar.height-2) + 1
         width: parent.width-2
-        height: scrollBar.pageSize * (scrollBar.height-2)
+        height: Math.max(scrollBar.pageSize * (scrollBar.height-2), 30)
         smooth: true
     }
 }

@@ -54,6 +54,25 @@ Collection::Collection()
     // Check if cache load was successful
     if (m_videos.count() == 0)
         rescan();
+
+    updateActresses();
+}
+
+void Collection::updateActresses()
+{
+    QDir dir(QUrl(Config::instance()->actressesPath()).toLocalFile());
+    QFileInfoList fileList = dir.entryInfoList(QStringList() << "*.jpg" << "*.png", QDir::Files, QDir::Name);
+    QStringList tags = allTags();
+    QStringList newActressList;
+    foreach (const QFileInfo &file, fileList) {
+        if (tags.contains(file.baseName())) {
+            newActressList.append(file.baseName());
+        }
+    }
+    if (newActressList != m_actresses) {
+        m_actresses = newActressList;
+        emit actressesChanged();
+    }
 }
 
 
@@ -206,6 +225,8 @@ void Collection::addTag(int row, QString tag)
 {
     if (m_filteredVideos[row]->m_tags.contains(tag))
         return;
+    if (tag.isEmpty())
+        return;
 
     m_filteredVideos[row]->m_tags.append(tag);
     emit dataChanged(createIndex(row, 0), createIndex(row, 1));
@@ -309,8 +330,11 @@ void Collection::scan(QDir dir)
         if (dir.exists("tags.txt")) {
             QFile file(dir.filePath("tags.txt"));
             if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                while (!file.atEnd())
-                    tags.append(QString::fromUtf8(file.readLine().simplified().toLower())); // One tag per line
+                while (!file.atEnd()) {
+                    QString tag = QString::fromUtf8(file.readLine().simplified().toLower());
+                    if (!tag.isEmpty())
+                        tags.append(tag); // One tag per line
+                }
             }
         }
 
@@ -346,10 +370,22 @@ void Collection::scan(QDir dir)
     }
 }
 
+
+bool videoContainsTags(const Video &video, const QStringList &tags)
+{
+    foreach (const QString &tag, tags)
+        if (!video.m_tags.contains(tag)) return false;
+
+    return true;
+}
+
 QStringList Collection::allTags()
 {
     QMap<QString, int> allTags;
     foreach(const Video &video, m_videos) {
+        if (!videoContainsTags(video, m_filterTags))
+            continue;
+
         foreach(const QString &tag, video.m_tags) {
             if (!m_tagFilter.isEmpty() && !tag.contains(m_tagFilter)) continue;
 
@@ -359,7 +395,7 @@ QStringList Collection::allTags()
     }
     QMultiMap<int, QString> reverse;
     foreach(const QString &key, allTags.keys()) {
-        if (Config::instance()->actresses().contains(key)) continue;
+        //if (Config::instance()->actresses().contains(key)) continue;
         reverse.insert(allTags[key], key);
     }
 
@@ -368,13 +404,6 @@ QStringList Collection::allTags()
     return ret;
 }
 
-bool videoContainsTags(const Video &video, const QStringList &tags)
-{
-    foreach (const QString &tag, tags)
-        if (!video.m_tags.contains(tag)) return false;
-
-    return true;
-}
 
 void Collection::updateFilteredVideos()
 {
@@ -426,6 +455,7 @@ void Collection::addFilterTag(QString tag)
     }
 
     emit tagsUpdated();
+    updateActresses();
 }
 
 
@@ -456,6 +486,7 @@ void Collection::removeFilterTag(QString tag)
 
 
     emit tagsUpdated();
+    updateActresses();
 }
 
 void Collection::createCover(QString file, qint64 position)

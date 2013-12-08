@@ -9,49 +9,13 @@ Rectangle {
     width: 200
     color: "black"
 
-    Rectangle {
-        z:1
-        id: actressInputBox
-        anchors.topMargin: 20
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        height: 30
-        border.color: "white"
-        color: "black"
-        border.width: 1
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.IBeamCursor
-        }
-        TextInput {
-            id: tagInput
-            color: "white"
-            anchors.fill: parent; anchors.leftMargin: 10
-            font.pixelSize: 24
-            onAccepted: {
-                config.addActress(text)
-                text = ""
-            }
-
-            Text {
-                anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                text: "Add actress..."
-                visible: !(parent.cursorVisible || parent.text != "")
-                color: "white"
-            }
-        }
-    }
-
-
     ListView {
         id: actressList
-        anchors.top: actressInputBox.bottom
+        anchors.top: parent.top
         anchors.right: scrollbar.left
         anchors.left: parent.left
         anchors.bottom: setPathButton.top
-        model: config.actresses
+        model: videoModel.actresses
         delegate: Image {
             source: config.actressPath + "/" + modelData + ".jpg"
             width: parent.width

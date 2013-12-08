@@ -71,10 +71,11 @@ class Collection : public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(QStringList allTags READ allTags NOTIFY tagsUpdated)
     Q_PROPERTY(QString status READ getStatus NOTIFY statusUpdated)
+    Q_PROPERTY(QStringList actresses READ actresses NOTIFY actressesChanged)
+
 
 public:
-
-    Collection();
+    static Collection *instance() { static Collection col; return &col; }
     ~Collection();
 
     QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const;
@@ -104,6 +105,8 @@ public slots:
 
     QStringList allTags();
 
+    const QStringList &actresses() { return m_actresses; }
+
     QString getStatus() { return m_status; }
 
     void createCover(QString file, qint64 position);
@@ -114,23 +117,27 @@ public slots:
 signals:
     void tagsUpdated();
     void statusUpdated();
+    void actressesChanged();
 
 private slots:
     void setStatus(QString status) { m_status = status; emit statusUpdated(); }
 
 private:
+    Collection();
+
     void scan(QDir directory);
     void loadCache();
     void writeTagCache(int index);
     void writeBookmarkCache(int index);
     void updateFilteredVideos();
+    void updateActresses();
 
     QList <Video> m_videos;
     QList <Video*> m_filteredVideos;
     QString m_filter;
     QString m_tagFilter;
     QStringList m_filterTags;
-
+    QStringList m_actresses;
     QString m_status;
 };
 

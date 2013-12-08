@@ -42,8 +42,7 @@ int main(int argc, char *argv[])
     QQuickView view;
     QObject::connect((QObject*)view.engine(), SIGNAL(quit()), &a, SLOT(quit()));
 
-    Collection collection;
-    view.rootContext()->setContextProperty("videoModel", &collection);
+    view.rootContext()->setContextProperty("videoModel", Collection::instance());
     view.rootContext()->setContextProperty("mainWindow", &view);
     view.rootContext()->setContextProperty("config", Config::instance());
     view.setSource(QUrl("qrc:/qml/main.qml"));
