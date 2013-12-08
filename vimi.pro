@@ -24,4 +24,4 @@ OTHER_FILES += \
     qml/SeekBar.qml \
     qml/ActressPanel.qml
 
-
+LIBS += -lavcodec -lavformat -lavutil -lswscale

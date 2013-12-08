@@ -1,12 +1,17 @@
 #include "videoframedumper.h"
 #include <QFileInfo>
+#include <QDebug>
+#include <QImage>
 
-VideoFrameDumper::VideoFrameDumper(QUrl path) :
-    QAbstractVideoSurface(0),
-    m_counter(0),
-    m_requestedPosition(0),
-    m_numberOfFrames(-1),
-    m_wrongFrameCount(0)
+extern "C" {
+#include <libavutil/imgutils.h>
+#include <libavutil/samplefmt.h>
+#include <libavutil/timestamp.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+}
+
+VideoFrameDumper::VideoFrameDumper(QUrl path)
 {
     QFileInfo fileInfo(path.toLocalFile());
     if (!fileInfo.exists()) {
@@ -14,98 +19,126 @@ VideoFrameDumper::VideoFrameDumper(QUrl path) :
     }
 
     m_outputPath = fileInfo.canonicalPath();
-    m_filename = fileInfo.fileName();
+    m_filename = fileInfo.absoluteFilePath().toLocal8Bit();
 
-    m_player.setVideoOutput(this);
-    m_player.setMedia(path);
-    connect(&m_player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)), SLOT(mediaLoaded()));
-    connect(&m_player, SIGNAL(error(QMediaPlayer::Error)), SLOT(handleError()));
 }
 
-void VideoFrameDumper::createScreenshots(int numberOfFrames)
+static void saveFrameToImage(AVFrame *frame, QString path, AVCodecContext *video_dec_ctx, int64_t cnt)
 {
-    m_numberOfFrames = numberOfFrames;
-    m_player.play();
-}
 
-void VideoFrameDumper::createCover(qint64 position)
-{
-    m_requestedPosition = position;
-    m_player.setPosition(position);
-    m_player.play();
-}
+    SwsContext* scaleContext = sws_getContext(video_dec_ctx->width, video_dec_ctx->height,
+                                              video_dec_ctx->pix_fmt,
+                                              video_dec_ctx->width, video_dec_ctx->height,
+                                              PIX_FMT_RGB24, SWS_BICUBLIN, NULL, NULL, NULL);
 
-bool VideoFrameDumper::present(const QVideoFrame &f)
-{
-    QVideoFrame frame(f);
+    AVFrame *avFrame = avcodec_alloc_frame();
 
-    if (qAbs(m_requestedPosition - frame.startTime()) > 10000) {
-        qDebug() << "Got wrong frame!: " << m_requestedPosition << frame.startTime();
-        m_wrongFrameCount++;
+    int numBytes = avpicture_get_size(PIX_FMT_RGB24, video_dec_ctx->width, video_dec_ctx->height);
+    quint8 *frameBuffer = reinterpret_cast<quint8*>(av_malloc(numBytes));
 
-        if (m_wrongFrameCount < 3) {
-            QMetaObject::invokeMethod(&m_player, "setPosition", Qt::QueuedConnection, Q_ARG(qint64, m_requestedPosition));
-            return true;
-        }
-    } else if (frame.pixelFormat() == QVideoFrame::Format_RGB24) {
-        frame.map(QAbstractVideoBuffer::ReadOnly);
-        {
-            QImage image(frame.bits(), frame.width(), frame.height(), QImage::Format_RGB888);
-            QString filename;
-            int height;
-            if (m_numberOfFrames == -1) {
-                filename = m_outputPath + "/.vimicover.jpg";
-                height = 300;
-            } else {
-                filename = m_outputPath + "/.vimiframe_" + QString::number(frame.startTime()) + "_" + m_filename + ".jpg";
-                height = 200;
-                emit statusUpdated(QString("Screenshot progress %1%").arg(frame.startTime()*100 / m_player.duration()));
-            }
-            image.scaledToHeight(height, Qt::SmoothTransformation).save(filename);
-            qDebug() << "saved" << filename;
-        }
-        frame.unmap();
-    } else {
-        qWarning() << "wrong pixel format:" << frame.pixelFormat();
-    }
+    avpicture_fill((AVPicture*) avFrame, frameBuffer, PIX_FMT_RGB24, video_dec_ctx->width, video_dec_ctx->height);
+
+    sws_scale(scaleContext, frame->data, frame->linesize, 0, video_dec_ctx->height,
+              avFrame->data, avFrame->linesize);
+    sws_freeContext(scaleContext);
 
 
-    // Generatic a single cover
-    if (m_numberOfFrames == -1) {
-        QMetaObject::invokeMethod(&m_player, "stop", Qt::QueuedConnection);
-        emit coverCreated(m_outputPath);
-        deleteLater();
-        return true;
-    }
 
-    if (m_counter >= m_numberOfFrames) {
-        QMetaObject::invokeMethod(&m_player, "stop", Qt::QueuedConnection);
-        emit screenshotsCreated(m_outputPath);
-        emit statusUpdated("Finished creating screenshots");
-        deleteLater();
-        return true;
-    }
+    /*av_image_copy(video_dst_data, video_dst_linesize,
+                  (const uint8_t **)(frame->data), frame->linesize,
+                  video_dec_ctx->pix_fmt, video_dec_ctx->width, video_dec_ctx->height);*/
 
-    m_wrongFrameCount = 0;
-    m_requestedPosition = m_player.duration()*m_counter++ / m_numberOfFrames;
-    QMetaObject::invokeMethod(&m_player, "setPosition", Qt::QueuedConnection, Q_ARG(qint64, m_requestedPosition));
-    if (m_counter <= m_numberOfFrames)
-        return true;
+    QImage image(video_dec_ctx->width, video_dec_ctx->height, QImage::Format_RGB888);
+    memcpy(image.bits(), &avFrame->data[0][0], image.byteCount());//m_frame->linesize[m_frame->height] * m_frame->height);
+    //QString filename = path + '/' + QString::number(frame->pts) + ".jpg";
+    QString filename = "/home/test/tmp/" + QString::number(cnt) + ".jpg";
+    if (!image.save(filename))
+        qWarning() << "Unable to save file" << filename;
     else
-        return false;
+        qDebug() << "Savied frame" << filename;
+
+
+    av_free(avFrame);
+    av_free(frameBuffer);
+
 }
 
-void VideoFrameDumper::mediaLoaded()
+void VideoFrameDumper::createSnapshots(int num)
 {
-    if (m_player.mediaStatus() == QMediaPlayer::LoadedMedia) {
-    }
-    else if (m_player.mediaStatus() == QMediaPlayer::EndOfMedia) {
-        m_player.stop();
-        deleteLater();
-    }
-}
+    AVFormatContext *fmt_ctx = 0;
+    av_register_all();
 
-void VideoFrameDumper::handleError()
-{
-    qDebug() << Q_FUNC_INFO << m_player.errorString();
+    int ret=0;
+    ret = avformat_open_input(&fmt_ctx, m_filename.constData(), NULL, NULL);
+    if (ret < 0) {
+        qWarning() << "Unable to open input" << ret << m_filename;
+        return;
+    }
+
+    if (avformat_find_stream_info(fmt_ctx, 0) < 0) {
+        qWarning() << "unable to get stream info";
+        return;
+    }
+
+    int video_stream_idx = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    if (video_stream_idx < 0) {
+        qWarning() << "unable to open codec context";
+        return;
+    }
+    AVCodec *dec = avcodec_find_decoder(fmt_ctx->streams[video_stream_idx]->codec->codec_id);
+    if (!dec) {
+        qWarning() << "Unable to find decoder!";
+        return;
+    }
+    AVDictionary *opts = NULL;
+    av_dict_set(&opts, "refcounted_frames", "1", 0);
+    if (avcodec_open2(fmt_ctx->streams[video_stream_idx]->codec, dec, &opts) < 0) {
+        qWarning() << "Unable to initialize codec context";
+        return;
+    }
+
+    //av_dump_format(fmt_ctx, 0, m_filename.constData(), 0);
+
+    AVFrame *frame = av_frame_alloc();
+    AVPacket pkt;
+    av_init_packet(&pkt);
+    pkt.data = NULL;
+    pkt.size = 0;
+
+
+    int64_t skip_size = (fmt_ctx->duration) / num;
+    qDebug() << "duration:" << fmt_ctx->duration;
+    int i = 0;
+    while (av_read_frame(fmt_ctx, &pkt) >= 0) {
+        //qDebug() << "pos:" << pkt.pos;
+        AVPacket orig_packet = pkt;
+        int got_frame = 0;
+        /* decode video frame */
+
+        qDebug() << "pkt.size before:" << pkt.size;
+        ret = avcodec_decode_video2(fmt_ctx->streams[video_stream_idx]->codec, frame, &got_frame, &pkt);
+        if (ret < 0) {
+            char errbuf[1024];
+            av_strerror(ret, errbuf, 1024);
+            qWarning() << "error decoding" << errbuf;
+            return;
+        }
+        qDebug() << "ret:" << ret << "pkt.size:" << pkt.size;
+
+        if (got_frame){
+            //saveFrameToImage(frame, m_outputPath, fmt_ctx->streams[video_stream_idx]->codec, skip_size*i);
+
+            i++;
+            qDebug() << skip_size*i << "/" << fmt_ctx->duration;
+            /*if (av_seek_frame(fmt_ctx, -1, skip_size*i, 0) < 0) {
+                qWarning() << "seek failed";
+                break;
+            }*/
+            //avformat_seek_file(fmt_ctx, video_stream_idx, INT64_MIN, skip_size * i, INT64_MAX, 0);
+
+            //avcodec_flush_buffers(fmt_ctx->streams[video_stream_idx]->codec);
+        }
+        av_frame_unref(frame);
+        av_free_packet(&orig_packet);
+    }
 }

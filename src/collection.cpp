@@ -495,7 +495,7 @@ void Collection::createCover(QString file, qint64 position)
     qDebug() << "creating cover" << position;
     connect(dumper, SIGNAL(coverCreated(QString)), SLOT(coverCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
-    dumper->createCover(position);
+    //dumper->createCover(position);
 }
 
 void Collection::createScreenshots(QUrl file)
@@ -503,7 +503,7 @@ void Collection::createScreenshots(QUrl file)
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
     connect(dumper, SIGNAL(screenshotsCreated(QString)), SLOT(screenshotsCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
-    dumper->createScreenshots(100);
+    dumper->createSnapshots(100);
 }
 
 void Collection::screenshotsCreated(QString path)
