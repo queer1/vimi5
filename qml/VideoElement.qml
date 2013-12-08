@@ -278,7 +278,9 @@ Item {
                 if (screenshots === undefined) return;
 
                 var file = player.file
-                var position = screenshot.position * player.duration / parent.width
+                var position = (screenshot.position * player.duration) / parent.width
+                //console.log("screenshots" + screenshots.length)
+
                 var lastScreenshotPos = -1000000000
                 var lastScreenshot =""
                 for (var i=0; i<screenshots.length; i++) {

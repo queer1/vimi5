@@ -265,7 +265,8 @@ void Collection::rescan()
     beginResetModel();
     m_filteredVideos.clear();
     m_videos.clear();
-    scan(QDir(Config::instance()->collectionPath()));
+    //scan(QDir(Config::instance()->collectionPath()));
+    scan(QDir("/home/test/Nubile films ultimate creampie"));
     qSort(m_filteredVideos.begin(), m_filteredVideos.end(), compareVideos);
     endResetModel();
 
@@ -307,7 +308,7 @@ static QString scanForCovers(QString path)
 
 void Collection::scan(QDir dir)
 {
-    qDebug() << "Scanning directory: " << dir.path();
+    //qDebug() << "Scanning directory: " << dir.path();
     QGuiApplication::instance()->processEvents();
 
     dir.setNameFilters(Config::instance()->movieSuffixes());
@@ -316,7 +317,7 @@ void Collection::scan(QDir dir)
     ////////////////////
     // Found movie files
     if (dir.count() > 0) {
-        qDebug() << "Found video " << dir.dirName();
+        //qDebug() << "Found video " << dir.dirName();
 
         QString name = dir.dirName();
         QString path = dir.path();
@@ -350,9 +351,11 @@ void Collection::scan(QDir dir)
         // Look for screenshots
         QStringList filter;
         foreach(const QString &file, files)
-            filter << ".vimiframe_*_" + file + ".jpg";
+            filter << ".vimiframe_*_*.jpg";
+        qDebug() << filter << dir;
         QMap <qint64, QString> fileMap;
         foreach(const QString &file, dir.entryList(filter, QDir::Files | QDir::Hidden)) {
+            qDebug() << file;
             fileMap[file.split("_")[1].toLong()] = file;
         }
         screenshots = fileMap.values();
@@ -503,7 +506,7 @@ void Collection::createScreenshots(QUrl file)
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
     connect(dumper, SIGNAL(screenshotsCreated(QString)), SLOT(screenshotsCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
-    dumper->createSnapshots(100);
+    qDebug() << QMetaObject::invokeMethod(dumper, "createSnapshots");
 }
 
 void Collection::screenshotsCreated(QString path)

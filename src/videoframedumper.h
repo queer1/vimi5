@@ -11,7 +11,8 @@ class VideoFrameDumper : public QObject
 public:
     explicit VideoFrameDumper(QUrl path);
 
-    void createSnapshots(int num);
+public slots:
+    void createSnapshots(int num=100);
 
 signals:
     void screenshotsCreated(QString path);
@@ -22,7 +23,8 @@ signals:
 private:
     QThread m_thread;
     QString m_outputPath;
-    QByteArray m_filename;
+    QString m_filename;
+    QByteArray m_outputFile;
 };
 
 #endif // VIDEOFRAMEDUMPER_H
