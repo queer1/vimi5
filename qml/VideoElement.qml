@@ -143,7 +143,8 @@ Item {
                                     player.seek(model.lastPosition)
                        //             screenshot.screenshots = model.screenshots
                                 }
-                                seekbarPeek.running = true
+                                //seekbarPeek.running = true
+                                seekbar.visible = true
                                 player.play()
                             }
                         }
@@ -195,7 +196,8 @@ Item {
                 event.accepted = false
                 return
             }
-            seekbarPeek.running = true
+            //seekbarPeek.running = true
+            seekbar.visible = true
 
             var newPosition = player.position + seekAmount
             if (newPosition > player.duration) {

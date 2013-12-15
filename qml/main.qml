@@ -57,7 +57,6 @@ Image {
         anchors.bottomMargin: 20
         anchors.rightMargin: 20
         color: "black"
-        radius: 25
         smooth: true
         opacity: 0
 

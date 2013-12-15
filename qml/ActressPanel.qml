@@ -29,14 +29,6 @@ Rectangle {
                 renderType: Text.NativeRendering
                 font.bold: selected
             }
-
-            property bool tried: false
-            onStatusChanged: {
-                if (status == Image.Error && !tried) {
-                    tried = true
-                    source = "/images/defaultactress.png"
-                }
-            }
             property bool selected: videoModel.filterTagsContains(modelData)
             MouseArea {
                 anchors.fill: parent
@@ -48,19 +40,6 @@ Rectangle {
                         videoModel.addFilterTag(modelData)
                     }
                     parent.selected = !parent.selected
-                }
-            }
-            Text {
-                id: removeTagButton
-                text: "x"
-                color: "red"
-                anchors.right: parent.right
-                anchors.top: parent.top
-                font.pointSize: 15
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: config.removeActress(modelData)
                 }
             }
         }

@@ -508,9 +508,10 @@ void Collection::removeFilterTag(QString tag)
 void Collection::createCover(QString file, qint64 position)
 {
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
-    qDebug() << "creating cover" << position;
+    dumper->seek(position*1000);
     connect(dumper, SIGNAL(coverCreated(QString)), SLOT(coverCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
+    QMetaObject::invokeMethod(dumper, "createSnapshots", Q_ARG(int, -1));
     //dumper->createCover(position);
 }
 
@@ -519,7 +520,7 @@ void Collection::createScreenshots(QUrl file)
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
     connect(dumper, SIGNAL(screenshotsCreated(QString)), SLOT(screenshotsCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
-    qDebug() << QMetaObject::invokeMethod(dumper, "createSnapshots");
+    QMetaObject::invokeMethod(dumper, "createSnapshots");
 }
 
 void Collection::screenshotsCreated(QString path)
@@ -544,8 +545,10 @@ void Collection::coverCreated(QString path)
 {
     for (int row=0; row<m_filteredVideos.count(); row++) {
         if (m_filteredVideos[row]->m_path == path) {
+            m_filteredVideos[row]->m_cover = QString();
+            emit dataChanged(createIndex(row, 0), createIndex(row, Video::ScreenshotsRole));
             m_filteredVideos[row]->m_cover = scanForCovers(path);
-            emit dataChanged(createIndex(row, 0), createIndex(row, 1));
+            emit dataChanged(createIndex(row, 0), createIndex(row, Video::ScreenshotsRole));
             qDebug() << row;
             return;
         }
