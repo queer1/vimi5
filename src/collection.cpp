@@ -265,10 +265,12 @@ void Collection::rescan()
     beginResetModel();
     m_filteredVideos.clear();
     m_videos.clear();
-    //scan(QDir(Config::instance()->collectionPath()));
-    scan(QDir("/home/test/Nubile films ultimate creampie"));
-    qSort(m_filteredVideos.begin(), m_filteredVideos.end(), compareVideos);
     endResetModel();
+    scan(QDir(Config::instance()->collectionPath()));
+    qDebug() << QDir(Config::instance()->collectionPath());
+    //scan(QDir("/home/test/Nubile films ultimate creampie"));
+    qSort(m_filteredVideos.begin(), m_filteredVideos.end(), compareVideos);
+
 
     writeCache();
 }
@@ -308,8 +310,8 @@ static QString scanForCovers(QString path)
 
 void Collection::scan(QDir dir)
 {
-    //qDebug() << "Scanning directory: " << dir.path();
-    QGuiApplication::instance()->processEvents();
+    qDebug() << "Scanning directory: " << dir.path();
+    //QGuiApplication::instance()->processEvents();
 
     dir.setNameFilters(Config::instance()->movieSuffixes());
     dir.setFilter(QDir::Files);
@@ -349,19 +351,30 @@ void Collection::scan(QDir dir)
         }
 
         // Look for screenshots
-        QStringList filter;
-        foreach(const QString &file, files)
-            filter << ".vimiframe_*_*.jpg";
-        qDebug() << filter << dir;
         QMap <qint64, QString> fileMap;
-        foreach(const QString &file, dir.entryList(filter, QDir::Files | QDir::Hidden)) {
-            qDebug() << file;
+        foreach(const QString &file, dir.entryList(QStringList() << ".vimiframe_*_*.jpg", QDir::Files | QDir::Hidden)) {
+    //        qDebug() << file;
             fileMap[file.split("_")[1].toLong()] = file;
         }
         screenshots = fileMap.values();
 
         m_videos.append(Video(name, path, cover, files, tags, 0, files.first(), bookmarks, screenshots));
-        m_filteredVideos.append(&m_videos.last());
+
+        int i = 0;
+        foreach(Video *video, m_filteredVideos) {
+            if (video->m_name > m_videos.last().m_name) {
+                beginInsertRows(QModelIndex(), i, i);
+                m_filteredVideos.insert(i, &m_videos.last());
+                endInsertRows();
+                break;
+            }
+            i++;
+        }
+        if (i >= m_filteredVideos.size()) {
+            beginInsertRows(QModelIndex(), i, i);
+            m_filteredVideos.append(&m_videos.last());
+            endInsertRows();
+        }
 
         setStatus(tr("Found video ")  + name);
     }
@@ -515,11 +528,8 @@ void Collection::screenshotsCreated(QString path)
     for (int row=0; row<m_filteredVideos.count(); row++) {
         if (m_filteredVideos[row]->m_path == path) {
             QDir dir(path);
-            QStringList filter;
-            foreach(const QString &file, m_filteredVideos[row]->m_files)
-                filter << ".vimiframe_*_" + file + ".jpg";
             QMap <qint64, QString> fileMap;
-            foreach(const QString &file, dir.entryList(filter, QDir::Files | QDir::Hidden)) {
+            foreach(const QString &file, dir.entryList(QStringList() << ".vimiframe_*_*.jpg", QDir::Files | QDir::Hidden)) {
                 fileMap[file.split("_")[1].toLong()] = file;
             }
             m_filteredVideos[row]->m_screenshots = fileMap.values();

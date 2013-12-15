@@ -141,8 +141,7 @@ void VideoFrameDumper::createSnapshots(int num)
             sws_scale(scaleContext, frame->data, frame->linesize, 0, height, avFrame->data, avFrame->linesize);
             sws_freeContext(scaleContext);
 
-            QImage image(width, height, QImage::Format_RGB888);
-            memcpy(image.bits(), &avFrame->data[0][0], image.byteCount());
+            QImage image(&avFrame->data[0][0], width, height, QImage::Format_RGB888);
             QString file = m_outputPath + "/.vimiframe_" + QString::number(i*skip_size/1000) + "_" + m_filename + ".jpg";
 
             if (!image.save(file))

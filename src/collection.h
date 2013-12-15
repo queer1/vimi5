@@ -25,7 +25,7 @@
 #include <QHash>
 #include <QDebug>
 
-class QThread;
+
 class QDir;
 class Video;
 

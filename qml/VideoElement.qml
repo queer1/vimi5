@@ -83,7 +83,7 @@ Item {
                 if (opacity == 0) visible = false
                 else visible = true
             }
-            Behavior on opacity { NumberAnimation { duration: 1000 } }
+            Behavior on opacity { NumberAnimation { duration: 500 } }
         }
 
         state: "normal"
@@ -147,7 +147,7 @@ Item {
                                 player.play()
                             }
                         }
-                        SmoothedAnimation { properties: "x,y,width,height"; duration: 500 }
+                        SmoothedAnimation { properties: "x,y,width,height"; duration: 250 }
                         ScriptAction { script: { gridView.visible = false; sideBar.visible = false; actressPanel.visible = false } }
                     }
                 }
@@ -156,7 +156,7 @@ Item {
                 ParentAnimation { via: mainView
                     SequentialAnimation {
                         ScriptAction { script: {gridView.visible = true; sideBar.visible = true; actressPanel.visible = true } }
-                        SmoothedAnimation { properties: "x,y,width,height"; duration: 500 }
+                        SmoothedAnimation { properties: "x,y,width,height"; duration: 250 }
                         ScriptAction { script: { player.pause();  } }
                     }
                 }
@@ -214,7 +214,7 @@ Item {
             source: player
             anchors.fill: rect
 
-            Behavior on opacity { NumberAnimation { duration: 1000 } }
+            Behavior on opacity { NumberAnimation { duration: 500 } }
         }
         MouseArea {
             id: videoMouseArea
@@ -325,8 +325,6 @@ Item {
 
         SeekBar {
             id: seekbar
-
-            PropertyAnimation { id: seekbarPeek; target: seekbar; property: "opacity"; from: 1; to: 0; duration: 1000 }
         }
 
         ControlBar {
@@ -345,7 +343,7 @@ Item {
 
         TagList {
             id: tagList
-            //opacity: 0
+            opacity: 0
         }
     }
 }
