@@ -7,11 +7,11 @@ Rectangle {
     id: videoPlayer
 
     property var video: gridView.currentItem
-    x: video.x + gridView.x - gridView.contentX
-    y: video.y + gridView.y - gridView.contentY
+    x: video == null ? 0 : video.x + gridView.x - gridView.contentX
+    y: video == null ? 0 : video.y + gridView.y - gridView.contentY
     color: "black"
-    height: video.height
-    width: video.width
+    height: video == null ? 0 : video.height
+    width: video == null ? 0 :video.width
     property string file: ""
     property string path: ""
     property string name: ""
@@ -246,15 +246,4 @@ Rectangle {
         running: false
         //        onStopped: screenshot.position = Qt.binding(function() { return mediaPlayer.position; })
     }
-    /*    NumberAnimation {
-        id: screenshotpeek
-        target: screenshot;
-        property: "opacity";
-        duration: 500;
-        easing.type: Easing.InOutQuad
-        from: 0.5
-        to: 0
-        running: false
-//        onStopped: screenshot.position = Qt.binding(function() { return mediaPlayer.position; })
-    }*/
 }

@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     QGuiApplication a(argc, argv);
     QGuiApplication::setQuitOnLastWindowClosed(true);
     a.setApplicationName("Vimi");
-    a.setOrganizationName("Cheggit");
+    a.setOrganizationName("cwk");
     a.setOrganizationDomain("cheggit.net");
 
 

@@ -15,16 +15,15 @@ Rectangle {
     InputBox {
         z: 1
         id: tagInputBox
-        anchors.topMargin: 2
         anchors.top: parent.top
         onTextChanged: videoModel.setTagFilter(text)
-        helpText: "Tag search"
+        helpText: "tag search"
     }
 
     ListView {
         id: availableTagsView
         anchors.top: tagInputBox.bottom
-        anchors.bottom: setPathButton.top
+        anchors.bottom: helpButton.top
         anchors.right: scrollbar.left
         anchors.left: parent.left
         model: videoModel.allTags
@@ -56,9 +55,17 @@ Rectangle {
     }
 
     Button {
+        id: helpButton
+        text: "help"
+        onClicked: helpDialog.opacity = 1
+        anchors.bottom: setPathButton.top
+        height: configShow ? 25 : 0
+    }
+
+    Button {
         id: setPathButton
         anchors.bottom: rescanButton.top
-        text: "Set path..."
+        text: "set path..."
         onClicked: folderDialog.visible = true
         height: configShow ? 25 : 0
 
@@ -76,7 +83,7 @@ Rectangle {
 
     Button {
         id: rescanButton
-        text: "Rescan"
+        text: "rescan"
         onClicked: videoModel.rescan();
         anchors.bottom: fullscreenButton.top
         height: configShow ? 25 : 0
@@ -85,7 +92,7 @@ Rectangle {
 
     Button {
         id: fullscreenButton
-        text: "Fullscreen"
+        text: "fullscreen"
         anchors.bottom: sizeSelector.top
         onClicked: {
             if (config.fullscreen) {
@@ -112,20 +119,33 @@ Rectangle {
         Behavior on height { SmoothedAnimation { duration: 200; } }
 
         Rectangle {
+            id: sizePosition
+            color: "white"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            x: gridView.cellHeight / 2 - 100
+            x: config.coverSize / 2 - 100//gridView.cellHeight / 2 - 100
             width: 1
         }
 
         MouseArea {
+            hoverEnabled: true
             anchors.fill: parent
             onClicked: config.coverSize = (mouse.x + 100) * 2
+            onPositionChanged: if (pressed) config.coverSize = (mouse.x + 100) * 2
+            onEntered: {
+                parent.color = "white"
+                sizePosition.color = "black"
+            }
+            onExited: {
+                parent.color = "black"
+                sizePosition.color = "white"
+            }
         }
         Text {
+            id: sizeLabel
             anchors.fill: parent
-            text: "Cover size"
-            color: "white"
+            text: "cover size"
+            color: sizePosition.color
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
             visible: height > font.pointSize ? true : false

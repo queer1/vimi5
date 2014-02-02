@@ -3,9 +3,6 @@ import QtQuick.Dialogs 1.0
 
 Rectangle {
     id: actressPanel
-    anchors.top: mainView.top
-    anchors.bottom: mainView.bottom
-    anchors.right: mainView.right
     width: config.starletsShow ? 200 : 0
     color: "black"
     onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
@@ -59,7 +56,7 @@ Rectangle {
         id: setPathButton
 
         anchors.bottom: parent.bottom
-        text: "Set picture path"
+        text: "set picture path..."
         onClicked: folderDialog.visible = true
 
         FileDialog {
