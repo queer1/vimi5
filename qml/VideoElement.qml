@@ -42,6 +42,7 @@ Item {
                 onClicked: {
                     videoPlayer.show()
                 }
+
             }
         }
 

@@ -79,8 +79,8 @@ void VideoFrameDumper::saveFrameToImage(QString outFile)
     AVCodecContext *video_dec_ctx = fmt_ctx->streams[video_stream_idx]->codec;
 
     //static SwsContext* scaleContext = 0;
-    const int outHeight = 300;
-    const int outWidth = video_dec_ctx->width * outHeight / video_dec_ctx->height;
+    const int outHeight = video_dec_ctx->width;
+    const int outWidth = video_dec_ctx->height;
     //const int outWidth = 1000;
     static SwsContext* scaleContext=0;
     qDebug() << scaleContext << outHeight << outWidth;

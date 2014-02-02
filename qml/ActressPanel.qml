@@ -6,9 +6,12 @@ Rectangle {
     anchors.top: mainView.top
     anchors.bottom: mainView.bottom
     anchors.right: mainView.right
-    width: 200
+    width: config.starletsShow ? 200 : 0
     color: "black"
     onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
+
+    Behavior on width { SmoothedAnimation { duration: 200; } }
+
 
     ListView {
         id: actressList
@@ -69,5 +72,4 @@ Rectangle {
             }
         }
     }
-
 }

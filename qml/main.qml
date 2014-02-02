@@ -87,13 +87,29 @@ Image {
 
     GridView {
         id: gridView
-        anchors.left: sideBar.right
         anchors.bottom: parent.bottom
-        anchors.top: parent.top
+        anchors.top: textInputBox.bottom
+        anchors.left: sideBar.right
         anchors.right: scrollbar.left
         model: videoModel
-        cellHeight: 315
-        cellWidth: 215
+        cellHeight: config.coverSize
+        cellWidth: cellHeight * 2 / 3
+        Behavior on cellHeight { SmoothedAnimation { duration: 200 } }
+
+        MouseArea {
+            anchors.fill: parent
+            propagateComposedEvents: true
+            hoverEnabled: true
+            onPositionChanged: {
+                var x = mouse.x + gridView.contentX
+                var y = mouse.y + gridView.contentY
+                var index = gridView.indexAt(x, y)
+                if (index !== -1) {
+                    gridView.currentIndex = index
+                    cursorShape = Qt.PointingHandCursor
+                } else cursorShape = Qt.ArrowCursor
+            }
+        }
         highlight: RectangularGlow { visible: !videoPlayer.visible; color:"white"; glowRadius: 15; spread:0.001}
         delegate: VideoElement {
             width: gridView.cellWidth;
@@ -107,23 +123,14 @@ Image {
         Keys.forwardTo: parent
         displaced: Transition { SmoothedAnimation { properties: "x,y"; duration: 100 } }
         add: Transition { SmoothedAnimation { properties: "x,y"; from: 100; duration: 100 } }
-        MouseArea {
-            anchors.fill: parent
-            propagateComposedEvents: true
-            hoverEnabled: true
-            onPositionChanged: {
-                var x = mouse.x + gridView.contentX
-                var y = mouse.y + gridView.contentY
-                var index = gridView.indexAt(x, y)
-                if (index !== -1) gridView.currentIndex = index
-            }
-        }
+
     }
 
     ScrollBar {
         id: scrollbar
         view: gridView
-        anchors.right: actressPanel.left
+        anchors.right: hideShowStarletsButton.left
+        anchors.top: textInputBox.bottom
         opacity: 1 - videoPlayer.opacity
     }
 
@@ -132,9 +139,31 @@ Image {
         opacity: 1 - videoPlayer.opacity
     }
 
+    Button {
+        id: hideShowStarletsButton
+        text: config.starletsShow ?  "→\ns\nt\na\nr\nl\ne\nt\ns\n→" : "←\ns\nt\na\nr\nl\ne\nt\ns\n←"
+        onClicked: config.starletsShow = !config.starletsShow
+        anchors.top: actressPanel.top
+        anchors.bottom: actressPanel.bottom
+        anchors.right: actressPanel.left
+        anchors.left: undefined
+        width: 15
+    }
+
     VideoPlayer {
         id: videoPlayer
     }
+
+    InputBox {
+        z: 1
+        id: textInputBox
+        onTextChanged: videoModel.setFilter(text)
+        helpText: "Name filter"
+        anchors.top: parent.top
+        anchors.left: sideBar.right
+        anchors.right: hideShowStarletsButton.left
+    }
+
 
     Rectangle {
         id: busyWidget

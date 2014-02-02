@@ -9,20 +9,14 @@ Rectangle {
     width: 200
     color: "black"
     onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
+    property bool configShow: config.configShow
 
-    InputBox {
-        z: 1
-        id: textInputBox
-        onTextChanged: videoModel.setFilter(text)
-        helpText: "Name filter"
-        anchors.top: parent.top
-    }
 
     InputBox {
         z: 1
         id: tagInputBox
-        anchors.topMargin: 20
-        anchors.top: textInputBox.bottom
+        anchors.topMargin: 2
+        anchors.top: parent.top
         onTextChanged: videoModel.setTagFilter(text)
         helpText: "Tag search"
     }
@@ -53,7 +47,6 @@ Rectangle {
                 }
             }
         }
-
     }
     ScrollBar {
         id: scrollbar
@@ -67,6 +60,7 @@ Rectangle {
         anchors.bottom: rescanButton.top
         text: "Set path..."
         onClicked: folderDialog.visible = true
+        height: configShow ? 25 : 0
 
         FileDialog {
             id: folderDialog
@@ -85,13 +79,14 @@ Rectangle {
         text: "Rescan"
         onClicked: videoModel.rescan();
         anchors.bottom: fullscreenButton.top
+        height: configShow ? 25 : 0
     }
 
 
     Button {
         id: fullscreenButton
         text: "Fullscreen"
-        anchors.bottom: parent.bottom
+        anchors.bottom: sizeSelector.top
         onClicked: {
             if (config.fullscreen) {
                 mainWindow.showMaximized()
@@ -101,12 +96,53 @@ Rectangle {
                 config.fullscreen = true
             }
         }
+        height: configShow ? 25 : 0
+    }
+
+    Rectangle {
+        id: sizeSelector
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: hideShowButton.top
+        height: configShow ? 20 : 0
+        color: "black"
+        border.color: "white"
+        visible: height > 0 ? true : false
+
+        Behavior on height { SmoothedAnimation { duration: 200; } }
+
+        Rectangle {
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            x: gridView.cellHeight / 2 - 100
+            width: 1
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: config.coverSize = (mouse.x + 100) * 2
+        }
+        Text {
+            anchors.fill: parent
+            text: "Cover size"
+            color: "white"
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            visible: height > font.pointSize ? true : false
+        }
+    }
+
+
+    Button {
+        id: hideShowButton
+        anchors.bottom: parent.bottom
+        text: configShow ? "↓ config ↓" : "↑ config ↑"
+        height: 15
+        onClicked: config.configShow = !config.configShow
     }
 
 
     Behavior on width {
         SmoothedAnimation { duration: 1000; }
     }
-
-
 }

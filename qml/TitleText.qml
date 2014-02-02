@@ -10,16 +10,16 @@ Text {
     verticalAlignment: Text.AlignVCenter
     color: "white"
     font.bold: true
-    height: 40
+    height: parent.height / 6
     wrapMode: Text.WordWrap
+    font.pointSize: height / 5 > 0 ?  height / 5 : 5
     
     elide: Text.ElideRight
-    width: 200
     Behavior on color { ColorAnimation { duration: 1000 } }
     anchors.top: rect.top
     anchors.left: rect.left
     anchors.right: rect.right
-    anchors.margins: 15
+    anchors.margins: 5
     
     MouseArea {
         propagateComposedEvents: true
@@ -27,7 +27,6 @@ Text {
         onDoubleClicked: {
             titleEditRectangle.visible = true
             titleEdit.focus = true
-            console.log("caek")
         }
     }
     

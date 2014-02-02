@@ -32,10 +32,13 @@ class Config : public QObject
 
     Q_PROPERTY(QString collectionPath READ collectionPath WRITE setCollectionPath NOTIFY collectionPathChanged)
     Q_PROPERTY(QStringList movieSuffixes READ movieSuffixes WRITE setMovieSuffixes NOTIFY movieSuffixesChanged)
-    Q_PROPERTY(QSize coverSize READ coverSize WRITE setCoverSize NOTIFY coverSizeChanged)
+    Q_PROPERTY(int coverSize READ coverSize WRITE setCoverSize NOTIFY coverSizeChanged)
     Q_PROPERTY(QStringList favouriteTags READ favouriteTags WRITE setFavouriteTags NOTIFY favouriteTagsChanged)
     Q_PROPERTY(bool fullscreen READ fullscreen WRITE setFullscreen NOTIFY fullscreenChanged)
     Q_PROPERTY(QString actressPath READ actressesPath WRITE setActressesPath NOTIFY actressPathChanged)
+    Q_PROPERTY(bool configShow READ configShow WRITE setConfigShow NOTIFY configShowChanged)
+    Q_PROPERTY(bool starletsShow READ starletsShow WRITE setStarletsShow NOTIFY starletsShowChanged)
+
 
 public:
     ~Config();
@@ -48,8 +51,8 @@ public:
     const QStringList &movieSuffixes() { return m_movieSuffixes; }
     void setMovieSuffixes(const QStringList &suffixes) { m_movieSuffixes = suffixes; save(); emit movieSuffixesChanged(); }
 
-    QSize coverSize() { return m_coverSize; }
-    void setCoverSize(const QSize &size) { m_coverSize = size; save(); emit coverSizeChanged(); }
+    int coverSize() { return m_coverSize; }
+    void setCoverSize(const int &size) { m_coverSize = size; save(); emit coverSizeChanged(); }
 
     const QStringList &favouriteTags() { return m_favouriteTags; }
     void setFavouriteTags(const QStringList &tags) { m_favouriteTags = tags; save(); emit favouriteTagsChanged(); }
@@ -63,6 +66,12 @@ public:
     const QString &actressesPath() { return m_actressPath; }
     void setActressesPath(const QString actressPath) { m_actressPath = actressPath; emit actressPathChanged(); }
 
+    bool configShow() const { return m_configShow; }
+    void setConfigShow(bool show) { m_configShow = show; emit configShowChanged(); }
+
+    bool starletsShow() const { return m_starletsShow; }
+    void setStarletsShow(bool show) { m_starletsShow = show; emit starletsShowChanged(); }
+
     static Config *instance();
 
 signals:
@@ -72,6 +81,8 @@ signals:
     void favouriteTagsChanged();
     void fullscreenChanged(bool);
     void actressPathChanged();
+    void configShowChanged();
+    void starletsShowChanged();
 
 private:
     Config();
@@ -80,9 +91,11 @@ private:
     QString m_collectionPath;
     QStringList m_movieSuffixes;
     QStringList m_favouriteTags;
-    QSize m_coverSize;
+    int m_coverSize;
     bool m_fullscreen;
     QString m_actressPath;
+    bool m_configShow;
+    bool m_starletsShow;
 };
 
 #endif // CONFIG_H

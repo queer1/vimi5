@@ -12,6 +12,10 @@ Rectangle {
     border.color: "white"
     border.width: 1
     color: "black"
+    visible: (height > 0 && width > 0) ? true : false
+
+    Behavior on height { SmoothedAnimation { duration: 300; } }
+
     Text {
         id: text
         anchors.fill: parent
@@ -19,11 +23,10 @@ Rectangle {
         horizontalAlignment: Text.AlignHCenter
         text: parent.text
         color: "white"
+        visible: (height > font.pointSize && width > 10) ? true : false
     }
-    MouseArea {
-        anchors.fill: parent
+    ClickableArea {
         onClicked: parent.clicked()
-        hoverEnabled: true
         onEntered: {
             parent.color = "white"
             text.color = "black"

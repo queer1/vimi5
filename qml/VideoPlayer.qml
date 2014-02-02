@@ -115,11 +115,8 @@ Rectangle {
         }
     }
     
-    MouseArea {
+    ClickableArea {
         id: videoMouseArea
-        anchors.fill: parent
-        hoverEnabled: parent.visible
-        enabled: parent.visible
         propagateComposedEvents: true
         
         onMouseXChanged: {
