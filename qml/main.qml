@@ -1,14 +1,14 @@
 import QtQuick 2.0
 import QtGraphicalEffects 1.0
-import QtMultimedia 5.0
 
 
-Image {
+Rectangle {
     id: mainView
     width: 640
     height: 480
-    source: "images/bg2.png"
-    fillMode: Image.Tile
+    //source: "images/bg2.png"
+    //fillMode: Image.Tile
+    color: "black"
 
     Keys.enabled: true
 
@@ -44,11 +44,7 @@ Image {
         var seekAmount = 0
         event.accepted = true;
         if (event.key === Qt.Key_Space) {
-            if (mediaPlayer.playbackState === MediaPlayer.PausedState) {
-                mediaPlayer.play()
-            } else {
-                mediaPlayer.pause()
-            }
+            videoPlayer.togglePause()
             return;
         } else if (event.key === Qt.Key_Escape) {
             videoPlayer.hide()
@@ -105,6 +101,9 @@ Image {
         cellHeight: config.coverSize
         cellWidth: cellHeight * 2 / 3
         Behavior on cellHeight { SmoothedAnimation { duration: 200 } }
+        boundsBehavior: Flickable.StopAtBounds
+        flickDeceleration: 10000
+        maximumFlickVelocity: 5000
 
         MouseArea {
             anchors.fill: parent
@@ -120,7 +119,13 @@ Image {
                 } else cursorShape = Qt.ArrowCursor
             }
         }
-        highlight: RectangularGlow { visible: !videoPlayer.visible; color:"white"; glowRadius: 15; spread:0.001}
+        highlight: RectangularGlow {
+            visible: !videoPlayer.visible
+            color:"white"
+            glowRadius: 1
+            spread:1
+        }
+        highlightMoveDuration: 0
         delegate: VideoElement {
             width: gridView.cellWidth;
             height: gridView.cellHeight;
@@ -136,11 +141,13 @@ Image {
 
     }
 
+
     ScrollBar {
         id: scrollbar
         view: gridView
         anchors.right: actressPanel.left
         anchors.top: nameFilterInput.bottom
+        anchors.bottom: parent.bottom
         opacity: 1 - videoPlayer.opacity
     }
 
@@ -151,6 +158,9 @@ Image {
         anchors.bottom: parent.bottom
         anchors.right: hideShowStarletsButton.left
     }
+
+
+
 
     Button {
         id: hideShowStarletsButton
@@ -163,12 +173,9 @@ Image {
         width: 15
     }
 
-    VideoPlayer {
-        id: videoPlayer
-    }
+
 
     InputBox {
-        z: 1
         id: nameFilterInput
         onTextChanged: videoModel.setFilter(text)
         helpText: "name search"
@@ -177,6 +184,11 @@ Image {
         anchors.right: actressPanel.left
         anchors.rightMargin: 2
         anchors.leftMargin: 2
+        opacity: 1 - videoPlayer.opacity
+    }
+
+    VideoPlayer {
+        id: videoPlayer
     }
 
 
@@ -327,4 +339,5 @@ the videos by them (assuming the videos are tagged with their names).
             cursorShape: "PointingHandCursor"
         }
     }
+
 }

@@ -1,6 +1,6 @@
 /*
  * Holds application configuration
- * Copyright (C) 2009-2012 cwk <coolwk@gmail.com>
+ * Copyright (C) 2009-2014 cwk <coolwk@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,8 +44,7 @@ public:
     ~Config();
 
     QString collectionPath() { return m_collectionPath; }
-    //void setCollectionPath(const QString &path) { qDebug() << path; m_collectionPath = path; save(); emit collectionPathChanged(); }
-    void setCollectionPath(const QUrl &url) { qDebug() << "url" << url; m_collectionPath = url.toLocalFile(); save(); emit collectionPathChanged(); }
+    void setCollectionPath(const QUrl &url) { m_collectionPath = url.toLocalFile(); save(); emit collectionPathChanged(); }
 
 
     const QStringList &movieSuffixes() { return m_movieSuffixes; }

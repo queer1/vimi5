@@ -10,7 +10,7 @@ Text {
     verticalAlignment: Text.AlignVCenter
     color: "white"
     font.bold: true
-    height: parent.height / 6
+    height: visible ? parent.height / 6 : 0
     wrapMode: Text.WordWrap
     font.pointSize: height / 5 > 0 ?  height / 5 : 5
     

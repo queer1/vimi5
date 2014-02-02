@@ -1,6 +1,6 @@
 /*
  * Main collection model, holds list of all videos and tags
- * Copyright (C) 2009-2012 cwk <coolwk@gmail.com>
+ * Copyright (C) 2009-2014 cwk <coolwk@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,12 @@
  */
 
 #include <QByteArray>
-#include <QDebug>
 #include <QStandardPaths>
 #include <QSet>
 #include <QThread>
 #include <QDir>
 #include <QGuiApplication>
 
-#include <ctime>
 #include <algorithm>
 
 #include "collection.h"
@@ -101,13 +99,16 @@ void Collection::writeCache()
     QString path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     QDir(path).mkpath(path);
     QFile file(path + "/videos.db");
-    QDataStream out(&file);
 
-    if (file.open(QIODevice::WriteOnly)) {
-        out << m_videos;
-    } else {
+    if (!file.open(QIODevice::WriteOnly)) {
         qWarning() << file.errorString();
+        return;
     }
+    QByteArray buffer;
+    QDataStream bufferWriter(&buffer, QIODevice::WriteOnly);
+    bufferWriter << m_videos;
+    QByteArray compressed = qCompress(buffer);
+    file.write(compressed);
 }
 
 void Collection::loadCache()
@@ -115,17 +116,23 @@ void Collection::loadCache()
     QString path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     QDir(path).mkpath(path);
     QFile file(path + "/videos.db");
-    QDataStream in(&file);
 
-    if (file.open(QIODevice::ReadOnly)) {
-        beginResetModel();
-        m_videos.clear();
-        in >> m_videos;
-        updateFilteredVideos();
-        endResetModel();
-    } else {
-        qWarning() << "Unable to load cache!: " << file.errorString() << " (file path:" << path << ")";
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Unable to load cache!: " << file.errorString() << " (file path:" << file.fileName() << ")";
+        return;
     }
+
+    beginResetModel();
+    m_videos.clear();
+    QByteArray compressed = file.readAll();
+    if (compressed.isEmpty()) {
+        return;
+    }
+    QByteArray uncompressed = qUncompress(compressed);
+    QDataStream in(uncompressed);
+    in >> m_videos;
+    updateFilteredVideos();
+    endResetModel();
 }
 
 
@@ -287,12 +294,9 @@ void Collection::renameVideo(int row, QString newName)
 
 void Collection::rescan()
 {
-    qDebug() << "Starting scan...";
     setStatus("Starting scan...");
     setBusy(true);
 
-    foreach(const Video *v, m_filteredVideos)
-        qDebug() << v->path;
     beginResetModel();
     m_filteredVideos.clear();
     endResetModel();
@@ -301,6 +305,7 @@ void Collection::rescan()
     qSort(m_filteredVideos.begin(), m_filteredVideos.end(), compareVideos);
 
     writeCache();
+    emit tagsUpdated();
     setBusy(false);
 }
 
@@ -339,7 +344,6 @@ static QString scanForCovers(QString path)
 
 void Collection::scan(QDir dir)
 {
-    qDebug() << "Scanning directory: " << dir.path();
     QGuiApplication::instance()->processEvents();
 
     dir.setNameFilters(Config::instance()->movieSuffixes());
@@ -348,7 +352,6 @@ void Collection::scan(QDir dir)
     ////////////////////
     // Found movie files
     if (dir.count() > 0) {
-        //qDebug() << "Found video " << dir.dirName();
 
         QString name = dir.dirName();
         QString path = dir.path();
@@ -382,7 +385,6 @@ void Collection::scan(QDir dir)
         // Look for screenshots
         QMap <qint64, QString> fileMap;
         foreach(const QString &file, dir.entryList(QStringList() << ".vimiframe_*_*.jpg", QDir::Files | QDir::Hidden)) {
-    //        qDebug() << file;
             fileMap[file.split("_")[1].toLong()] = file;
         }
         screenshots = fileMap.values();
@@ -406,13 +408,13 @@ void Collection::scan(QDir dir)
         }
 
         setStatus(tr("Found video ")  + name);
-    } else {
+    }// else {
         dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::AllDirs | QDir::Executable);
         // QDir::AllDirs ignores name filter
         foreach(const QFileInfo &subdir, dir.entryInfoList()) {
             scan(QDir(subdir.filePath())); // Recursively scan
         }
-    }
+    //}
 }
 
 
@@ -452,9 +454,6 @@ QStringList Collection::allTags()
 
 void Collection::updateFilteredVideos()
 {
-    clock_t start, end;
-    start = clock();
-
     QList<Video*> filtered;
     for (int i=0; i<m_videos.count(); i++) {
         if (!m_filter.isEmpty() && !m_videos[i].name.contains(m_filter, Qt::CaseInsensitive))
@@ -474,8 +473,6 @@ void Collection::updateFilteredVideos()
     beginResetModel();
     m_filteredVideos = filtered;
     endResetModel();
-    end = clock();
-    qDebug() << "update finished in" << ((float) (end - start) / CLOCKS_PER_SEC) << "seconds.";
 }
 
 void Collection::setFilter(QString text)
@@ -550,7 +547,6 @@ void Collection::createCover(QString file, qint64 position)
     connect(dumper, SIGNAL(coverCreated(QString)), SLOT(coverCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
     QMetaObject::invokeMethod(dumper, "createSnapshots", Q_ARG(int, -1));
-    //dumper->createCover(position);
 }
 
 void Collection::createScreenshots(QUrl file)
@@ -565,7 +561,6 @@ void Collection::createScreenshots(QUrl file)
 void Collection::screenshotsCreated(QString path)
 {
     setBusy(false);
-    qDebug() << path;
     for (int row=0; row<m_filteredVideos.count(); row++) {
         if (m_filteredVideos[row]->path == path) {
             QDir dir(path);
@@ -573,8 +568,8 @@ void Collection::screenshotsCreated(QString path)
             foreach(const QString &file, dir.entryList(QStringList() << ".vimiframe_*_*.jpg", QDir::Files | QDir::Hidden)) {
                 fileMap[file.split("_")[1].toLong()] = file;
             }
+            qDebug() << "screenshots" << fileMap.values();
             m_filteredVideos[row]->screenshots = fileMap.values();
-            //qDebug() << fileMap;
             emit dataChanged(index(row), index(row));
             emit screenshotsFinished();
             return;
@@ -590,7 +585,6 @@ void Collection::coverCreated(QString path)
             emit dataChanged(createIndex(row, 0), createIndex(row, 0));
             m_filteredVideos[row]->cover = scanForCovers(path);
             emit dataChanged(createIndex(row, 0), createIndex(row, 0));
-            qDebug() << row;
             return;
         }
     }

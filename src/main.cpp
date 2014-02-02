@@ -1,6 +1,6 @@
 /*
  * Main entry point for application
- * Copyright (C) 2009-2012 cwk <coolwk@gmail.com>
+ * Copyright (C) 2009-2014 cwk <coolwk@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,6 @@
 #include <QQmlContext>
 #include <QUrl>
 
-#include <ctime>
-
 #include "collection.h"
 #include "config.h"
 #include "version.h"
@@ -36,7 +34,6 @@ int main(int argc, char *argv[])
     QGuiApplication::setQuitOnLastWindowClosed(true);
     a.setApplicationName("Vimi");
     a.setOrganizationName("cwk");
-    a.setOrganizationDomain("cheggit.net");
 
 
     QQuickView view;

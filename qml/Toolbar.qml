@@ -4,9 +4,10 @@ Rectangle {
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
-    color: "black"
+    color: "#f0000000"
+    border.color: "white"
     property var model
-    height: fileList.count * 20 + 20
+    height: fileList.count * titleText.contentHeight + 2
     property string videoName
     property string folderPath
     property string file
@@ -18,8 +19,8 @@ Rectangle {
         anchors.top: parent.top
         color: "white"
         text: parent.videoName
-        font.pixelSize: 15
-        font.bold: true
+        font.pointSize: 15
+        font.bold: false
         MouseArea {
             hoverEnabled: true
             anchors.fill: parent
@@ -40,13 +41,14 @@ Rectangle {
             id: fileEntry
             color: "white"
             font.bold: file === modelData
-            font.pixelSize: 15
-            text: " ● " + modelData
+            font.pointSize: titleText.font.pointSize
+            font.underline: true
+            text: modelData
             elide: Text.ElideRight
             ClickableArea {
-                hoverEnabled: file === modelData
+                hoverEnabled: toolbar.file !== modelData
                 onClicked: {
-                    file = modelData
+                    toolbar.file = modelData
                 }
             }
         }

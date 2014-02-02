@@ -4,8 +4,8 @@ Rectangle {
     id: tagList
     anchors.margins: 5
     width: 200
-    color: "#55000000"
-    radius: 10
+    color: "#c0000000"
+    border.color: "white"
     property var tags
     property int index
     opacity: 0
@@ -59,7 +59,7 @@ Rectangle {
                 text: modelData;
                 color: "white";
                 styleColor: "black"
-                font.pointSize: 20
+                font.pointSize: 12
                 style: Text.Outline
                 width: 150
                 wrapMode: Text.WordWrap

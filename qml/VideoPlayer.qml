@@ -7,24 +7,35 @@ Rectangle {
     id: videoPlayer
 
     property var video: gridView.currentItem
+
     x: video == null ? 0 : video.x + gridView.x - gridView.contentX
     y: video == null ? 0 : video.y + gridView.y - gridView.contentY
     color: "black"
     height: video == null ? 0 : video.height
     width: video == null ? 0 :video.width
+    property int position: 0
     property string file: ""
+    onFileChanged: {
+        var info = video.info
+        mediaPlayer.source = "file:" + encodeURIComponent(info.path + "/" + file)
+        mediaPlayer.seek(position)
+        mediaPlayer.play()
+    }
     property string path: ""
     property string name: ""
     property int index: -1
     opacity: 0
     visible: false
-    onOpacityChanged: if (opacity < 0.1) { visible = false } else { visible = true }
+    onOpacityChanged: {
+        if (opacity == 0) { visible = false; mediaPlayer.pause() } else { visible = true }
+        if (opacity == 1) mediaPlayer.play()
+    }
 
-    Behavior on height { SmoothedAnimation { duration: 300; }}
-    Behavior on width { SmoothedAnimation { duration: 300; }}
-    Behavior on x { SmoothedAnimation { duration: 300; }}
-    Behavior on y { SmoothedAnimation { duration: 300; }}
-    Behavior on opacity { NumberAnimation { duration: 500; }}
+    Behavior on height { NumberAnimation { duration: 300; }}
+    Behavior on width { NumberAnimation { duration: 300; }}
+    Behavior on x { NumberAnimation { duration: 300; }}
+    Behavior on y { NumberAnimation { duration: 300; }}
+    Behavior on opacity { NumberAnimation { duration: 300; }}
 
     function seek(seekAmount) {
         var newPosition = mediaPlayer.position + seekAmount
@@ -55,35 +66,38 @@ Rectangle {
     function tags() {
         tagList.opacity = 1
     }
+    function togglePause() {
+        if (mediaPlayer.playbackState === MediaPlayer.PausedState) {
+            mediaPlayer.play()
+        } else {
+            mediaPlayer.pause()
+        }
+        seekbarpeek.restart()
+    }
     
     function show() {
         var info = video.info
-        
-        file = info.lastFile
-        path = info.path
-        name = info.name
-        index = info.index
-        
         tagList.tags = Qt.binding(function() { return info.tags; })
         screenshot.screenshots = Qt.binding(function() { return info.screenshots; })
         seekbar.bookmarks = Qt.binding(function() { return info.bookmarks; })
         controls.bookmarks = Qt.binding(function() { return info.bookmarks; })
         toolbar.model = info.files
-        mediaPlayer.source = "file:" + encodeURIComponent(path + "/" + file)
-        
-        mediaPlayer.seek(info.lastPosition)
-        mediaPlayer.play()
+
         videoPlayer.opacity = 1
         videoPlayer.x = Qt.binding(function() { return mainView.x; })
         videoPlayer.y = Qt.binding(function() { return mainView.y; })
         videoPlayer.width = Qt.binding(function() { return mainView.width })
         videoPlayer.height = Qt.binding(function() { return mainView.height })
         focus = true
-        
-        mediaPlayer.play()
+
+
+        file = info.lastFile
+        position = info.lastPosition
+        path = info.path
+        name = info.name
+        index = info.index
     }
     function hide() {
-        videoPlayer.opacity = 0
         videoPlayer.x = Qt.binding(function() { return video.x + gridView.x - gridView.contentX; })
         videoPlayer.y = Qt.binding(function() { return video.y + gridView.y - gridView.contentY; })
         videoPlayer.width = Qt.binding(function() { return video.width })
@@ -95,7 +109,7 @@ Rectangle {
         videoModel.setLastFile(gridView.currentIndex, file)
         videoModel.setLastPosition(gridView.currentIndex, mediaPlayer.position)
         gridView.focus = true
-        mediaPlayer.stop()
+        videoPlayer.opacity = 0
     }
     
     VideoOutput {
@@ -115,9 +129,13 @@ Rectangle {
         }
     }
     
-    ClickableArea {
+    MouseArea {
         id: videoMouseArea
         propagateComposedEvents: true
+        hoverEnabled: parent.visible
+        enabled: hoverEnabled
+        anchors.fill: parent
+
         
         onMouseXChanged: {
             if (mouse.y > parent.height - seekbar.height){
@@ -149,7 +167,9 @@ Rectangle {
     MediaPlayer {
         id: mediaPlayer
         
-        onPlaying: errorText.visible = false
+        onPlaying: {
+            errorText.visible = false
+        }
         onStatusChanged: {
             if (status == MediaPlayer.EndOfMedia) {
                 seek(0)
@@ -160,7 +180,6 @@ Rectangle {
         onError: {
             errorText.visible = true
             errorText.text = "Error while playing file " + source + ": " + errorString
-            
         }
     }
     
@@ -218,12 +237,13 @@ Rectangle {
     Toolbar {
         id: toolbar
         model: []
-        //onFileChanged: {
-        //    parent.file = toolbar.video
-        //}
+        onFileChanged: {
+            parent.position = 0
+            parent.file = toolbar.file
+        }
         videoName: parent.name
         folderPath: parent.path
-        file: file
+        file: parent.file
     }
     
     TagList {

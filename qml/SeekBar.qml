@@ -6,13 +6,16 @@ Rectangle {
     anchors.right: parent.right
     anchors.left: parent.left
     height: 30
-    color: "#55000000"
+    //color: "#55000000"
+    color: "black"
+    border.color: "white"
     opacity: 0
     property int position: 0
     property int duration: 0
     property int index
     property string file: ""
     property var bookmarks
+    visible: opacity > 0
 
     Rectangle {
         //radius: 10
@@ -22,6 +25,8 @@ Rectangle {
         height: 15
         color:"white"
         width: position * parent.width / duration
+        Behavior on width { SmoothedAnimation { duration: 100; } }
+        border.color: "white"
     }
     Text {
         // HAHAHA
@@ -47,10 +52,12 @@ Rectangle {
         anchors.left: progressbar.left
         anchors.leftMargin: 5
         verticalAlignment: Text.AlignVCenter
-        color: "#aaaaaa"
+        //color: "#aaaaaa"
+        color: "black"
         style: Text.Outline
 
-        styleColor: "black"
+        styleColor: "white"
+        renderType: Text.NativeRendering
     }
 
     Repeater {
@@ -92,9 +99,7 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         enabled: parent.visible
-//        propagateComposedEvents: true
         onClicked: {
-            console.log("berk")
             mediaPlayer.seek(mouse.x * mediaPlayer.duration / seekbar.width)
             videoModel.setLastPosition(index, mediaPlayer.position)
         }

@@ -14,6 +14,7 @@ Image {
     property string path
     property string file
     property var screenshots
+    //x: visible ? position - (width * (position/parent.width)) : 0
     x: position - (width * (position/parent.width))
     onXChanged: {
         var screenshots = screenshot.screenshots

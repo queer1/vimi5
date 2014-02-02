@@ -5,6 +5,7 @@ Rectangle {
     id: actressPanel
     width: config.starletsShow ? 200 : 0
     color: "black"
+    visible: width != 0
     onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
 
     Behavior on width { SmoothedAnimation { duration: 200; } }
@@ -31,6 +32,7 @@ Rectangle {
             }
             property bool selected: videoModel.filterTagsContains(modelData)
             MouseArea {
+                enabled: actressPanel.visible
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {

@@ -14,7 +14,7 @@ Item {
         id: rect
         color: "black"
         radius: 10
-        onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
+        visible: opacity > 0
 
         TitleText {
             id: titleText
@@ -30,7 +30,8 @@ Item {
             //anchors.bottomMargin: 15
 
             source: coverPath == "" ? "/images/defaultcover.png" : "file:/" + encodeURIComponent(coverPath)
-            cache: false
+            cache: true
+            onSourceChanged: { cache = false; cache = true; }
             asynchronous: true
             fillMode: Image.PreserveAspectCrop
             onOpacityChanged: {

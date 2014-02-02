@@ -1,3 +1,21 @@
+/*
+ * Video frame dumper
+ * Copyright (C) 2013-2014 cwk <coolwk@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "videoframedumper.h"
 #include <QFileInfo>
 #include <QDebug>
@@ -79,11 +97,10 @@ void VideoFrameDumper::saveFrameToImage(QString outFile)
     AVCodecContext *video_dec_ctx = fmt_ctx->streams[video_stream_idx]->codec;
 
     //static SwsContext* scaleContext = 0;
-    const int outHeight = video_dec_ctx->width;
-    const int outWidth = video_dec_ctx->height;
+    const int outHeight = video_dec_ctx->height;
+    const int outWidth = video_dec_ctx->width;
     //const int outWidth = 1000;
     static SwsContext* scaleContext=0;
-    qDebug() << scaleContext << outHeight << outWidth;
     scaleContext = sws_getCachedContext(scaleContext,
                                               video_dec_ctx->width, video_dec_ctx->height, video_dec_ctx->pix_fmt,
                                               outWidth, outHeight, PIX_FMT_RGB24,
@@ -180,10 +197,12 @@ void VideoFrameDumper::createSnapshots(int num)
     if (ret < 0) {
         char errbuf[1024];
         av_strerror(ret, errbuf, 1024);
-        qWarning() << "error reading frame:" << errbuf << ret;
+        qWarning() << "error reading frame:" << errbuf << "(" << ret << ")";
     }
 
     if (num > 0) {
         emit screenshotsCreated(m_outputPath);
     }
+
+//    deleteLater();
 }

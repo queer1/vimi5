@@ -10,7 +10,7 @@ Rectangle {
     property var bookmarks
     property int index
     property string file
-    visible: true
+    visible: false
     onOpacityChanged: if (opacity < 0.1) { visible = false } else { visible = true }
 
 

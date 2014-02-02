@@ -11,6 +11,7 @@ Rectangle {
     border.color: "white"
     border.width: 1
     color: "black"
+    visible: opacity > 0.1
 
 
     MouseArea {
