@@ -8,7 +8,11 @@ Rectangle {
     height: 30
     color: "#55000000"
     opacity: 0
-
+    property int position: 0
+    property int duration: 0
+    property int index
+    property string file: ""
+    property var bookmarks
 
     Rectangle {
         //radius: 10
@@ -17,27 +21,27 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         height: 15
         color:"white"
-        width: player.position * parent.width / player.duration
+        width: position * parent.width / duration
     }
     Text {
         // HAHAHA
-        text: (player.position < 10000*60*60 ? "0" : "") +
-              Math.floor(player.position/ (1000*60*60)) +
+        text: (position < 10000*60*60 ? "0" : "") +
+              Math.floor(position/ (1000*60*60)) +
               ":" +
-              (player.position%(1000*60*60) < 600000 ? "0" : "") +
-              Math.floor((player.position%(1000*60*60))/ (1000*60)) +
+              (position % (1000*60*60) < 600000 ? "0" : "") +
+              Math.floor((position % (1000*60*60)) / (1000*60)) +
               ":" +
-              ((player.position%(1000*60*60))%(1000*60) < 10000 ? "0" : "") +
-              Math.floor(((player.position%(1000*60*60))%(1000*60))/1000) +
+              ((position % (1000*60*60))%(1000*60) < 10000 ? "0" : "") +
+              Math.floor(((position%(1000*60*60))%(1000*60))/1000) +
               "/" +
-              (player.duration < 10000*60*60 ? "0" : "") +
-              Math.floor(player.duration/ (1000*60*60)) +
+              (duration < 10000*60*60 ? "0" : "") +
+              Math.floor(duration/ (1000*60*60)) +
               ":" +
-              (player.duration%(1000*60*60) < 600000 ? "0" : "") +
-              Math.floor((player.duration%(1000*60*60))/ (1000*60)) +
+              (duration%(1000*60*60) < 600000 ? "0" : "") +
+              Math.floor((duration%(1000*60*60))/ (1000*60)) +
               ":" +
-              ((player.duration%(1000*60*60))%(1000*60) < 10000 ? "0" : "") +
-              Math.floor(((player.duration%(1000*60*60))%(1000*60))/1000)
+              ((duration%(1000*60*60))%(1000*60) < 10000 ? "0" : "") +
+              Math.floor(((duration%(1000*60*60))%(1000*60))/1000)
         anchors.top: progressbar.top
         anchors.bottom: progressbar.bottom
         anchors.left: progressbar.left
@@ -45,7 +49,6 @@ Rectangle {
         verticalAlignment: Text.AlignVCenter
         color: "#aaaaaa"
         style: Text.Outline
-        renderType: Text.NativeRendering
 
         styleColor: "black"
     }
@@ -53,22 +56,24 @@ Rectangle {
     Repeater {
         id: bookmarkTicks
         function removeBookmark(bookmark) {
-            videoModel.removeBookmark(index, player.file, bookmark)
+            videoModel.removeBookmark(index, file, bookmark)
         }
 
-        model: bookmarks[player.file]
+        model: bookmarks[videoPlayer.file]
         Rectangle {
             id: bookmarkTick
             width: 1
             color: "gray"
-            x: modelData * seekbar.width / player.duration
+            x: modelData * seekbar.width / mediaPlayer.duration
             height: progressbar.height
             y: progressbar.y
             Text {
-                anchors.top: parent.bottom
+                anchors.bottom: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "x"
                 color: "red"
+                font.pointSize: 20
+                font.bold: true
                 opacity: 1
                 MouseArea {
                     anchors.fill: parent
@@ -80,7 +85,19 @@ Rectangle {
     }
 
     Behavior on opacity {
-        NumberAnimation { duration: 250 }
+        NumberAnimation { duration: 300 }
+    }
+
+
+    MouseArea {
+        anchors.fill: parent
+        enabled: parent.visible
+//        propagateComposedEvents: true
+        onClicked: {
+            console.log("berk")
+            mediaPlayer.seek(mouse.x * mediaPlayer.duration / seekbar.width)
+            videoModel.setLastPosition(index, mediaPlayer.position)
+        }
     }
 }
 

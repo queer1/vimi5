@@ -8,68 +8,23 @@ Rectangle {
     anchors.left: mainView.left
     width: 200
     color: "black"
+    onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
 
-    Rectangle {
-        z:1
+    InputBox {
+        z: 1
         id: textInputBox
-        anchors.left: parent.left
-        anchors.right: parent.right
+        onTextChanged: videoModel.setFilter(text)
+        helpText: "Name filter"
         anchors.top: parent.top
-        height: 30
-        border.color: "white"
-        border.width: 1
-        color: "black"
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.IBeamCursor
-        }
-        TextInput {
-            id: searchInput
-            color: "white"
-            anchors.fill: parent; anchors.leftMargin: 10
-            font.pixelSize: 24
-            onTextChanged: videoModel.setFilter(text)
-
-            Text {
-                anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                text: "Name filter..."
-                visible: !(parent.cursorVisible || parent.text != "")
-                color: "white"
-            }
-        }
     }
 
-    Rectangle {
-        z:1
+    InputBox {
+        z: 1
         id: tagInputBox
         anchors.topMargin: 20
-        anchors.left: parent.left
-        anchors.right: parent.right
         anchors.top: textInputBox.bottom
-        height: 30
-        border.color: "white"
-        color: "black"
-        border.width: 1
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.IBeamCursor
-        }
-        TextInput {
-            id: tagInput
-            color: "white"
-            anchors.fill: parent; anchors.leftMargin: 10
-            font.pixelSize: 24
-            onTextChanged: videoModel.setTagFilter(text)
-
-            Text {
-                anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                text: "Tag search..."
-                visible: !(parent.cursorVisible || parent.text != "")
-                color: "white"
-            }
-        }
+        onTextChanged: videoModel.setTagFilter(text)
+        helpText: "Tag search"
     }
 
     ListView {
@@ -83,7 +38,6 @@ Rectangle {
             text: modelData
             color: "white";
             font.pointSize: 8
-            renderType: Text.NativeRendering
             property bool selected: videoModel.filterTagsContains(modelData)
             font.bold: selected
             MouseArea {
@@ -108,26 +62,11 @@ Rectangle {
         anchors.bottom: availableTagsView.bottom
     }
 
-    Rectangle {
+    Button {
         id: setPathButton
-        height: 25
-        anchors.right: parent.right
-        anchors.left: parent.left
         anchors.bottom: rescanButton.top
-        border.color: "white"
-        border.width: 1
-        color: "black"
-        Text {
-            anchors.fill: parent
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            text: "Set path"
-            color: "white"
-        }
-        MouseArea {
-            anchors.fill: parent
-            onClicked: folderDialog.visible = true
-        }
+        text: "Set path..."
+        onClicked: folderDialog.visible = true
 
         FileDialog {
             id: folderDialog
@@ -141,78 +80,25 @@ Rectangle {
         }
     }
 
-    Rectangle {
+    Button {
         id: rescanButton
-        height: 25
-        anchors.right: parent.right
-        anchors.left: parent.left
-        anchors.bottom: aboutButton.top
-        border.color: "white"
-        border.width: 1
-        color: "black"
-        Text {
-            anchors.fill: parent
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            text: "Rescan"
-            color: "white"
-        }
-        MouseArea {
-            anchors.fill: parent
-            onClicked: videoModel.rescan();
-        }
-    }
-
-    Rectangle {
-        id: aboutButton
-        height: 25
-        anchors.right: parent.right
-        anchors.left: parent.left
+        text: "Rescan"
+        onClicked: videoModel.rescan();
         anchors.bottom: fullscreenButton.top
-        border.color: "white"
-        border.width: 1
-        color: "black"
-        Text {
-            anchors.fill: parent
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            text: "About"
-            color: "white"
-        }
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                aboutBox.visible = true
-            }
-        }
     }
 
-    Rectangle {
+
+    Button {
         id: fullscreenButton
-        height: 25
-        anchors.right: parent.right
-        anchors.left: parent.left
+        text: "Fullscreen"
         anchors.bottom: parent.bottom
-        border.color: "white"
-        border.width: 1
-        color: "black"
-        Text {
-            anchors.fill: parent
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            text: "Fullscreen"
-            color: "white"
-        }
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                if (config.fullscreen) {
-                    mainWindow.showMaximized()
-                    config.fullscreen = false
-                } else {
-                    mainWindow.showFullScreen()
-                    config.fullscreen = true
-                }
+        onClicked: {
+            if (config.fullscreen) {
+                mainWindow.showMaximized()
+                config.fullscreen = false
+            } else {
+                mainWindow.showFullScreen()
+                config.fullscreen = true
             }
         }
     }

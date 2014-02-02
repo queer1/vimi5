@@ -3,12 +3,35 @@ import QtMultimedia 5.0
 
 Rectangle {
     id: controlbar
-    anchors.right: rect.right
-    anchors.top: toolbar.bottom
-    anchors.bottom: seekbar.top
-    color: "transparent"
-    property int maxWidth: 50
+    color: "#55000000"
+    width: 75
+    height: 250
+    property var player
+    property var bookmarks
+    property int index
+    property string file
+    visible: true
+    onOpacityChanged: if (opacity < 0.1) { visible = false } else { visible = true }
 
+
+    function bookmark() {
+        videoModel.addBookmark(index, file, player.position)
+    }
+    function screenshots() {
+        videoModel.createScreenshots(player.source)
+    }
+    function next() {
+        var bks = bookmarks[file]
+        for (var i=0; i<bks.length; i++) {
+            if (bks[i] > player.position) {
+                player.seek(bks[i])
+                return
+            }
+        }
+    }
+    function cover() {
+        videoModel.createCover(player.source, player.position)
+    }
 
     Rectangle {
         id: skipButton
@@ -29,11 +52,9 @@ Rectangle {
             font.pointSize: 20
             color: "white"
         }
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
+        ClickableArea {
             onClicked: {
-                videoModel.createScreenshots(player.source)
+                screenshots()
             }
         }
     }
@@ -56,11 +77,9 @@ Rectangle {
             font.pointSize: 20
             color: "white"
         }
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
+        ClickableArea {
             onClicked: {
-                videoModel.createCover(player.source, player.position)
+                cover()
             }
         }
     }
@@ -84,17 +103,9 @@ Rectangle {
             font.pointSize: 20
             color: "white"
         }
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
+        ClickableArea {
             onClicked: {
-                var bks = bookmarks[player.file]
-                for (var i=0; i<bks.length; i++) {
-                    if (bks[i] > player.position) {
-                        player.seek(bks[i])
-                        return
-                    }
-                }
+                next()
             }
         }
     }
@@ -118,12 +129,9 @@ Rectangle {
             font.pointSize: 20
             color: "white"
         }
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
+        ClickableArea {
             onClicked: {
-                videoModel.addBookmark(index, player.file, player.position)
-                seekbarPeek.running = true
+                bookmark()
             }
         }
     }
@@ -143,47 +151,21 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: (player.playbackState == MediaPlayer.PlayingState) ? "| |" : ">"
+            text: (mediaPlayer.playbackState === MediaPlayer.PlayingState) ? "| |" : ">"
             font.bold: true
             font.pointSize: 20
             color: "white"
         }
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
+        ClickableArea {
             onClicked: {
-                if (player.playbackState == MediaPlayer.PlayingState) {
-                    player.pause()
-                    //pauseButtonText.text = ">"
+                if (mediaPlayer.playbackState === MediaPlayer.PlayingState) {
+                    mediaPlayer.pause()
                 } else {
-                    player.play()
-                    //pauseButtonText.text = "| |"
+                    mediaPlayer.play()
                 }
             }
         }
     }
 
-    states: [
-        State {
-            name: "shown"
-            PropertyChanges {
-                target: controlbar
-                width: maxWidth
-                opacity: 0.75
-            }
-        },
-        State {
-            name: "hidden"
-            PropertyChanges {
-                target: controlbar
-                width: 0
-                opacity: 0
-            }
-        }
-    ]
-    state: "hidden"
-
-    Behavior on opacity { NumberAnimation { duration: 1000 } }
-    Behavior on width { SmoothedAnimation { duration: 1000 } }
-
+    Behavior on opacity { NumberAnimation { duration: 300 } }
 }

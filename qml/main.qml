@@ -1,5 +1,7 @@
 import QtQuick 2.0
 import QtGraphicalEffects 1.0
+import QtMultimedia 5.0
+
 
 Image {
     id: mainView
@@ -8,12 +10,79 @@ Image {
     source: "images/bg2.png"
     fillMode: Image.Tile
 
-    Keys.onEscapePressed: {
-        Qt.quit()
+    Keys.enabled: true
+
+    Keys.onPressed: {
+        if (!videoPlayer.visible) {
+            if (event.key === Qt.Key_Escape) {
+                Qt.quit()
+            } else if (event.key === Qt.Key_Return) {
+                videoPlayer.show();
+                event.accepted = true;
+                return;
+            } else {
+                event.accepted = false
+                return
+            }
+        }
+
+        if (!videoPlayer.visible) {
+            event.accepted = false
+            return
+        }
+
+        var seekAmount = 0
+        event.accepted = true;
+        if (event.key === Qt.Key_Space) {
+            if (mediaPlayer.playbackState === MediaPlayer.PausedState) {
+                mediaPlayer.play()
+            } else {
+                mediaPlayer.pause()
+            }
+            return;
+        } else if (event.key === Qt.Key_Escape) {
+            videoPlayer.hide()
+            return;
+        } else if (event.key === Qt.Key_S) {
+            videoPlayer.screenshots();
+            return;
+        } else if (event.key === Qt.Key_C) {
+            videoPlayer.cover();
+            return;
+        } else if (event.key === Qt.Key_N) {
+            videoPlayer.next();
+            return;
+        } else if (event.key === Qt.Key_B) {
+            videoPlayer.bookmark();
+            return;
+        } else if (event.key === Qt.Key_B) {
+            videoPlayer.bookmark();
+            return;
+        } else if (event.key === Qt.Key_T) {
+            videoPlayer.tags()
+        } else if (event.key === Qt.Key_Left) {
+            seekAmount = -3000
+        } else if (event.key === Qt.Key_Right) {
+            seekAmount = 3000
+        } else if (event.key === Qt.Key_Up) {
+            seekAmount = 30000
+        } else if (event.key === Qt.Key_Down) {
+            seekAmount = -30000
+        } else if (event.key === Qt.Key_PageUp) {
+            seekAmount = 300000
+        } else if (event.key === Qt.Key_PageDown) {
+            seekAmount = -300000
+        } else {
+            event.accepted = false
+            return
+        }
+
+        videoPlayer.seek(seekAmount)
     }
 
     SideBar {
         id: sideBar
+        opacity: 1 - videoPlayer.opacity
     }
 
     GridView {
@@ -23,17 +92,31 @@ Image {
         anchors.top: parent.top
         anchors.right: scrollbar.left
         model: videoModel
-        cellHeight: 300
-        cellWidth: 200
+        cellHeight: 315
+        cellWidth: 215
+        highlight: RectangularGlow { visible: !videoPlayer.visible; color:"white"; glowRadius: 15; spread:0.001}
         delegate: VideoElement {
+            width: gridView.cellWidth;
+            height: gridView.cellHeight;
+            opacity: 1 - videoPlayer.opacity
+            property var info: model
         }
-        focus:true
-        //highlight: RectangularGlow {color:"white"; glowRadius: 15; spread:0.001}
-        displaced: Transition {
-            SmoothedAnimation { properties: "x,y"; duration: 100 }
-        }
-        add: Transition {
-            SmoothedAnimation { properties: "x,y"; from: 100; duration: 100 }
+
+        focus: true
+
+        Keys.forwardTo: parent
+        displaced: Transition { SmoothedAnimation { properties: "x,y"; duration: 100 } }
+        add: Transition { SmoothedAnimation { properties: "x,y"; from: 100; duration: 100 } }
+        MouseArea {
+            anchors.fill: parent
+            propagateComposedEvents: true
+            hoverEnabled: true
+            onPositionChanged: {
+                var x = mouse.x + gridView.contentX
+                var y = mouse.y + gridView.contentY
+                var index = gridView.indexAt(x, y)
+                if (index !== -1) gridView.currentIndex = index
+            }
         }
     }
 
@@ -41,115 +124,61 @@ Image {
         id: scrollbar
         view: gridView
         anchors.right: actressPanel.left
+        opacity: 1 - videoPlayer.opacity
     }
 
     ActressPanel {
         id: actressPanel
+        opacity: 1 - videoPlayer.opacity
+    }
+
+    VideoPlayer {
+        id: videoPlayer
     }
 
     Rectangle {
-        z: 100
-        id: notification
-        height: 150
-        width: 300
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.bottomMargin: 20
-        anchors.rightMargin: 20
-        color: "black"
-        smooth: true
-        opacity: 0
-
-        Text {
-            color: "white"
-            anchors.fill: parent
-            anchors.margins: 25
-            font.pointSize: 12
-            text: videoModel.status
-            onTextChanged: {
-                parent.opacity = 1
-                notifyTimer.restart()
-            }
-            wrapMode: Text.WordWrap
-            elide: Text.ElideRight
-
-        }
-
-        RectangularGlow {
-            z:-1
-            anchors.fill: notification
-            glowRadius: 10
-            spread: 0.2
-            color: "white"
-            cornerRadius: notification.radius + glowRadius
-        }
-
-        Timer {
-            id: notifyTimer
-            interval: 1000
-            onTriggered: parent.opacity = 0
-        }
-
-        Behavior on opacity { NumberAnimation { duration: 1000; } }
-    }
-
-    Rectangle {
-        id: aboutBox
+        id: busyWidget
+        visible: videoModel.busy
         anchors.fill: parent
-        visible: false
-        color: "#00000000"
-        Behavior on color {
-            ColorAnimation { duration: 500 }
-        }
+        opacity: 0.9
+        color: "black"
 
-        onVisibleChanged: {
-            if (visible) color = "#e0000000"
-            else color = "#00000000"
+        Rectangle {
+            id: spinnerContainer
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            height: 100
+            width: 100
+            border.color: "white"
+            color: "transparent"
+            Rectangle {
+                smooth: true
+                height: 10
+                width: 100
+                anchors.centerIn: parent
+                color: "white"
+                RotationAnimation on rotation {
+                    loops: Animation.Infinite
+                    from: 0
+                    to: 360
+                    duration: 1500
+                    running: busyWidget.visible
+                }
+            }
         }
 
         Text {
-            id: aboutLogo
-            //anchors.centerIn: parent
-            anchors.fill: parent
-            text: "Vimi"
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            font.pointSize: 200
-            color: "black"
             opacity: 1
-        }
-        Glow {
-            id: aboutLogoGlow
-            anchors.fill: parent
-            radius: 8
-            samples: 8
+            text: videoModel.status
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.left: parent.left
             color: "white"
-            source: aboutLogo
-            SequentialAnimation {
-                running: aboutBox.visible
-                loops: Animation.Infinite
-                NumberAnimation { target: aboutLogoGlow; property: "radius"; duration: 5000; from: 8; to:100; easing.type: Easing.InOutQuad }
-                NumberAnimation { target: aboutLogoGlow; property: "radius"; duration: 5000; from: 100; to:8; easing.type: Easing.InOutQuad }
-            }
-        }
-
-        Text {
-            id: aboutAuthor
-            text: "by coolwk"
-            x: parent.width*2 / 3
-            y: parent.height*2 / 3
-            color: "white"
-        }
-
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                aboutBox.color = "#00000000"
-                aboutBox.visible = false
-            }
+            font.pointSize: 20
+            font.bold: true
         }
     }
-
-
 }

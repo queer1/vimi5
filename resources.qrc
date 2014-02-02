@@ -13,5 +13,11 @@
         <file>images/defaultcover.png</file>
         <file>qml/ActressPanel.qml</file>
         <file>images/defaultactress.png</file>
+        <file>qml/TitleText.qml</file>
+        <file>qml/Screenshot.qml</file>
+        <file>qml/ClickableArea.qml</file>
+        <file>qml/VideoPlayer.qml</file>
+        <file>qml/Button.qml</file>
+        <file>qml/InputBox.qml</file>
     </qresource>
 </RCC>

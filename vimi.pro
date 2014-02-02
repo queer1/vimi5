@@ -8,7 +8,7 @@ HEADERS = \
     src/videoframedumper.h \
     src/config.h \
 
-QT += quick qml
+QT += quick qml widgets
 
 RESOURCES += \
     resources.qrc
@@ -22,6 +22,12 @@ OTHER_FILES += \
     qml/ScrollBar.qml \
     qml/SideBar.qml \
     qml/SeekBar.qml \
-    qml/ActressPanel.qml
+    qml/ActressPanel.qml \
+    qml/TitleText.qml \
+    qml/ClickableArea.qml \
+    qml/Screenshot.qml \
+    qml/VideoPlayer.qml \
+    qml/Button.qml \
+    qml/InputBox.qml
 
 LIBS += -lavcodec -lavformat -lavutil -lswscale

@@ -25,7 +25,6 @@
 #include <QHash>
 #include <QDebug>
 
-
 class QDir;
 class Video;
 
@@ -45,7 +44,7 @@ public:
     };
 
     Video(QString name, QString path, QString cover, QStringList files, QStringList tags, int lastPosition, QString lastFile, QVariantMap bookmarks, QStringList screenshots) :
-        m_name(name), m_path(path), m_cover(cover), m_files(files), m_tags(tags), m_lastPosition(lastPosition), m_lastFile(lastFile), m_bookmarks(bookmarks), m_screenshots(screenshots)
+        name(name), path(path), cover(cover), files(files), tags(tags), lastPosition(lastPosition), lastFile(lastFile), bookmarks(bookmarks), screenshots(screenshots)
     { }
 
     Video() {}
@@ -54,15 +53,17 @@ public:
     friend QDataStream &operator<<(QDataStream &, const Video &);
     friend QDataStream &operator>>(QDataStream &, Video &);
 
-    QString m_name;
-    QString m_path;
-    QString m_cover;
-    QStringList m_files;
-    QStringList m_tags;
-    int m_lastPosition;
-    QString m_lastFile;
-    QVariantMap m_bookmarks;
-    QStringList m_screenshots;
+    QString name;
+    QString path;
+    QString cover;
+    QStringList files;
+    QStringList tags;
+    int lastPosition;
+    QString lastFile;
+    QVariantMap bookmarks;
+    QStringList screenshots;
+
+    bool operator==(const Video& other) const { return (path == other.path); }
 };
 
 class Collection : public QAbstractListModel
@@ -72,6 +73,7 @@ class Collection : public QAbstractListModel
     Q_PROPERTY(QStringList allTags READ allTags NOTIFY tagsUpdated)
     Q_PROPERTY(QString status READ getStatus NOTIFY statusUpdated)
     Q_PROPERTY(QStringList actresses READ actresses NOTIFY actressesChanged)
+    Q_PROPERTY(bool busy READ isBusy NOTIFY busyChanged)
 
 
 public:
@@ -96,10 +98,12 @@ public slots:
     void setLastFile(int row, QString file);
     void setLastPosition(int row, int position);
 
+    void renameVideo(int row, QString newName);
+
     void setFilter(QString text);
     void addFilterTag(QString tag);
     void removeFilterTag(QString tag);
-    bool filterTagsContains(QString tag) { return m_filterTags.contains(tag); }
+    bool filterTagsContains(QString tag);
 
     void setTagFilter(QString text) { m_tagFilter = text; emit tagsUpdated(); }
 
@@ -114,13 +118,18 @@ public slots:
     void screenshotsCreated(QString path);
     void coverCreated(QString path);
 
+    bool isBusy() { return m_busy; }
+
 signals:
     void tagsUpdated();
     void statusUpdated();
     void actressesChanged();
+    void busyChanged();
+    void screenshotsFinished();
 
 private slots:
     void setStatus(QString status) { m_status = status; emit statusUpdated(); }
+    void setBusy(bool isBusy) { if (m_busy != isBusy) {m_busy = isBusy; emit busyChanged(); } }
 
 private:
     Collection();
@@ -139,6 +148,7 @@ private:
     QStringList m_filterTags;
     QStringList m_actresses;
     QString m_status;
+    bool m_busy;
 };
 
 #endif // COLLECTION_H

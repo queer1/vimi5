@@ -8,6 +8,7 @@ Rectangle {
     anchors.right: mainView.right
     width: 200
     color: "black"
+    onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
 
     ListView {
         id: actressList
@@ -26,7 +27,6 @@ Rectangle {
                 styleColor: "black"
                 style: Text.Outline
                 font.pointSize: 8
-                renderType: Text.NativeRendering
                 font.bold: selected
             }
             property bool selected: videoModel.filterTagsContains(modelData)
@@ -52,28 +52,12 @@ Rectangle {
         anchors.bottom: actressList.bottom
     }
 
-    Rectangle {
+    Button {
         id: setPathButton
-        height: 25
-        anchors.right: parent.right
-        anchors.left: parent.left
+
         anchors.bottom: parent.bottom
-        border.color: "white"
-        border.width: 1
-        color: "black"
-
-        Text {
-            anchors.fill: parent
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            text: "Set picture path"
-            color: "white"
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: folderDialog.visible = true
-        }
+        text: "Set picture path"
+        onClicked: folderDialog.visible = true
 
         FileDialog {
             id: folderDialog

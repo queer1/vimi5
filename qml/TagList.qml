@@ -3,63 +3,76 @@ import QtQuick 2.0
 Rectangle {
     id: tagList
     anchors.margins: 5
-    height: Math.min(taglistlist.count * 10 + 30, rect.height)
-
-
-    color: "#10000000"
+    width: 200
+    color: "#55000000"
     radius: 10
+    property var tags
+    property int index
+    opacity: 0
+    visible: false
+    onOpacityChanged: {
+        if (opacity < 0.1)
+            visible = false
+        else
+            visible = true
+    }
+    onVisibleChanged: {
+        if (visible)
+            newTagInput.forceActiveFocus()
+        else
+            parent.forceActiveFocus()
+    }
+
     ListView {
         id: taglistlist
-        anchors.fill: parent
-        interactive: false
+        anchors.top: parent.top
+        anchors.bottom: newTagRect.top
+        anchors.right: parent.right
+        anchors.left: parent.left
+        //interactive: false
+        boundsBehavior: Flickable.StopAtBounds
 
         anchors.margins: 10
         anchors.bottomMargin: 15
         model: tags
         opacity: 1.0
         delegate: Row {
-            height:10; width: tagList.width
+            height: tag.height + 10
+            width: tagList.width
             spacing: 10
             Text {
-                id: removeTagButton
                 text: "x"
                 color: "red"
                 visible: newTagRect.visible
-                font.pointSize: 8
+                font.pointSize: tag.font.pointSize
+                font.bold: true
+
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: videoModel.removeTag(rect.index, modelData)
+                    onClicked: videoModel.removeTag(tagList.index, modelData)
                 }
             }
 
             Text {
+                id: tag
                 text: modelData;
                 color: "white";
                 styleColor: "black"
-                font.pointSize: 8
-                renderType: Text.NativeRendering
+                font.pointSize: 20
                 style: Text.Outline
+                width: 150
+                wrapMode: Text.WordWrap
+                verticalAlignment: Text.AlignVCenter
 
                 property bool selected: videoModel.filterTagsContains(modelData)
                 font.bold: selected
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    visible: !newTagRect.visible
-                    onClicked: {
-                        if (parent.selected) {
-                            videoModel.removeFilterTag(modelData)
-                        } else {
-                            videoModel.addFilterTag(modelData)
-                        }
-                        parent.selected = !parent.selected
-                    }
-                }
-
             }
         }
+    }
+
+    ScrollBar {
+        view: taglistlist
     }
 
     Rectangle {
@@ -69,7 +82,7 @@ Rectangle {
         anchors.right: tagList.right
         anchors.rightMargin: 10
         anchors.leftMargin: 10
-        height: 16
+        height: 24
         color: "black"
         border.color: "white"
         border.width: 1
@@ -79,7 +92,7 @@ Rectangle {
         }
 
         TextInput {
-            font.pointSize: 8
+            font.pointSize: 12
             anchors.fill: parent
             anchors.margins: 2
             color: "white"
@@ -93,6 +106,8 @@ Rectangle {
                     newTagRect.border.width = 0
             }
 
+            Keys.onEscapePressed: tagList.opacity = 0
+
             Text {
                 font.pointSize: parent.font.pointSize
                 anchors.fill: parent
@@ -103,54 +118,11 @@ Rectangle {
             }
 
             onAccepted: {
-                videoModel.addTag(index, text)
+                videoModel.addTag(tagList.index, text)
                 text = ""
             }
         }
     }
 
-    Behavior on opacity { NumberAnimation { duration: 1000 } }
-    Behavior on width { SmoothedAnimation { duration: 1000 } }
-
-    state: "normal"
-    states: [
-        State {
-            name: "hidden"
-            PropertyChanges { target: tagList; opacity: 0; width: 0 }
-            PropertyChanges { target: newTagInput; focus: false }
-            AnchorChanges {
-                target: tagList
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: rect.left
-                anchors.right: undefined
-            }
-        },
-        State {
-            name: "maximized"
-            PropertyChanges { target: tagList; opacity: 0.75; width: 200 }
-            PropertyChanges { target: newTagInput; focus: false }
-            PropertyChanges { target: newTagRect; visible: true }
-            AnchorChanges {
-                target: tagList
-                anchors.verticalCenter: rect.verticalCenter
-                anchors.left: rect.left
-                anchors.right: undefined
-            }
-        },
-        State {
-            name: "normal"
-            PropertyChanges { target: tagList; width: undefined }
-            PropertyChanges { target: newTagInput; focus: false }
-            PropertyChanges { target: newTagRect; visible: false }
-            AnchorChanges {
-                target: tagList
-                anchors.top: titleText.bottom
-                anchors.verticalCenter: undefined
-                anchors.bottom: undefined
-                anchors.left: rect.left
-                anchors.right: rect.right
-            }
-        }
-
-    ]
+    Behavior on opacity { NumberAnimation { duration: 300 } }
 }
