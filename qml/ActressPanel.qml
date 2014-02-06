@@ -5,23 +5,25 @@ Rectangle {
     id: actressPanel
     width: config.starletsShow ? 200 : 0
     color: "black"
+    border.color: "white"
     visible: width != 0
     onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
 
     Behavior on width { SmoothedAnimation { duration: 200; } }
 
-
     ListView {
         id: actressList
-        anchors.top: parent.top
+        anchors.top: filter.bottom
         anchors.right: scrollbar.left
         anchors.left: parent.left
         anchors.bottom: setPathButton.top
+        anchors.margins: 15
         model: videoModel.actresses
         delegate: Image {
             source: config.actressPath + "/" + modelData + ".jpg"
             width: parent.width
             fillMode: Image.PreserveAspectFit
+            visible: modelData.indexOf(filter.text) !== -1
             Text {
                 text: modelData
                 color: "white";
@@ -47,11 +49,17 @@ Rectangle {
         }
     }
 
+
+    InputBox {
+        id: filter
+        helpText: "filter"
+    }
+
     ScrollBar {
         id: scrollbar
         view: actressList
         anchors.top: actressList.top
-        anchors.bottom: actressList.bottom
+        anchors.bottom: setPathButton.top
     }
 
     Button {
