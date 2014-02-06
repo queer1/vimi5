@@ -43,7 +43,7 @@ Item {
                 onClicked: {
                     videoPlayer.show()
                 }
-
+                hoverEnabled: false
             }
         }
 
