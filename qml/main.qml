@@ -91,6 +91,22 @@ Rectangle {
         opacity: 1 - videoPlayer.opacity
     }
 
+
+    MouseArea {
+        anchors.fill: gridView
+        propagateComposedEvents: true
+        hoverEnabled: true
+        enabled: !videoModel.busy
+        onPositionChanged: {
+            var x = mouse.x + gridView.contentX
+            var y = mouse.y + gridView.contentY
+            var index = gridView.indexAt(x, y)
+            if (index !== -1) {
+                gridView.currentIndex = index
+                cursorShape = Qt.PointingHandCursor
+            } else cursorShape = Qt.ArrowCursor
+        }
+    }
     GridView {
         id: gridView
         anchors.bottom: parent.bottom
@@ -105,20 +121,6 @@ Rectangle {
         flickDeceleration: 10000
         maximumFlickVelocity: 5000
 
-        MouseArea {
-            anchors.fill: parent
-            propagateComposedEvents: true
-            hoverEnabled: true
-            onPositionChanged: {
-                var x = mouse.x + gridView.contentX
-                var y = mouse.y + gridView.contentY
-                var index = gridView.indexAt(x, y)
-                if (index !== -1) {
-                    gridView.currentIndex = index
-                    cursorShape = Qt.PointingHandCursor
-                } else cursorShape = Qt.ArrowCursor
-            }
-        }
         highlight: RectangularGlow {
             visible: !videoPlayer.visible
             color:"white"
