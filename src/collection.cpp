@@ -351,6 +351,7 @@ static QStringList scanForScreenshots(QString path)
     foreach(const QString &file, dir.entryList(QStringList() << ".vimiframe_*_*.jpg", QDir::Files | QDir::Hidden)) {
         fileMap[file.split("_")[1].toLong()] = file;
     }
+    return fileMap.values();
 }
 
 void Collection::scan(QDir dir)
