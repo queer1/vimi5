@@ -3,7 +3,7 @@ import QtMultimedia 5.0
 
 MouseArea {
     hoverEnabled: parent.visible
-    enabled: hoverEnabled
+    enabled: parent.visible
     anchors.fill: parent
     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 }
