@@ -62,6 +62,7 @@ void Collection::updateActresses()
     QDir dir(QUrl(Config::instance()->actressesPath()).toLocalFile());
     QFileInfoList fileList = dir.entryInfoList(QStringList() << "*.jpg" << "*.png", QDir::Files, QDir::Name);
     QStringList tags = allTags();
+    for(int i=0; i<tags.length(); i++) tags[i] = tags[i].split(" (")[0];
     QStringList newActressList;
     foreach (const QFileInfo &file, fileList) {
         if (tags.contains(file.baseName())) {
