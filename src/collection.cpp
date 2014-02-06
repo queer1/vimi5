@@ -344,6 +344,15 @@ static QString scanForCovers(QString path)
     return coverPath;
 }
 
+static QStringList scanForScreenshots(QString path)
+{
+    QDir dir(path);
+    QMap <qint64, QString> fileMap;
+    foreach(const QString &file, dir.entryList(QStringList() << ".vimiframe_*_*.jpg", QDir::Files | QDir::Hidden)) {
+        fileMap[file.split("_")[1].toLong()] = file;
+    }
+}
+
 void Collection::scan(QDir dir)
 {
     QGuiApplication::instance()->processEvents();
@@ -384,12 +393,7 @@ void Collection::scan(QDir dir)
             }
         }
 
-        // Look for screenshots
-        QMap <qint64, QString> fileMap;
-        foreach(const QString &file, dir.entryList(QStringList() << ".vimiframe_*_*.jpg", QDir::Files | QDir::Hidden)) {
-            fileMap[file.split("_")[1].toLong()] = file;
-        }
-        screenshots = fileMap.values();
+        screenshots = scanForScreenshots(path);
 
         m_videos.append(Video(name, path, cover, files, tags, 0, files.first(), bookmarks, screenshots));
 
@@ -565,15 +569,8 @@ void Collection::screenshotsCreated(QString path)
     setBusy(false);
     for (int row=0; row<m_filteredVideos.count(); row++) {
         if (m_filteredVideos[row]->path == path) {
-            QDir dir(path);
-            QMap <qint64, QString> fileMap;
-            foreach(const QString &file, dir.entryList(QStringList() << ".vimiframe_*_*.jpg", QDir::Files | QDir::Hidden)) {
-                fileMap[file.split("_")[1].toLong()] = file;
-            }
-            qDebug() << "screenshots" << fileMap.values();
-            m_filteredVideos[row]->screenshots = fileMap.values();
-            emit dataChanged(index(row), index(row));
-            emit screenshotsFinished();
+            m_filteredVideos[row]->screenshots = scanForScreenshots(path);
+            emit dataChanged(index(row, 0), index(row, 0));
             return;
         }
     }
