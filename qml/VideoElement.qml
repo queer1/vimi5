@@ -47,5 +47,15 @@ Item {
             }
         }
 
+        Button {
+            z: 1
+            visible: coverPath === ""
+            anchors.centerIn: parent
+            anchors.right: undefined
+            anchors.left: undefined
+            width: parent.width - 10
+            text: "generate cover"
+            onClicked: videoModel.createCover("file:/" + encodeURIComponent(path + "/" + lastFile), -1)
+        }
     }
 }
