@@ -54,8 +54,8 @@ Rectangle {
     function bookmark() {
         controls.bookmark();
     }
-    function screenshots() {
-        controls.screenshots();
+    function takeScreenshots() {
+        controls.takeScreenshots();
     }
     function next() {
         controls.next();

@@ -129,6 +129,7 @@ signals:
 private slots:
     void setStatus(QString status) { m_status = status; emit statusUpdated(); }
     void setBusy(bool isBusy) { if (m_busy != isBusy) {m_busy = isBusy; emit busyChanged(); } }
+    void updateActresses();
 
 private:
     Collection();
@@ -138,7 +139,6 @@ private:
     void writeTagCache(int index);
     void writeBookmarkCache(int index);
     void updateFilteredVideos();
-    void updateActresses();
 
     QList <Video> m_videos;
     QList <Video*> m_filteredVideos;

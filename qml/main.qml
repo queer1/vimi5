@@ -50,7 +50,7 @@ Rectangle {
             videoPlayer.hide()
             return;
         } else if (event.key === Qt.Key_S) {
-            videoPlayer.screenshots();
+            videoPlayer.takeScreenshots();
             return;
         } else if (event.key === Qt.Key_C) {
             videoPlayer.cover();

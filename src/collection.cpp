@@ -54,6 +54,7 @@ Collection::Collection()
         rescan();
 
     updateActresses();
+    connect(Config::instance(), SIGNAL(actressPathChanged()), SLOT(updateActresses()));
 }
 
 void Collection::updateActresses()

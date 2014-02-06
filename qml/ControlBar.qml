@@ -17,7 +17,7 @@ Rectangle {
     function bookmark() {
         videoModel.addBookmark(index, file, player.position)
     }
-    function screenshots() {
+    function takeScreenshots() {
         videoModel.createScreenshots(player.source)
     }
     function next() {
@@ -54,7 +54,7 @@ Rectangle {
         }
         ClickableArea {
             onClicked: {
-                screenshots()
+                takeScreenshots()
             }
         }
     }
