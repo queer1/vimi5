@@ -72,7 +72,8 @@ class Collection : public QAbstractListModel
     Q_PROPERTY(QStringList allTags READ allTags NOTIFY tagsUpdated)
     Q_PROPERTY(QString status READ getStatus NOTIFY statusUpdated)
     Q_PROPERTY(QStringList actresses READ actresses NOTIFY actressesChanged)
-    Q_PROPERTY(bool busy READ isBusy NOTIFY busyChanged)
+    Q_PROPERTY(bool rescanning READ isRescanning NOTIFY rescanningChanged)
+    Q_PROPERTY(bool creatingScreenshots READ isCreatingScreenshots NOTIFY creatingScreenshotsChanged)
 
 
 public:
@@ -117,18 +118,20 @@ public slots:
     void screenshotsCreated(QString path);
     void coverCreated(QString path);
 
-    bool isBusy() { return m_busy; }
+    bool isRescanning() { return m_rescanning; }
+    bool isCreatingScreenshots() { return m_creatingScreenshots; }
 
 signals:
     void tagsUpdated();
     void statusUpdated();
     void actressesChanged();
-    void busyChanged();
-    void screenshotsFinished();
+    void rescanningChanged();
+    void creatingScreenshotsChanged();
 
 private slots:
     void setStatus(QString status) { m_status = status; emit statusUpdated(); }
-    void setBusy(bool isBusy) { if (m_busy != isBusy) {m_busy = isBusy; emit busyChanged(); } }
+    void setRescanning(bool isRescanning) { if (m_rescanning != isRescanning) {m_rescanning = isRescanning; emit rescanningChanged(); } }
+    void setCreatingScreenshots(bool creating) { if (m_creatingScreenshots != creating) { m_creatingScreenshots = creating; emit creatingScreenshotsChanged(); } }
     void updateActresses();
 
 private:
@@ -147,7 +150,8 @@ private:
     QStringList m_filterTags;
     QStringList m_actresses;
     QString m_status;
-    bool m_busy;
+    bool m_rescanning;
+    bool m_creatingScreenshots;
 };
 
 #endif // COLLECTION_H

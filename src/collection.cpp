@@ -45,7 +45,7 @@ bool compareVideos(const Video *a, const Video *b)
 }
 
 Collection::Collection()
-    : QAbstractListModel(), m_busy(false)
+    : QAbstractListModel(), m_rescanning(false), m_creatingScreenshots(false)
 {
     loadCache();
 
@@ -297,7 +297,7 @@ void Collection::renameVideo(int row, QString newName)
 void Collection::rescan()
 {
     setStatus("Starting scan...");
-    setBusy(true);
+    setRescanning(true);
 
     beginResetModel();
     m_filteredVideos.clear();
@@ -308,7 +308,7 @@ void Collection::rescan()
 
     writeCache();
     emit tagsUpdated();
-    setBusy(false);
+    setRescanning(false);
 }
 
 static QString scanForCovers(QString path)
@@ -558,7 +558,7 @@ void Collection::createCover(QString file, qint64 position)
 
 void Collection::createScreenshots(QUrl file)
 {
-    setBusy(true);
+    setCreatingScreenshots(true);
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
     connect(dumper, SIGNAL(screenshotsCreated(QString)), SLOT(screenshotsCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
@@ -567,7 +567,7 @@ void Collection::createScreenshots(QUrl file)
 
 void Collection::screenshotsCreated(QString path)
 {
-    setBusy(false);
+    setCreatingScreenshots(false);
     for (int row=0; row<m_filteredVideos.count(); row++) {
         if (m_filteredVideos[row]->path == path) {
             m_filteredVideos[row]->screenshots = scanForScreenshots(path);

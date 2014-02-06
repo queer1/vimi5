@@ -28,6 +28,7 @@ OTHER_FILES += \
     qml/Screenshot.qml \
     qml/VideoPlayer.qml \
     qml/Button.qml \
-    qml/InputBox.qml
+    qml/InputBox.qml \
+    qml/BusyWidget.qml
 
 LIBS += -lavcodec -lavformat -lavutil -lswscale

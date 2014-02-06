@@ -19,5 +19,6 @@
         <file>qml/VideoPlayer.qml</file>
         <file>qml/Button.qml</file>
         <file>qml/InputBox.qml</file>
+        <file>qml/BusyWidget.qml</file>
     </qresource>
 </RCC>

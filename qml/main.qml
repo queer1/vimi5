@@ -96,7 +96,6 @@ Rectangle {
         anchors.fill: gridView
         propagateComposedEvents: true
         hoverEnabled: true
-        enabled: !videoModel.busy
         onPositionChanged: {
             var x = mouse.x + gridView.contentX
             var y = mouse.y + gridView.contentY
@@ -113,13 +112,16 @@ Rectangle {
         anchors.top: nameFilterInput.bottom
         anchors.left: sideBar.right
         anchors.right: scrollbar.left
-        model: videoModel
+        model: videoModel.rescanning ? [] : videoModel
         cellHeight: config.coverSize
         cellWidth: cellHeight * 2 / 3
         Behavior on cellHeight { SmoothedAnimation { duration: 200 } }
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 10000
         maximumFlickVelocity: 5000
+        opacity: 1-videoPlayer.opacity
+        onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
+
 
         highlight: RectangularGlow {
             visible: !videoPlayer.visible
@@ -194,50 +196,10 @@ Rectangle {
     }
 
 
-    Rectangle {
+    BusyWidget {
         id: busyWidget
-        visible: videoModel.busy
-        anchors.fill: parent
-        opacity: 0.9
-        color: "black"
-
-        Rectangle {
-            id: spinnerContainer
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-            height: 100
-            width: 100
-            border.color: "white"
-            color: "transparent"
-            Rectangle {
-                smooth: true
-                height: 10
-                width: 100
-                anchors.centerIn: parent
-                color: "white"
-                RotationAnimation on rotation {
-                    loops: Animation.Infinite
-                    from: 0
-                    to: 360
-                    duration: 1500
-                    running: busyWidget.visible
-                }
-            }
-        }
-
-        Text {
-            opacity: 1
-            text: videoModel.status
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
-            anchors.left: parent.left
-            color: "white"
-            font.pointSize: 20
-            font.bold: true
-        }
+        visible: videoModel.rescanning
+        color: "#ee000000"
     }
 
     Rectangle {

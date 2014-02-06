@@ -266,4 +266,10 @@ Rectangle {
         running: false
         //        onStopped: screenshot.position = Qt.binding(function() { return mediaPlayer.position; })
     }
+
+    BusyWidget {
+        id: playerBusyWidget
+        visible: videoModel.creatingScreenshots
+        color: "#99000000"
+    }
 }
