@@ -29,19 +29,18 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
-VideoFrameDumper::VideoFrameDumper(QUrl path)
+VideoFrameDumper::VideoFrameDumper(QUrl path) : fmt_ctx(0)
 {
     QFileInfo fileInfo(path.toLocalFile());
     if (!fileInfo.exists()) {
-        qWarning() << "can't open file" << path;
+        qWarning() << "can't open file" << path.toLocalFile();
+        return;
     }
 
     m_outputPath = fileInfo.canonicalPath();
     m_outputFile = fileInfo.absoluteFilePath().toLocal8Bit();
     m_filename = fileInfo.fileName();
 
-
-    fmt_ctx = 0;
     av_register_all();
 
     if (avformat_open_input(&fmt_ctx, m_outputFile.constData(), NULL, NULL) < 0) {
@@ -84,6 +83,8 @@ VideoFrameDumper::VideoFrameDumper(QUrl path)
 
 VideoFrameDumper::~VideoFrameDumper()
 {
+    if (!fmt_ctx) return;
+
     avcodec_close(fmt_ctx->streams[video_stream_idx]->codec);
     avformat_close_input(&fmt_ctx);
     av_frame_free(&frame);
@@ -142,12 +143,20 @@ void VideoFrameDumper::saveFrameToImage(QString outFile)
 
 void VideoFrameDumper::seek(quint64 pos)
 {
-    av_seek_frame(fmt_ctx, -1, pos, 0);
+    if (!fmt_ctx) return;
+
+    if (pos == -1) {
+        av_seek_frame(fmt_ctx, -1, fmt_ctx->duration / 2, 0);
+    } else {
+        av_seek_frame(fmt_ctx, -1, pos, 0);
+    }
     avcodec_flush_buffers(fmt_ctx->streams[video_stream_idx]->codec);
 }
 
 void VideoFrameDumper::createSnapshots(int num)
 {
+    if (!fmt_ctx) return;
+
     int64_t skip_size = (fmt_ctx->duration) / num;
     int i = 0;
     int ret;
@@ -175,7 +184,7 @@ void VideoFrameDumper::createSnapshots(int num)
         }
         if (got_frame){
             if (num == -1) {
-                saveFrameToImage(m_outputPath + "/cover.jpg");
+                saveFrameToImage(m_outputPath + "/.vimicover.jpg");
                 emit coverCreated(m_outputPath);
             } else {
                 saveFrameToImage(m_outputPath + "/.vimiframe_" + QString::number(i*skip_size/1000) + "_" + m_filename + ".jpg");
