@@ -52,7 +52,7 @@ Rectangle {
 
     InputBox {
         id: filter
-        helpText: "filter"
+        helpText: "filter starlets"
     }
 
     ScrollBar {

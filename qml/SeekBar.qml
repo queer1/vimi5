@@ -17,6 +17,7 @@ Rectangle {
     property var bookmarks
     visible: opacity > 0
 
+
     Rectangle {
         //radius: 10
         id: progressbar

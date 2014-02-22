@@ -10,6 +10,8 @@ Rectangle {
     color: "black"
     onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
     property bool configShow: config.configShow
+    border.width: 1
+    border.color: "white"
 
 
     InputBox {
@@ -17,7 +19,7 @@ Rectangle {
         id: tagInputBox
         anchors.top: parent.top
         onTextChanged: videoModel.setTagFilter(text)
-        helpText: "tag search"
+        helpText: "filter tags"
     }
 
     ListView {
@@ -111,7 +113,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: hideShowButton.top
-        height: configShow ? 20 : 0
+        height: configShow ? 25 : 0
         color: "black"
         border.color: "white"
         visible: height > 0 ? true : false
@@ -120,11 +122,13 @@ Rectangle {
 
         Rectangle {
             id: sizePosition
-            color: "white"
+         //   color: "black"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            x: config.coverSize / 2 - 100//gridView.cellHeight / 2 - 100
+            x: gridView.cellHeight / 2 - 100
             width: 1
+            color: "white"
+            opacity: 1
         }
 
         MouseArea {
@@ -145,6 +149,8 @@ Rectangle {
             id: sizeLabel
             anchors.fill: parent
             text: "cover size"
+            style: Text.Outline
+            styleColor: parent.color
             color: sizePosition.color
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
@@ -156,7 +162,7 @@ Rectangle {
     Button {
         id: hideShowButton
         anchors.bottom: parent.bottom
-        text: configShow ? "↓ config ↓" : "↑ config ↑"
+        text: configShow ? "↓ toggle config ↓" : "↑ toggle config ↑"
         height: 15
         onClicked: config.configShow = !config.configShow
     }

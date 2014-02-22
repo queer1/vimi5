@@ -141,9 +141,10 @@ void VideoFrameDumper::saveFrameToImage(QString outFile)
     av_free(frameBuffer);
 }
 
-void VideoFrameDumper::seek(quint64 pos)
+void VideoFrameDumper::seek(qint64 pos)
 {
     if (!fmt_ctx) return;
+    qDebug() << "SEEKING TO" << pos;
 
     if (pos == -1) {
         av_seek_frame(fmt_ctx, -1, fmt_ctx->duration / 2, 0);

@@ -37,7 +37,7 @@ public:
 
 public slots:
     void createSnapshots(int num=100);
-    void seek(quint64 pos);
+    void seek(qint64 pos);
 
 signals:
     void screenshotsCreated(QString path);

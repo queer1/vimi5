@@ -45,7 +45,7 @@ bool compareVideos(const Video *a, const Video *b)
 }
 
 Collection::Collection()
-    : QAbstractListModel(), m_rescanning(false), m_creatingScreenshots(false)
+    : QAbstractListModel(), m_rescanning(false), m_creatingScreenshots(false), m_isRandom(false)
 {
     loadCache();
 
@@ -135,6 +135,8 @@ void Collection::loadCache()
     in >> m_videos;
     updateFilteredVideos();
     endResetModel();
+
+    emit emptyChanged();
 }
 
 
@@ -304,11 +306,12 @@ void Collection::rescan()
     endResetModel();
     m_videos.clear();
     scan(QDir(Config::instance()->collectionPath()));
-    qSort(m_filteredVideos.begin(), m_filteredVideos.end(), compareVideos);
+    qSort(m_filteredVideos);
 
     writeCache();
     emit tagsUpdated();
     setRescanning(false);
+    emit emptyChanged();
 }
 
 static QString scanForCovers(QString path)
@@ -474,7 +477,7 @@ void Collection::updateFilteredVideos()
         return;
     }
 
-    qSort(filtered.begin(), filtered.end(), compareVideos);
+    qSort(filtered);
 
     //TODO intelligently merge and notify about updates
     beginResetModel();
@@ -550,7 +553,7 @@ bool Collection::filterTagsContains(QString tag) {
 void Collection::createCover(QString file, qint64 position)
 {
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
-    dumper->seek(position*1000);
+    dumper->seek(position);
     connect(dumper, SIGNAL(coverCreated(QString)), SLOT(coverCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
     QMetaObject::invokeMethod(dumper, "createSnapshots", Q_ARG(int, -1));
@@ -588,4 +591,22 @@ void Collection::coverCreated(QString path)
             return;
         }
     }
+}
+
+void Collection::setRandom(bool random)
+{
+    if (random == m_isRandom) return;
+
+    beginResetModel();
+    if (random) {
+        for (int index = m_filteredVideos.count() - 1; index > 0; --index) {
+            const int swapIndex = qrand() % (index + 1);//getLong(index + 1);
+            qSwap(m_filteredVideos[index], m_filteredVideos[swapIndex]);
+        }
+    } else {
+        qSort(m_filteredVideos);
+    }
+    endResetModel();
+    m_isRandom = random;
+    emit randomChanged();
 }

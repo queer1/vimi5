@@ -4,7 +4,7 @@ import QtMultimedia 5.0
 Rectangle {
     id: controlbar
     color: "#55000000"
-    width: 75
+    width: 150
     height: 250
     property var player
     property var bookmarks
@@ -30,7 +30,7 @@ Rectangle {
         }
     }
     function cover() {
-        videoModel.createCover(player.source, player.position)
+        videoModel.createCover(player.source, player.position*1000)
     }
 
     Rectangle {
@@ -47,9 +47,9 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: "SS"
+            text: "create thumbs"
             font.bold: true
-            font.pointSize: 20
+            font.pointSize: 12
             color: "white"
         }
         ClickableArea {
@@ -72,9 +72,9 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: "C"
+            text: "create cover"
             font.bold: true
-            font.pointSize: 20
+            font.pointSize: 12
             color: "white"
         }
         ClickableArea {
@@ -98,9 +98,9 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: ">>"
+            text: "next bookmark"
             font.bold: true
-            font.pointSize: 20
+            font.pointSize: 12
             color: "white"
         }
         ClickableArea {
@@ -124,9 +124,9 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: "+"
+            text: "add bookmark"
             font.bold: true
-            font.pointSize: 20
+            font.pointSize: 12
             color: "white"
         }
         ClickableArea {
@@ -151,9 +151,9 @@ Rectangle {
             anchors.fill: parent
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: (mediaPlayer.playbackState === MediaPlayer.PlayingState) ? "| |" : ">"
+            text: (mediaPlayer.playbackState === MediaPlayer.PlayingState) ? "pause" : "play"
             font.bold: true
-            font.pointSize: 20
+            font.pointSize: 12
             color: "white"
         }
         ClickableArea {

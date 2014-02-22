@@ -62,7 +62,8 @@ public:
     QVariantMap bookmarks;
     QStringList screenshots;
 
-    bool operator==(const Video& other) const { return (path == other.path); }
+    bool operator==(const Video &other) const { return (path == other.path); }
+    bool operator<(const Video &other) const { return (name < other.name); }
 };
 
 class Collection : public QAbstractListModel
@@ -74,6 +75,8 @@ class Collection : public QAbstractListModel
     Q_PROPERTY(QStringList actresses READ actresses NOTIFY actressesChanged)
     Q_PROPERTY(bool rescanning READ isRescanning NOTIFY rescanningChanged)
     Q_PROPERTY(bool creatingScreenshots READ isCreatingScreenshots NOTIFY creatingScreenshotsChanged)
+    Q_PROPERTY(bool random READ isRandom WRITE setRandom NOTIFY randomChanged)
+    Q_PROPERTY(bool empty READ isEmpty() NOTIFY emptyChanged)
 
 
 public:
@@ -120,6 +123,10 @@ public slots:
 
     bool isRescanning() { return m_rescanning; }
     bool isCreatingScreenshots() { return m_creatingScreenshots; }
+    bool isRandom() { return m_isRandom; }
+    void setRandom(bool random);
+
+    bool isEmpty() { return m_videos.isEmpty(); }
 
 signals:
     void tagsUpdated();
@@ -127,6 +134,8 @@ signals:
     void actressesChanged();
     void rescanningChanged();
     void creatingScreenshotsChanged();
+    void randomChanged();
+    void emptyChanged();
 
 private slots:
     void setStatus(QString status) { m_status = status; emit statusUpdated(); }
@@ -152,6 +161,7 @@ private:
     QString m_status;
     bool m_rescanning;
     bool m_creatingScreenshots;
+    bool m_isRandom;
 };
 
 #endif // COLLECTION_H

@@ -90,6 +90,10 @@ Rectangle {
         videoPlayer.height = Qt.binding(function() { return mainView.height })
         focus = true
 
+        cursorTimer.restart()
+
+        videoMouseArea.forceActiveFocus()
+
 
         file = info.lastFile
         position = info.lastPosition
@@ -136,30 +140,34 @@ Rectangle {
         enabled: hoverEnabled
         anchors.fill: parent
 
-        
-        onMouseXChanged: {
+        onPositionChanged: {
+            cursorShape = Qt.ArrowCursor
+            cursorTimer.restart()
             if (mouse.y > parent.height - seekbar.height){
                 seekbar.opacity = 1
                 screenshot.position = mouse.x
-                //         screenshot.y = mouse.y
-            }else if(mouse.y < toolbar.height)
-                toolbar.opacity = 1
-            else if (mouse.x < tagList.width)
-                tagList.opacity = 1
-            else if (mouse.x > parent.width - 200) {
-                controls.opacity = 1
             } else {
-                toolbar.opacity = 0
                 seekbar.opacity = 0
-                tagList.opacity = 0
-                controls.opacity = 0
-                return false;
             }
+
+            if (mouse.y < toolbar.height)
+                toolbar.opacity = 1
+            else
+                toolbar.opacity = 0
+
+            if (mouse.x < tagList.width)
+                tagList.opacity = 1
+            else
+                tagList.opacity = 0
+
+            if (mouse.x > parent.width - 200)
+                controls.opacity = 1
+            else
+                controls.opacity = 0
         }
         onClicked: {
             if (mouse.x > 200 && mouse.x < width - controls.width && mouse.y < parent.height - seekbar.height && mouse.y > parent.width - toolbar.width) {
                 parent.hide()
-            } else {
             }
         }
     }
@@ -179,7 +187,7 @@ Rectangle {
         
         onError: {
             errorText.visible = true
-            errorText.text = "Error while playing file " + source + ": " + errorString
+            errorText.text = "Error while playing file: " + errorString
         }
     }
     
@@ -272,4 +280,93 @@ Rectangle {
         visible: videoModel.creatingScreenshots
         color: "#99000000"
     }
+
+    Timer {
+        id: cursorTimer
+        onTriggered: {
+            videoMouseArea.cursorShape = Qt.BlankCursor
+        }
+    }
+
+
+    GridView {
+        id: screenshotOverview
+        anchors.top: toolbar.bottom
+        anchors.bottom: seekbar.top
+        anchors.left: tagList.right
+        anchors.right: controls.left
+        model: screenshot.screenshots
+        Behavior on opacity { NumberAnimation { duration: 100; } }
+        function resizeScreenshots() {
+            var n = screenshot.screenshots.length
+            if (n == 0) return
+
+            var px = Math.ceil(Math.sqrt(n * width / height))
+            var sx = 0
+            var sy = 0
+
+            if (Math.floor(px * height / width) * px < n)
+                sx = height / Math.ceil(px * height / width)
+            else
+                sx = width / px
+
+            var py = Math.ceil(Math.sqrt(n * height / width))
+            if (Math.floor(py * width / height) * py < n)
+                sy = width / Math.ceil(py * width / height)
+            else
+                sy = height / py;
+
+            cellWidth = Math.max(sy, sx)
+        }
+        onWidthChanged: resizeScreenshots()
+        onHeightChanged: resizeScreenshots()
+        onCountChanged: resizeScreenshots()
+
+        cellHeight: cellWidth
+
+        opacity: 1
+        delegate: Image {
+            height: screenshotOverview.cellHeight
+            width: screenshotOverview.cellWidth
+            id: tinyScreenshot
+            asynchronous: true
+            opacity: 0.9
+            fillMode: Image.PreserveAspectCrop
+            source: "file:" + encodeURIComponent(screenshot.path + "/" + modelData)
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: {
+                    tinyScreenshot.opacity = 1
+                    screenshotOverview.opacity = 1
+                    tinyScreenshot.width *= 1.5
+                    tinyScreenshot.height *= 1.5
+                    tinyScreenshot.z++
+                }
+                onExited: {
+                    tinyScreenshot.opacity = 0.9
+                    screenshotOverview.opacity = 0
+                    tinyScreenshot.width = screenshotOverview.cellWidth
+                    tinyScreenshot.height = screenshotOverview.cellHeight
+                    tinyScreenshot.z--
+                }
+                onClicked: {
+                    var screenshotPos = modelData.split("_")[1]
+                    var tmp = modelData
+                    tmp = tmp.substring(tmp.indexOf("_") + 1)
+                    tmp = tmp.substring(tmp.indexOf("_") + 1)
+                    tmp = tmp.substring(0, tmp.length - 4)
+                    videoPlayer.file = tmp
+                    mediaPlayer.seek(screenshotPos)
+                    screenshotOverview.opacity = 0
+                    cursorShape = Qt.BlankCursor
+                }
+            }
+
+            Behavior on opacity { NumberAnimation { duration: 100; } }
+            Behavior on width { NumberAnimation { duration: 100; } }
+            Behavior on height { NumberAnimation { duration: 100; } }
+        }
+    }
 }
+

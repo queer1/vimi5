@@ -20,5 +20,6 @@
         <file>qml/Button.qml</file>
         <file>qml/InputBox.qml</file>
         <file>qml/BusyWidget.qml</file>
+        <file>qml/HelpDialog.qml</file>
     </qresource>
 </RCC>

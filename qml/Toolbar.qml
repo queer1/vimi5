@@ -17,6 +17,7 @@ Rectangle {
         id: titleText
         anchors.right: parent.right
         anchors.top: parent.top
+        anchors.margins: 5
         color: "white"
         text: parent.videoName
         font.pointSize: 15

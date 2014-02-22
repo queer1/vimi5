@@ -16,17 +16,18 @@ Item {
 
     Rectangle {
         id: thumb
-        //color: "#77ffffff"
         color: "black"
         border.color: "white"
-        y: scrollBar.position * (scrollBar.height-2) + 1
+        y: scrollBar.position * (scrollBar.height-2)
         width: parent.width
-        height: Math.max(scrollBar.pageSize * (scrollBar.height-2), 30)
+        height: Math.max(scrollBar.pageSize * (scrollBar.height-2), 30) + 2
         Rectangle {
             id: hl
-            anchors.centerIn: thumb
+            //anchors.centerIn: thumb
             height: 1
-            width: parent.width
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            anchors.right: parent.right
             color: "white"
         }
         MouseArea {

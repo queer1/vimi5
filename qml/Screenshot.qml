@@ -19,7 +19,10 @@ Image {
     onXChanged: {
         var screenshots = screenshot.screenshots
         if (screenshots === undefined) return;
-        if (screenshots.length < 2) return;
+        if (screenshots.length < 2) {
+            screenshot.source = ""
+            return;
+        }
         
         var file = screenshot.file
         var position = (screenshot.position * duration) / parent.width
