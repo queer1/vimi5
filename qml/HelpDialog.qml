@@ -7,7 +7,6 @@ Rectangle {
     height: 500
     color: "black"
     border.color: "white"
-    radius: 15
     opacity: 0
     visible: false
     onOpacityChanged: if (opacity < 0.1) visible = false; else visible = true
@@ -55,6 +54,7 @@ s:\tgenerate screenshot previews for seek bar\n\
 t:\tedit tags\n\
 b:\tadd bookmark at current position\n\
 c:\tscreenshot video for cover at current position\n\
+q:\tquit
 "
     }
 

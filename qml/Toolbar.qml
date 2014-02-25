@@ -7,7 +7,7 @@ Rectangle {
     color: "#f0000000"
     border.color: "white"
     property var model
-    height: fileList.count * titleText.contentHeight + 2
+    height: (fileList.count+1) * titleText.contentHeight + 5
     property string videoName
     property string folderPath
     property string file
@@ -15,11 +15,11 @@ Rectangle {
 
     Text {
         id: titleText
-        anchors.right: parent.right
+        anchors.left: parent.left
         anchors.top: parent.top
         anchors.margins: 5
         color: "white"
-        text: parent.videoName
+        text: parent.videoName + ":"
         font.pointSize: 15
         font.bold: false
         MouseArea {
@@ -35,8 +35,10 @@ Rectangle {
 
     ListView {
         id: fileList
-        anchors.top: parent.top
+        anchors.top: titleText.bottom
         anchors.bottom: parent.bottom
+        anchors.leftMargin: 10
+        anchors.left: parent.left
         model: parent.model
         delegate: Text {
             id: fileEntry

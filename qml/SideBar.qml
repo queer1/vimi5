@@ -125,7 +125,7 @@ Rectangle {
          //   color: "black"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            x: gridView.cellHeight / 2 - 100
+            x: gridView.cellWidth - 100
             width: 1
             color: "white"
             opacity: 1
@@ -134,8 +134,8 @@ Rectangle {
         MouseArea {
             hoverEnabled: true
             anchors.fill: parent
-            onClicked: config.coverSize = (mouse.x + 100) * 2
-            onPositionChanged: if (pressed) config.coverSize = (mouse.x + 100) * 2
+            onClicked: config.coverSize = (mouse.x + 100)
+            onPositionChanged: if (pressed) config.coverSize = (mouse.x + 100)
             onEntered: {
                 parent.color = "white"
                 sizePosition.color = "black"

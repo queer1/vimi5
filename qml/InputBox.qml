@@ -13,6 +13,15 @@ Rectangle {
     color: "black"
     visible: opacity > 0.1
 
+    onFocusChanged: if (focus) textInput.forceActiveFocus()
+    function addText(text) {
+        textInput.text = text
+    }
+
+    Keys.onEscapePressed: {
+        textInput.text = ""
+        gridView.forceActiveFocus()
+    }
 
     MouseArea {
         anchors.fill: parent

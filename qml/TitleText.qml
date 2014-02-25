@@ -10,8 +10,8 @@ Text {
     verticalAlignment: Text.AlignVCenter
     color: "white"
     font.bold: true
-    height: visible ? parent.height / 6 : 0
-    wrapMode: Text.WordWrap
+    height: visible ? parent.height / 7 : 0
+    wrapMode: Text.Wrap
     font.pointSize: height / 5 > 0 ?  height / 5 : 5
     
     elide: Text.ElideRight

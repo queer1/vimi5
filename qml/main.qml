@@ -32,6 +32,10 @@ Rectangle {
                 videoPlayer.show();
                 event.accepted = true;
                 return;
+            } else if (event.text !== ""){
+                nameFilterInput.addText(event.text)
+                nameFilterInput.forceActiveFocus()
+                return
             } else {
                 event.accepted = false
                 return
@@ -49,7 +53,7 @@ Rectangle {
             videoPlayer.togglePause()
             return;
         } else if (event.key === Qt.Key_Escape) {
-            videoPlayer.hide()
+            videoPlayer.escapePressed()
             return;
         } else if (event.key === Qt.Key_S) {
             videoPlayer.takeScreenshots();
@@ -115,8 +119,8 @@ Rectangle {
         anchors.left: sideBar.right
         anchors.right: scrollbar.left
         model: videoModel.rescanning ? [] : videoModel
-        cellHeight: config.coverSize
-        cellWidth: cellHeight * 2 / 3
+        cellHeight: config.coverSize * 1.618
+        cellWidth: config.coverSize
         Behavior on cellHeight { SmoothedAnimation { duration: 200 } }
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 10000
@@ -124,13 +128,13 @@ Rectangle {
         opacity: 1-videoPlayer.opacity
         onOpacityChanged: if (opacity == 0) { visible = false } else { visible = true }
 
-
-        highlight: RectangularGlow {
+        highlight: Rectangle {}
+        /*highlight: RectangularGlow {
             visible: !videoPlayer.visible
             color:"white"
             glowRadius: 1
             spread:1
-        }
+        }*/
         highlightMoveDuration: 0
         delegate: VideoElement {
             width: gridView.cellWidth;
@@ -192,20 +196,29 @@ Rectangle {
         anchors.top: parent.top
         anchors.right: actressPanel.left
         anchors.bottom: nameFilterInput.bottom
-        color: videoModel.random ? "white" : "black"
+        color: "black"//videoModel.random ? "white" : "black"
         border.color: "white"
         border.width: 1
         width: 100
         ClickableArea {
             onClicked: videoModel.setRandom(!videoModel.isRandom())
+            onEntered: {
+                randomizeLabel.color = "black"
+                parent.color = "white"
+            }
+            onExited: {
+                randomizeLabel.color = "white"
+                parent.color = "black"
+            }
         }
         Text {
-            id: text
+            id: randomizeLabel
             anchors.fill: parent
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
+            font.bold: videoModel.random
             text: "random"
-            color: videoModel.random ? "black" : "white"
+            color: "white"
             visible: (height > font.pointSize && width > 10) ? true : false
         }
     }

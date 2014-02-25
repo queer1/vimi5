@@ -133,6 +133,7 @@ void Collection::loadCache()
     QByteArray uncompressed = qUncompress(compressed);
     QDataStream in(uncompressed);
     in >> m_videos;
+    qSort(m_videos);
     updateFilteredVideos();
     endResetModel();
 
@@ -234,6 +235,7 @@ void Collection::writeTagCache(int index)
 
 void Collection::addTag(int row, QString tag)
 {
+    tag = tag.trimmed();
     if (m_filteredVideos[row]->tags.contains(tag))
         return;
     if (tag.isEmpty())
@@ -466,8 +468,9 @@ void Collection::updateFilteredVideos()
 {
     QList<Video*> filtered;
     for (int i=0; i<m_videos.count(); i++) {
-        if (!m_filter.isEmpty() && !m_videos[i].name.contains(m_filter, Qt::CaseInsensitive))
+        if (!m_filter.isEmpty() && !m_videos[i].name.contains(m_filter, Qt::CaseInsensitive)) {
             continue;
+        }
 
         if (m_filterTags.isEmpty() || videoContainsTags(m_videos[i], m_filterTags)) {
             filtered.append(&m_videos[i]);

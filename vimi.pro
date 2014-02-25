@@ -29,6 +29,7 @@ OTHER_FILES += \
     qml/VideoPlayer.qml \
     qml/Button.qml \
     qml/InputBox.qml \
-    qml/BusyWidget.qml
+    qml/BusyWidget.qml \
+    qml/HelpDialog.qml \
 
 LIBS += -lavcodec -lavformat -lavutil -lswscale

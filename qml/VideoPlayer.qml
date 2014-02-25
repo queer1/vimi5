@@ -74,6 +74,16 @@ Rectangle {
         }
         seekbarpeek.restart()
     }
+    function escapePressed() {
+        if (screenshotOverview.opacity == 1) {
+            screenshotOverview.opacity = 0
+            videoMouseArea.forceActiveFocus()
+            cursorTimer.start()
+            videoMouseArea.cursorShape = Qt.BlankCursor
+        } else {
+            hide()
+        }
+    }
     
     function show() {
         var info = video.info
@@ -94,6 +104,7 @@ Rectangle {
 
         videoMouseArea.forceActiveFocus()
 
+        tagList.filterTagList()
 
         file = info.lastFile
         position = info.lastPosition
@@ -231,6 +242,7 @@ Rectangle {
         file: parent.file
         bookmarks: []
         index: parent.index
+        onPositionChanged: videoModel.setLastPosition(gridView.currentIndex, mediaPlayer.position)
     }
     
     ControlBar {
@@ -248,6 +260,7 @@ Rectangle {
         onFileChanged: {
             parent.position = 0
             parent.file = toolbar.file
+            videoModel.setLastFile(gridView.currentIndex, parent.file)
         }
         videoName: parent.name
         folderPath: parent.path
@@ -334,6 +347,7 @@ Rectangle {
             fillMode: Image.PreserveAspectCrop
             source: "file:" + encodeURIComponent(screenshot.path + "/" + modelData)
             MouseArea {
+                cursorShape: screenshotOverview.opacity == 0 ? Qt.BlankCursor : Qt.PointingHandCursor
                 anchors.fill: parent
                 hoverEnabled: true
                 onEntered: {

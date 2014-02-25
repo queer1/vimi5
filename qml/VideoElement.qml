@@ -1,6 +1,4 @@
 import QtQuick 2.0
-import QtMultimedia 5.0
-import QtGraphicalEffects 1.0
 
 Item {
     id: gridItem
@@ -13,8 +11,9 @@ Item {
         anchors.margins: 5
         id: rect
         color: "black"
-        radius: 10
         visible: opacity > 0
+        border.width: 1
+        border.color: "white"
 
         TitleText {
             id: titleText
@@ -27,6 +26,7 @@ Item {
             anchors.top: titleText.bottom
             anchors.right: parent.right
             anchors.left: parent.left
+            anchors.margins: 1
             //anchors.bottomMargin: 15
 
             source: coverPath == "" ? "/images/defaultcover.png" : "file:/" + encodeURIComponent(coverPath)

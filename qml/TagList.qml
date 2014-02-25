@@ -17,10 +17,32 @@ Rectangle {
             visible = true
     }
     onVisibleChanged: {
-        if (visible)
+        if (visible) {
             newTagInput.forceActiveFocus()
-        else
+        } else
             parent.forceActiveFocus()
+    }
+
+    function filterTagList() {
+        var tagList = videoModel.allTags
+        var filtered = []
+        for (var i=0; i<tagList.length; i++) {
+            var tag = tagList[i].substring(0, tagList[i].indexOf('(') - 1)
+            if (tag.indexOf(newTagInput.text) === -1) {
+                continue;
+            }
+            var found = false
+            for (var j=0; j<tags.length; j++) {
+                if (tags[j] === tag) {
+                    found = true
+                    break
+                }
+            }
+            if (!found) {
+                filtered.push(tag)
+            }
+        }
+        availableTagsView.model = filtered
     }
 
     ListView {
@@ -76,6 +98,35 @@ Rectangle {
     }
 
     Rectangle {
+        anchors.bottom: newTagRect.top
+        height: 100
+        anchors.left: parent.left
+        anchors.right: parent.right
+        color:"transparent"
+        border.width: 1
+        border.color: "white"
+
+        ListView {
+            id: availableTagsView
+            anchors.fill: parent
+            anchors.margins: 10
+            model: []
+            delegate: Text {
+                text: modelData
+                color: "white"
+                font.pointSize: 8
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        videoModel.addTag(tagList.index, text.substring(0, text.indexOf('(')))
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
         id: newTagRect
         anchors.bottom: parent.bottom
         anchors.left: tagList.left
@@ -97,6 +148,8 @@ Rectangle {
             anchors.margins: 2
             color: "white"
             id: newTagInput
+
+            onTextChanged: filterTagList()
 
             selectByMouse: true
             onCursorVisibleChanged: {
