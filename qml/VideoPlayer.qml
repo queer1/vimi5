@@ -20,6 +20,7 @@ Rectangle {
         mediaPlayer.source = "file:" + encodeURIComponent(info.path + "/" + file)
         mediaPlayer.seek(position)
         mediaPlayer.play()
+        screenshotOverview.filterScreenshots()
     }
     property string path: ""
     property string name: ""
@@ -37,6 +38,14 @@ Rectangle {
     Behavior on y { NumberAnimation { duration: 300; }}
     Behavior on opacity { NumberAnimation { duration: 300; }}
 
+    function hideAllScreenshots() {
+        screenshotOverview.opacity = 0
+    }
+
+    function showAllScreenshots() {
+        screenshotOverview.opacity = 1
+    }
+
     function seek(seekAmount) {
         var newPosition = mediaPlayer.position + seekAmount
         if (newPosition > mediaPlayer.duration) {
@@ -53,15 +62,17 @@ Rectangle {
 
     function bookmark() {
         controls.bookmark();
+        seekbarpeek.restart()
     }
     function takeScreenshots() {
         controls.takeScreenshots();
     }
     function next() {
         controls.next();
+        seekbarpeek.restart()
     }
     function cover() {
-        controls.cover();
+        controls.createCover();
     }
     function tags() {
         tagList.opacity = 1
@@ -91,6 +102,7 @@ Rectangle {
         screenshot.screenshots = Qt.binding(function() { return info.screenshots; })
         seekbar.bookmarks = Qt.binding(function() { return info.bookmarks; })
         controls.bookmarks = Qt.binding(function() { return info.bookmarks; })
+        controls.cover = "file:/" + encodeURIComponent(info.coverPath)
         toolbar.model = info.files
 
         videoPlayer.opacity = 1
@@ -112,6 +124,7 @@ Rectangle {
         name = info.name
         index = info.index
     }
+
     function hide() {
         videoPlayer.x = Qt.binding(function() { return video.x + gridView.x - gridView.contentX; })
         videoPlayer.y = Qt.binding(function() { return video.y + gridView.y - gridView.contentY; })
@@ -121,6 +134,8 @@ Rectangle {
         screenshot.screenshots = []
         seekbar.bookmarks = []
         controls.bookmarks = []
+        controls.cover = ""
+
         videoModel.setLastFile(gridView.currentIndex, file)
         videoModel.setLastPosition(gridView.currentIndex, mediaPlayer.position)
         gridView.focus = true
@@ -157,24 +172,18 @@ Rectangle {
             if (mouse.y > parent.height - seekbar.height){
                 seekbar.opacity = 1
                 screenshot.position = mouse.x
-            } else {
+            } else if (mouse.y < toolbar.height)
+                toolbar.opacity = 1
+            else if (mouse.x < tagList.width)
+                tagList.opacity = 1
+            else if (mouse.x > parent.width - 200)
+                controls.opacity = 1
+            else {
+                controls.opacity = 0
+                tagList.opacity = 0
+                toolbar.opacity = 0
                 seekbar.opacity = 0
             }
-
-            if (mouse.y < toolbar.height)
-                toolbar.opacity = 1
-            else
-                toolbar.opacity = 0
-
-            if (mouse.x < tagList.width)
-                tagList.opacity = 1
-            else
-                tagList.opacity = 0
-
-            if (mouse.x > parent.width - 200)
-                controls.opacity = 1
-            else
-                controls.opacity = 0
         }
         onClicked: {
             if (mouse.x > 200 && mouse.x < width - controls.width && mouse.y < parent.height - seekbar.height && mouse.y > parent.width - toolbar.width) {
@@ -208,6 +217,10 @@ Rectangle {
         path: parent.path
         file: parent.file
         screenshots: []
+        onScreenshotsChanged: {
+            screenshotOverview.filterScreenshots()
+        }
+
         anchors.bottom: seekbar.top
         position: mediaPlayer.position
         visible: false
@@ -256,6 +269,8 @@ Rectangle {
     
     Toolbar {
         id: toolbar
+        anchors.right: controls.left
+        anchors.left: tagList.right
         model: []
         onFileChanged: {
             parent.position = 0
@@ -265,12 +280,13 @@ Rectangle {
         videoName: parent.name
         folderPath: parent.path
         file: parent.file
+        screenshots: screenshot.screenshots
     }
     
     TagList {
         id: tagList
         tags: []
-        anchors.top: toolbar.bottom
+        anchors.top: parent.top
         anchors.left: parent.left
         anchors.bottom: seekbar.top
         index: parent.index
@@ -285,7 +301,6 @@ Rectangle {
         from: 1
         to: 0
         running: false
-        //        onStopped: screenshot.position = Qt.binding(function() { return mediaPlayer.position; })
     }
 
     BusyWidget {
@@ -304,15 +319,63 @@ Rectangle {
 
     GridView {
         id: screenshotOverview
-        anchors.top: toolbar.bottom
-        anchors.bottom: seekbar.top
-        anchors.left: tagList.right
-        anchors.right: controls.left
-        model: screenshot.screenshots
+        anchors.fill: parent
+        model: []
+        interactive: false
+
+        property int position: mediaPlayer.position
+        onPositionChanged: {
+            var screenshots = model
+            if (screenshots === undefined) return;
+
+            var file = screenshot.file
+            var position = mediaPlayer.position
+            var lastScreenshotPos = -1000000000
+            var lastIndex = -1
+
+            for (var i=0; i<screenshots.length; i++) {
+                if (screenshots[i].indexOf(file) === -1) {
+                    continue
+                }
+
+                var screenshotPos = screenshots[i].split("_")[1]
+
+                if (screenshotPos > position) {
+                    if (Math.abs(screenshotPos - position) < Math.abs(lastScreenshotPos - position)) {
+                        currentIndex = i
+                    } else if (lastIndex !== -1){
+                        currentIndex = lastIndex
+                    }
+                    return
+                }
+
+                lastScreenshotPos = screenshotPos
+                lastIndex = i
+            }
+        }
+
+        highlight: Rectangle {
+            height: parent.cellHeight + 5
+            width: parent.cellWidth + 5
+        }
+        highlightFollowsCurrentItem: true
+
+        function filterScreenshots() {
+            var fileScreenshots = [];
+            var screenshots = screenshot.screenshots
+            if (screenshots === undefined) return;
+
+            for (var i=0; i<screenshots.length; i++) {
+                if (screenshots[i].indexOf(file) === -1) continue;
+                fileScreenshots.push(screenshots[i]);
+            }
+            model = fileScreenshots
+        }
+
         Behavior on opacity { NumberAnimation { duration: 100; } }
         function resizeScreenshots() {
-            var n = screenshot.screenshots.length
-            if (n == 0) return
+            var n = model.length
+            if (n === 0) return
 
             var px = Math.ceil(Math.sqrt(n * width / height))
             var sx = 0
@@ -337,49 +400,47 @@ Rectangle {
 
         cellHeight: cellWidth
 
-        opacity: 1
-        delegate: Image {
+        opacity: 0
+        visible: opacity != 0
+        delegate: Item {
             height: screenshotOverview.cellHeight
             width: screenshotOverview.cellWidth
-            id: tinyScreenshot
-            asynchronous: true
-            opacity: 0.9
-            fillMode: Image.PreserveAspectCrop
-            source: "file:" + encodeURIComponent(screenshot.path + "/" + modelData)
-            MouseArea {
-                cursorShape: screenshotOverview.opacity == 0 ? Qt.BlankCursor : Qt.PointingHandCursor
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: {
-                    tinyScreenshot.opacity = 1
-                    screenshotOverview.opacity = 1
-                    tinyScreenshot.width *= 1.5
-                    tinyScreenshot.height *= 1.5
-                    tinyScreenshot.z++
+            Image {
+                height: screenshotOverview.cellHeight - 3
+                width: screenshotOverview.cellWidth - 3
+                anchors.centerIn: parent
+                id: tinyScreenshot
+                asynchronous: true
+                opacity: 0.9
+                fillMode: Image.PreserveAspectCrop
+                source: "file:" + encodeURIComponent(screenshot.path + "/" + modelData)
+                MouseArea {
+                    cursorShape: screenshotOverview.opacity == 0 ? Qt.BlankCursor : Qt.PointingHandCursor
+                    anchors.fill: parent
+                    hoverEnabled: false
+                    onEntered: {
+                        tinyScreenshot.opacity = 1
+                    }
+                    onExited: {
+                        tinyScreenshot.opacity = 0.9
+                    }
+                    onClicked: {
+                        var screenshotPos = modelData.split("_")[1]
+                        var tmp = modelData
+                        tmp = tmp.substring(tmp.indexOf("_") + 1)
+                        tmp = tmp.substring(tmp.indexOf("_") + 1)
+                        tmp = tmp.substring(0, tmp.length - 4)
+                        videoPlayer.file = tmp
+                        mediaPlayer.seek(screenshotPos)
+                        //screenshotOverview.opacity = 0
+                        //cursorShape = Qt.BlankCursor
+                    }
                 }
-                onExited: {
-                    tinyScreenshot.opacity = 0.9
-                    screenshotOverview.opacity = 0
-                    tinyScreenshot.width = screenshotOverview.cellWidth
-                    tinyScreenshot.height = screenshotOverview.cellHeight
-                    tinyScreenshot.z--
-                }
-                onClicked: {
-                    var screenshotPos = modelData.split("_")[1]
-                    var tmp = modelData
-                    tmp = tmp.substring(tmp.indexOf("_") + 1)
-                    tmp = tmp.substring(tmp.indexOf("_") + 1)
-                    tmp = tmp.substring(0, tmp.length - 4)
-                    videoPlayer.file = tmp
-                    mediaPlayer.seek(screenshotPos)
-                    screenshotOverview.opacity = 0
-                    cursorShape = Qt.BlankCursor
-                }
-            }
 
-            Behavior on opacity { NumberAnimation { duration: 100; } }
-            Behavior on width { NumberAnimation { duration: 100; } }
-            Behavior on height { NumberAnimation { duration: 100; } }
+                Behavior on opacity { NumberAnimation { duration: 100; } }
+                Behavior on width { NumberAnimation { duration: 100; } }
+                Behavior on height { NumberAnimation { duration: 100; } }
+            }
         }
     }
 }

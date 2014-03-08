@@ -6,31 +6,42 @@ Rectangle {
     id: busyWidget
     anchors.fill: parent
     color: "black"
-    
-    Rectangle {
-        id: spinnerContainer
+
+    Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
-        height: 100
-        width: 100
-        border.color: "white"
-        color: "transparent"
+        height: 200
+        width: 200
+
         Rectangle {
-            smooth: true
-            height: 10
-            width: 100
+            id: spinnerContainer
             anchors.centerIn: parent
-            color: "white"
+            height: 100
+            width: 100
+            radius: 10
+            border.width: 5
+            border.color: "#fff"
+            color: "#222"
             RotationAnimation on rotation {
                 loops: Animation.Infinite
                 from: 0
                 to: 360
-                duration: 1500
+                duration: 3000
                 running: busyWidget.visible
             }
         }
+        Text {
+            smooth: true
+            anchors.centerIn: parent
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            font.bold: true
+            color: "white"
+            text: "working..."
+        }
     }
     
+
     Text {
         opacity: 1
         text: videoModel.status

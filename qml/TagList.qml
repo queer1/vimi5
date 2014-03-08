@@ -24,7 +24,7 @@ Rectangle {
     }
 
     function filterTagList() {
-        var tagList = videoModel.allTags
+        var tagList = videoModel.tags()
         var filtered = []
         for (var i=0; i<tagList.length; i++) {
             var tag = tagList[i].substring(0, tagList[i].indexOf('(') - 1)
@@ -48,7 +48,7 @@ Rectangle {
     ListView {
         id: taglistlist
         anchors.top: parent.top
-        anchors.bottom: newTagRect.top
+        anchors.bottom: tagSuggestions.top
         anchors.right: parent.right
         anchors.left: parent.left
         //interactive: false
@@ -95,9 +95,11 @@ Rectangle {
 
     ScrollBar {
         view: taglistlist
+        anchors.bottom: tagSuggestions.top
     }
 
     Rectangle {
+        id: tagSuggestions
         anchors.bottom: newTagRect.top
         height: 100
         anchors.left: parent.left

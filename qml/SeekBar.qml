@@ -5,7 +5,7 @@ Rectangle {
     anchors.bottom: parent.bottom
     anchors.right: parent.right
     anchors.left: parent.left
-    height: 30
+    height: 50
     //color: "#55000000"
     color: "black"
     border.color: "white"
@@ -61,6 +61,16 @@ Rectangle {
         renderType: Text.NativeRendering
     }
 
+
+    MouseArea {
+        anchors.fill: parent
+        enabled: parent.visible
+        onClicked: {
+            mediaPlayer.seek(mouse.x * mediaPlayer.duration / seekbar.width)
+            videoModel.setLastPosition(index, mediaPlayer.position)
+        }
+    }
+
     Repeater {
         id: bookmarkTicks
         function removeBookmark(bookmark) {
@@ -94,16 +104,6 @@ Rectangle {
 
     Behavior on opacity {
         NumberAnimation { duration: 300 }
-    }
-
-
-    MouseArea {
-        anchors.fill: parent
-        enabled: parent.visible
-        onClicked: {
-            mediaPlayer.seek(mouse.x * mediaPlayer.duration / seekbar.width)
-            videoModel.setLastPosition(index, mediaPlayer.position)
-        }
     }
 }
 

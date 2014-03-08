@@ -27,10 +27,9 @@ Item {
             anchors.right: parent.right
             anchors.left: parent.left
             anchors.margins: 1
-            //anchors.bottomMargin: 15
 
             source: coverPath == "" ? "/images/defaultcover.png" : "file:/" + encodeURIComponent(coverPath)
-            cache: true
+            cache: false
             onSourceChanged: { cache = false; cache = true; }
             asynchronous: true
             fillMode: Image.PreserveAspectCrop

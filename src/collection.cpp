@@ -199,9 +199,10 @@ void Collection::addBookmark(int row, QString file, int bookmark)
 {
     QList<QVariant> bookmarks = m_filteredVideos[row]->bookmarks[file].toList();
     bookmarks.append(bookmark);
+    qSort(bookmarks);
     m_filteredVideos[row]->bookmarks[file] = bookmarks;
 
-    emit dataChanged(createIndex(row, 0), createIndex(row, 1));
+    emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::BookmarksRole);
     writeBookmarkCache(row);
 }
 
@@ -214,7 +215,7 @@ void Collection::removeBookmark(int row, QString file, int bookmark)
     bookmarks.removeAll(bookmark);
     m_filteredVideos[row]->bookmarks[file] = bookmarks;
 
-    emit dataChanged(createIndex(row, 0), createIndex(row, 0));
+    emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::BookmarksRole);
     writeBookmarkCache(row);
 }
 
@@ -242,7 +243,7 @@ void Collection::addTag(int row, QString tag)
         return;
 
     m_filteredVideos[row]->tags.append(tag);
-    emit dataChanged(createIndex(row, 0), createIndex(row, 1));
+    emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::TagsRole);
     emit tagsUpdated();
     writeTagCache(row);
 }
@@ -250,7 +251,7 @@ void Collection::addTag(int row, QString tag)
 void Collection::removeTag(int row, QString tag)
 {
     m_filteredVideos[row]->tags.removeAll(tag);
-    emit dataChanged(createIndex(row, 0), createIndex(row, 0));
+    emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::TagsRole);
     emit tagsUpdated();
     writeTagCache(row);
 }
@@ -262,7 +263,7 @@ void Collection::setLastFile(int row, QString file)
         return;
 
     m_filteredVideos[row]->lastFile = file;
-    emit dataChanged(createIndex(row, 0), createIndex(row, 0));
+    emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::LastFileRole);
 }
 
 
@@ -272,7 +273,7 @@ void Collection::setLastPosition(int row, int position)
         return;
 
     m_filteredVideos[row]->lastPosition = position;
-    emit dataChanged(createIndex(row, 0), createIndex(row, 0));
+    emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::LastPositionRole);
 }
 
 void Collection::renameVideo(int row, QString newName)
@@ -419,7 +420,7 @@ void Collection::scan(QDir dir)
             endInsertRows();
         }
 
-        setStatus(tr("Found video ")  + name);
+        setStatus(tr("Found video:\n")  + name);
     }// else {
         dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::AllDirs | QDir::Executable);
         // QDir::AllDirs ignores name filter
@@ -438,9 +439,10 @@ bool videoContainsTags(const Video &video, const QStringList &tags)
     return true;
 }
 
-QStringList Collection::allTags()
+const QStringList Collection::allTags() const
 {
-    QMap<QString, int> allTags;
+    qDebug() << "Getting all tags...";
+    QMap<QString, int> tagCounts;
     foreach(const Video &video, m_videos) {
         if (!videoContainsTags(video, m_filterTags))
             continue;
@@ -448,14 +450,14 @@ QStringList Collection::allTags()
         foreach(const QString &tag, video.tags) {
             if (!m_tagFilter.isEmpty() && !tag.contains(m_tagFilter)) continue;
 
-            if (!allTags.contains(tag)) allTags[tag] = 0;
-            else allTags[tag]++;
+            if (!tagCounts.contains(tag)) tagCounts[tag] = 0;
+            else tagCounts[tag]++;
         }
     }
     QMultiMap<int, QString> reverse;
-    foreach(const QString &key, allTags.keys()) {
+    foreach(const QString &key, tagCounts.keys()) {
         //if (Config::instance()->actresses().contains(key)) continue;
-        reverse.insert(allTags[key], key + " (" + QString::number(allTags[key] + 1) + ")");
+        reverse.insert(tagCounts[key], key + " (" + QString::number(tagCounts[key] + 1) + ")");
     }
 
     QStringList ret = reverse.values();
@@ -577,7 +579,7 @@ void Collection::screenshotsCreated(QString path)
     for (int row=0; row<m_filteredVideos.count(); row++) {
         if (m_filteredVideos[row]->path == path) {
             m_filteredVideos[row]->screenshots = scanForScreenshots(path);
-            emit dataChanged(index(row, 0), index(row, 0));
+            emit dataChanged(index(row, 0), index(row, 0), QVector<int>() << Video::ScreenshotsRole);
             return;
         }
     }
@@ -588,9 +590,9 @@ void Collection::coverCreated(QString path)
     for (int row=0; row<m_filteredVideos.count(); row++) {
         if (m_filteredVideos[row]->path == path) {
             m_filteredVideos[row]->cover = QString();
-            emit dataChanged(createIndex(row, 0), createIndex(row, 0));
+            emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::CoverRole);
             m_filteredVideos[row]->cover = scanForCovers(path);
-            emit dataChanged(createIndex(row, 0), createIndex(row, 0));
+            emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::CoverRole);
             return;
         }
     }

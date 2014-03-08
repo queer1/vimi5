@@ -10,6 +10,13 @@ Rectangle {
 
     Keys.enabled: true
 
+    Keys.onReleased: {
+        if (event.key === Qt.Key_Control) {
+            videoPlayer.hideAllScreenshots()
+            return
+        }
+    }
+
     Keys.onPressed: {
         if (event.key === Qt.Key_Question || event.key === Qt.Key_H) {
             helpDialog.opacity = 1
@@ -44,6 +51,12 @@ Rectangle {
 
         if (!videoPlayer.visible) {
             event.accepted = false
+            return
+        }
+
+        if (event.key === Qt.Key_Control) {
+            videoPlayer.showAllScreenshots()
+            event.accepted = true
             return
         }
 

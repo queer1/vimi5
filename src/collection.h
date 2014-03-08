@@ -110,7 +110,9 @@ public slots:
 
     void setTagFilter(QString text) { m_tagFilter = text; emit tagsUpdated(); }
 
-    QStringList allTags();
+    const QStringList allTags() const;
+
+    const QStringList tags() { return allTags(); }
 
     const QStringList &actresses() { return m_actresses; }
 

@@ -25,3 +25,7 @@ In a terminal, run the following in the directory containing the source:
 
 (Instructions for other platforms will follow.)
 
+## TODO
+
+info in control bar
+automatic cumpilation

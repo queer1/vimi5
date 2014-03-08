@@ -3,14 +3,17 @@ import QtMultimedia 5.0
 
 Rectangle {
     id: controlbar
-    color: "#55000000"
+    color: "transparent"
     width: 150
     height: 250
     property var player
     property var bookmarks
     property int index
     property string file
+    property string cover
     visible: false
+    border.width: 1
+    border.color: "white"
     onOpacityChanged: if (opacity < 0.1) { visible = false } else { visible = true }
 
 
@@ -23,14 +26,23 @@ Rectangle {
     function next() {
         var bks = bookmarks[file]
         for (var i=0; i<bks.length; i++) {
-            if (bks[i] > player.position) {
+            if (bks[i] > player.position + 5000) {
                 player.seek(bks[i])
                 return
             }
         }
     }
-    function cover() {
+    function createCover() {
         videoModel.createCover(player.source, player.position*1000)
+    }
+
+    Image {
+        anchors.bottom: skipButton.top
+        anchors.right: parent.right
+        source: parent.cover
+        width:  150
+        height: 250
+        fillMode: Image.PreserveAspectCrop
     }
 
     Rectangle {
@@ -79,7 +91,7 @@ Rectangle {
         }
         ClickableArea {
             onClicked: {
-                cover()
+                createCover()
             }
         }
     }
