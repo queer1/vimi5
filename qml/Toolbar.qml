@@ -65,7 +65,7 @@ Rectangle {
                 var skipAmount = fileScreenshots.length / shotCount
                 screenshots = []
                 for (var i=0,j=0; i<shotCount; i++) {
-                    screenshots.push(fileScreenshots[Math.round(j)])
+                    screenshots.push(fileScreenshots[Math.floor(j)])
                     j+=skipAmount
                 }
                 screenshotsList.model = screenshots

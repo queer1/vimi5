@@ -3,7 +3,7 @@ import QtMultimedia 5.0
 
 Rectangle {
     id: controlbar
-    color: "transparent"
+    color: "black"
     width: 200
     height: 500
     property var player
@@ -46,136 +46,53 @@ Rectangle {
         fillMode: Image.PreserveAspectCrop
     }
 
-    Rectangle {
+    Button {
         id: skipButton
         anchors.bottom: coverButton.top
-        anchors.bottomMargin: 5
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 50
-        color: "black"
-        border.width: 1
         border.color: "white"
-        Text {
-            anchors.fill: parent
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            text: "create thumbs"
-            font.bold: true
-            font.pointSize: 12
-            color: "white"
-        }
-        ClickableArea {
+            text: "create [s]creenshots"
+
             onClicked: {
                 takeScreenshots()
             }
-        }
     }
-    Rectangle {
+    Button {
         id: coverButton
         anchors.bottom: generateScreenshotsButton.top
-        anchors.bottomMargin: 5
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 50
-        color: "black"
-        border.width: 1
-        border.color: "white"
-        Text {
-            anchors.fill: parent
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            text: "create cover"
-            font.bold: true
-            font.pointSize: 12
-            color: "white"
+        text: "[c]reate cover"
+        onClicked: {
+            createCover()
         }
-        ClickableArea {
-            onClicked: {
-                createCover()
-            }
-        }
+
     }
 
-    Rectangle {
+    Button {
         id: generateScreenshotsButton
         anchors.bottom: bookmarkButton.top
-        anchors.bottomMargin: 5
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 50
-        color: "black"
-        border.width: 1
-        border.color: "white"
-        Text {
-            anchors.fill: parent
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            text: "next bookmark"
-            font.bold: true
-            font.pointSize: 12
-            color: "white"
-        }
-        ClickableArea {
-            onClicked: {
-                next()
-            }
+        text: "[n]ext bookmark"
+        onClicked: {
+            next()
         }
     }
 
-    Rectangle {
+    Button {
         id: bookmarkButton
         anchors.bottom: pauseButton.top
-        anchors.bottomMargin: 5
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 50
-        color: "black"
-        border.width: 1
-        border.color: "white"
-        Text {
-            anchors.fill: parent
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            text: "add bookmark"
-            font.bold: true
-            font.pointSize: 12
-            color: "white"
-        }
-        ClickableArea {
-            onClicked: {
-                bookmark()
-            }
+        text: "add [b]ookmark"
+        onClicked: {
+            bookmark()
         }
     }
 
-    Rectangle {
+    Button {
         id: pauseButton
         anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 50
-        color: "black"
-
-        border.width: 1
-        border.color: "white"
-        Text {
-            id: pauseButtonText
-            anchors.fill: parent
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            text: (mediaPlayer.playbackState === MediaPlayer.PlayingState) ? "pause" : "play"
-            font.bold: true
-            font.pointSize: 12
-            color: "white"
-        }
-        ClickableArea {
-            onClicked: {
-                if (mediaPlayer.playbackState === MediaPlayer.PlayingState) {
-                    mediaPlayer.pause()
-                } else {
-                    mediaPlayer.play()
-                }
+        text: (mediaPlayer.playbackState === MediaPlayer.PlayingState) ? "pause" : "play"
+        onClicked: {
+            if (mediaPlayer.playbackState === MediaPlayer.PlayingState) {
+                mediaPlayer.pause()
+            } else {
+                mediaPlayer.play()
             }
         }
     }

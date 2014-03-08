@@ -340,7 +340,6 @@ Rectangle {
                     } else {
                         currentIndex = i
                     }
-                    console.log(currentIndex)
                     return
                 }
 

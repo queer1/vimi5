@@ -23,7 +23,6 @@ Rectangle {
             source: config.actressPath + "/" + modelData + ".jpg"
             width: parent.width
             fillMode: Image.PreserveAspectFit
-            visible: modelData.indexOf(filter.text) !== -1
             Text {
                 text: modelData
                 color: "white";
@@ -53,6 +52,20 @@ Rectangle {
     InputBox {
         id: filter
         helpText: "filter starlets"
+        onTextChanged: {
+            var allActresses = videoModel.actresses
+            if (text === "") {
+                actressList.model = allActresses
+                return
+            }
+            var actresses = []
+            for (var i=0; i<allActresses.length; i++) {
+                if (allActresses[i].indexOf(text) > 0) {
+                    actresses.push(allActresses[i])
+                }
+            }
+            actressList.model = actresses
+        }
     }
 
     ScrollBar {
