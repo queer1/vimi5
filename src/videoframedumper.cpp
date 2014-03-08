@@ -156,7 +156,10 @@ void VideoFrameDumper::seek(qint64 pos)
 
 void VideoFrameDumper::createSnapshots(int num)
 {
-    if (!fmt_ctx) return;
+    if (!fmt_ctx) {
+        emit error("Error while creating snapshots");
+        return;
+    }
 
     int64_t skip_size = (fmt_ctx->duration) / num;
     int i = 0;
@@ -214,5 +217,5 @@ void VideoFrameDumper::createSnapshots(int num)
         emit screenshotsCreated(m_outputPath);
     }
 
-//    deleteLater();
+    deleteLater();
 }

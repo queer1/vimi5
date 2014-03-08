@@ -43,6 +43,7 @@ signals:
     void screenshotsCreated(QString path);
     void coverCreated(QString path);
     void statusUpdated(QString status);
+    void error(QString message);
 
 
 private:

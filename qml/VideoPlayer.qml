@@ -169,6 +169,7 @@ Rectangle {
         onPositionChanged: {
             cursorShape = Qt.ArrowCursor
             cursorTimer.restart()
+            if (screenshotOverview.visible) return
             if (mouse.y > parent.height - seekbar.height){
                 seekbar.opacity = 1
                 screenshot.position = mouse.x
@@ -260,11 +261,13 @@ Rectangle {
     
     ControlBar {
         id: controls
+        videoName: parent.name
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
         player: mediaPlayer
         index: parent.index
         file: parent.file
+        folderPath: parent.path
     }
     
     Toolbar {
@@ -277,7 +280,6 @@ Rectangle {
             parent.file = toolbar.file
             videoModel.setLastFile(gridView.currentIndex, parent.file)
         }
-        videoName: parent.name
         folderPath: parent.path
         file: parent.file
         screenshots: screenshot.screenshots
@@ -349,8 +351,8 @@ Rectangle {
         }
 
         highlight: Rectangle {
-            height: parent.cellHeight + 5
-            width: parent.cellWidth + 5
+            height: parent === null ? 0 : parent.cellHeight + 5
+            width: parent === null ? 0 : parent.cellWidth + 5
         }
         highlightFollowsCurrentItem: true
 

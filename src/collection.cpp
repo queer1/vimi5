@@ -157,7 +157,7 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 
     switch(role){
     case Video::NameRole:
-        return m_filteredVideos[row]->name;
+        return m_filteredVideos[row]->name.replace('-', '\n');
     case Video::PathRole:
         return m_filteredVideos[row]->path;
     case Video::CoverRole:
@@ -243,6 +243,7 @@ void Collection::addTag(int row, QString tag)
         return;
 
     m_filteredVideos[row]->tags.append(tag);
+    qSort(m_filteredVideos[row]->tags);
     emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::TagsRole);
     emit tagsUpdated();
     writeTagCache(row);
@@ -282,6 +283,8 @@ void Collection::renameVideo(int row, QString newName)
     if (row == -1 || newName.isEmpty())
         return;
 
+    newName = newName.replace('\n', '-');
+
     Video *oldVideo = m_filteredVideos[row];
 
     QDir dir(oldVideo->path);
@@ -299,6 +302,9 @@ void Collection::renameVideo(int row, QString newName)
     endInsertRows();
 }
 
+bool videoPointerCompare(Video *first, Video *second) {
+    return *first < *second;
+}
 
 void Collection::rescan()
 {
@@ -310,7 +316,7 @@ void Collection::rescan()
     endResetModel();
     m_videos.clear();
     scan(QDir(Config::instance()->collectionPath()));
-    qSort(m_filteredVideos);
+    qSort(m_filteredVideos.begin(), m_filteredVideos.end(), videoPointerCompare);
 
     writeCache();
     m_filterTags.clear();
@@ -571,6 +577,7 @@ void Collection::createCover(QString file, qint64 position)
     dumper->seek(position);
     connect(dumper, SIGNAL(coverCreated(QString)), SLOT(coverCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
+    connect(dumper, SIGNAL(error(QString)), SLOT(snapshotError()));
     QMetaObject::invokeMethod(dumper, "createSnapshots", Q_ARG(int, -1));
 }
 
@@ -580,6 +587,7 @@ void Collection::createScreenshots(QUrl file)
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
     connect(dumper, SIGNAL(screenshotsCreated(QString)), SLOT(screenshotsCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
+    connect(dumper, SIGNAL(error(QString)), SLOT(snapshotError()));
     QMetaObject::invokeMethod(dumper, "createSnapshots");
 }
 
@@ -606,6 +614,11 @@ void Collection::coverCreated(QString path)
             return;
         }
     }
+}
+
+void Collection::snapshotError()
+{
+    setCreatingScreenshots(false);
 }
 
 void Collection::setRandom(bool random)

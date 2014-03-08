@@ -45,6 +45,8 @@ public:
     Video(QString name, QString path, QString cover, QStringList files, QStringList tags, int lastPosition, QString lastFile, QVariantMap bookmarks, QStringList screenshots) :
         name(name), path(path), cover(cover), files(files), tags(tags), lastPosition(lastPosition), lastFile(lastFile), bookmarks(bookmarks), screenshots(screenshots)
     {
+        qSort(this->tags);
+        qSort(this->files);
     }
 
     Video() {}
@@ -146,6 +148,7 @@ private slots:
     void setRescanning(bool isRescanning) { if (m_rescanning != isRescanning) {m_rescanning = isRescanning; emit rescanningChanged(); } }
     void setCreatingScreenshots(bool creating) { if (m_creatingScreenshots != creating) { m_creatingScreenshots = creating; emit creatingScreenshotsChanged(); } }
     void updateActresses();
+    void snapshotError();
 
 private:
     Collection();

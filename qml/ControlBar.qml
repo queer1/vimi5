@@ -5,12 +5,14 @@ Rectangle {
     id: controlbar
     color: "black"
     width: 200
-    height: 500
+    height: 450
     property var player
     property var bookmarks
     property int index
     property string file
     property string cover
+    property string videoName
+    property string folderPath
     visible: false
     border.width: 1
     border.color: "white"
@@ -36,13 +38,36 @@ Rectangle {
         videoModel.createCover(player.source, player.position*1000)
     }
 
+    Text {
+        id: titleText
+        anchors.right: parent.right
+        anchors.left: parent.left
+        height: 50
+        anchors.top: parent.top
+        anchors.margins: 5
+        color: "white"
+        text: parent.videoName + ":"
+        font.pointSize: 15
+        font.bold: false
+        wrapMode: Text.Wrap
+        MouseArea {
+            hoverEnabled: true
+            anchors.fill: parent
+            onClicked: {
+                Qt.openUrlExternally("file://" + folderPath)
+            }
+            cursorShape: Qt.PointingHandCursor
+        }
+    }
+
     Image {
+        id: cover
         anchors.bottom: skipButton.top
+        anchors.top: titleText.bottom
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.margins: 5
         source: parent.cover
-        anchors.top: parent.top
         fillMode: Image.PreserveAspectCrop
     }
 

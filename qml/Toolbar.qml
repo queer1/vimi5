@@ -6,40 +6,16 @@ Rectangle {
     border.color: "white"
     property var model
     property var screenshots
-    height: Math.min((fileList.count+1) * 30 + 5, parent.height / 2)//titleText.contentHeight + 5
-    property string videoName
+    height: Math.min((fileList.count) * 30 + 10, parent.height / 2)//titleText.contentHeight + 5
     property string folderPath
     property string file
     opacity: 0
     Behavior on opacity { NumberAnimation { duration: 300 } }
 
-    Text {
-        id: titleText
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.margins: 5
-        color: "white"
-        text: parent.videoName + ":"
-        font.pointSize: 15
-        font.bold: false
-        MouseArea {
-            hoverEnabled: true
-            anchors.fill: parent
-            onClicked: {
-                Qt.openUrlExternally("file://" + folderPath)
-            }
-            cursorShape: Qt.PointingHandCursor
-        }
-    }
-
-
     ListView {
         id: fileList
-        anchors.top: titleText.bottom
-        anchors.bottom: parent.bottom
-        anchors.leftMargin: 10
-        anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.fill: parent
+        anchors.margins: 5
         model: parent.model
         clip: true
         interactive: false
@@ -88,7 +64,7 @@ Rectangle {
                 id: fileEntry
                 color: "white"
                 font.bold: file === modelData
-                font.pointSize: titleText.font.pointSize
+                font.pointSize: 20
                 text: modelData
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
