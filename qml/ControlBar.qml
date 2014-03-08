@@ -4,8 +4,8 @@ import QtMultimedia 5.0
 Rectangle {
     id: controlbar
     color: "transparent"
-    width: 150
-    height: 250
+    width: 200
+    height: 500
     property var player
     property var bookmarks
     property int index
@@ -39,9 +39,10 @@ Rectangle {
     Image {
         anchors.bottom: skipButton.top
         anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.margins: 5
         source: parent.cover
-        width:  150
-        height: 250
+        anchors.top: parent.top
         fillMode: Image.PreserveAspectCrop
     }
 

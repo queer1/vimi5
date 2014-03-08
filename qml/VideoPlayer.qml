@@ -325,27 +325,22 @@ Rectangle {
 
         property int position: mediaPlayer.position
         onPositionChanged: {
-            var screenshots = model
-            if (screenshots === undefined) return;
+            var shots = model
+            if (shots === undefined) return;
 
-            var file = screenshot.file
             var position = mediaPlayer.position
             var lastScreenshotPos = -1000000000
             var lastIndex = -1
 
-            for (var i=0; i<screenshots.length; i++) {
-                if (screenshots[i].indexOf(file) === -1) {
-                    continue
-                }
-
-                var screenshotPos = screenshots[i].split("_")[1]
-
+            for (var i=0; i<shots.length; i++) {
+                var screenshotPos = shots[i].split("_")[1]
                 if (screenshotPos > position) {
-                    if (Math.abs(screenshotPos - position) < Math.abs(lastScreenshotPos - position)) {
-                        currentIndex = i
-                    } else if (lastIndex !== -1){
+                    if (lastIndex !== -1){
                         currentIndex = lastIndex
+                    } else {
+                        currentIndex = i
                     }
+                    console.log(currentIndex)
                     return
                 }
 
@@ -432,8 +427,6 @@ Rectangle {
                         tmp = tmp.substring(0, tmp.length - 4)
                         videoPlayer.file = tmp
                         mediaPlayer.seek(screenshotPos)
-                        //screenshotOverview.opacity = 0
-                        //cursorShape = Qt.BlankCursor
                     }
                 }
 
