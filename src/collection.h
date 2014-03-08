@@ -44,7 +44,8 @@ public:
 
     Video(QString name, QString path, QString cover, QStringList files, QStringList tags, int lastPosition, QString lastFile, QVariantMap bookmarks, QStringList screenshots) :
         name(name), path(path), cover(cover), files(files), tags(tags), lastPosition(lastPosition), lastFile(lastFile), bookmarks(bookmarks), screenshots(screenshots)
-    { }
+    {
+    }
 
     Video() {}
 
@@ -109,12 +110,13 @@ public slots:
     bool filterTagsContains(QString tag);
 
     void setTagFilter(QString text) { m_tagFilter = text; emit tagsUpdated(); }
+    void setActressFilter(QString text) { m_actressFilter = text; emit actressesChanged(); }
 
     const QStringList allTags() const;
 
     const QStringList tags() { return allTags(); }
 
-    const QStringList &actresses() { return m_actresses; }
+    const QStringList actresses() const;
 
     QString getStatus() { return m_status; }
 
@@ -158,6 +160,7 @@ private:
     QList <Video*> m_filteredVideos;
     QString m_filter;
     QString m_tagFilter;
+    QString m_actressFilter;
     QStringList m_filterTags;
     QStringList m_actresses;
     QString m_status;

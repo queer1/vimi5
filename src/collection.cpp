@@ -246,6 +246,7 @@ void Collection::addTag(int row, QString tag)
     emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::TagsRole);
     emit tagsUpdated();
     writeTagCache(row);
+    updateActresses();
 }
 
 void Collection::removeTag(int row, QString tag)
@@ -312,6 +313,7 @@ void Collection::rescan()
     qSort(m_filteredVideos);
 
     writeCache();
+    m_filterTags.clear();
     emit tagsUpdated();
     setRescanning(false);
     emit emptyChanged();
@@ -465,6 +467,14 @@ const QStringList Collection::allTags() const
     return ret;
 }
 
+const QStringList Collection::actresses() const
+{
+    QStringList list;
+    foreach(const QString &actress, m_actresses) {
+        if (actress.contains(m_actressFilter)) list.append(actress);
+    }
+    return list;
+}
 
 void Collection::updateFilteredVideos()
 {

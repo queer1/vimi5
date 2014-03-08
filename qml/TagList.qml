@@ -162,6 +162,11 @@ Rectangle {
             }
 
             Keys.onEscapePressed: tagList.opacity = 0
+            Keys.onTabPressed: {
+                var suggestion = availableTagsView.model[0]
+                if (suggestion === "") return;
+                text = suggestion
+            }
 
             Text {
                 font.pointSize: parent.font.pointSize
