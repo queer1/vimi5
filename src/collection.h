@@ -114,7 +114,7 @@ public slots:
     void setTagFilter(QString text) { m_tagFilter = text; emit tagsUpdated(); }
     void setActressFilter(QString text) { m_actressFilter = text; emit actressesChanged(); }
 
-    const QStringList allTags() const;
+    const QStringList allTags();
 
     const QStringList tags() { return allTags(); }
 
@@ -133,6 +133,10 @@ public slots:
     void setRandom(bool random);
 
     bool isEmpty() { return m_videos.isEmpty(); }
+
+    void renameTag(QString tag, QString newTag);
+
+    int tagCount(const QString tag) { return m_tagCounts[tag]; }
 
 signals:
     void tagsUpdated();
@@ -155,7 +159,7 @@ private:
 
     void scan(QDir directory);
     void loadCache();
-    void writeTagCache(int index);
+    void writeTagCache(Video *video);
     void writeBookmarkCache(int index);
     void updateFilteredVideos();
 
@@ -170,6 +174,8 @@ private:
     bool m_rescanning;
     bool m_creatingScreenshots;
     bool m_isRandom;
+
+    QMap<QString, int> m_tagCounts;
 };
 
 #endif // COLLECTION_H

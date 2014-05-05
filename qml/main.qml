@@ -85,6 +85,16 @@ Rectangle {
             return;
         } else if (event.key === Qt.Key_T) {
             videoPlayer.tags()
+        } else if (event.key === Qt.Key_1) {
+            videoPlayer.setPlaybackSpeed(1)
+        } else if (event.key === Qt.Key_2) {
+            videoPlayer.setPlaybackSpeed(2)
+        } else if (event.key === Qt.Key_3) {
+            videoPlayer.setPlaybackSpeed(3)
+        } else if (event.key === Qt.Key_4) {
+            videoPlayer.setPlaybackSpeed(4)
+        } else if (event.key === Qt.Key_5) {
+            videoPlayer.setPlaybackSpeed(5)
         } else if (event.key === Qt.Key_Left) {
             seekAmount = -3000
         } else if (event.key === Qt.Key_Right) {
@@ -209,7 +219,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.right: actressPanel.left
         anchors.bottom: nameFilterInput.bottom
-        color: "black"//videoModel.random ? "white" : "black"
+        color: "black"
         border.color: "white"
         border.width: 1
         width: 100

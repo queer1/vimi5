@@ -6,7 +6,7 @@ Rectangle {
     border.color: "white"
     property var model
     property var screenshots
-    height: Math.min((fileList.count) * 30 + 10, parent.height / 2)//titleText.contentHeight + 5
+    height: Math.min((fileList.count) * 75 + 10, parent.height / 2)//titleText.contentHeight + 5
     property string folderPath
     property string file
     opacity: 0
@@ -21,7 +21,7 @@ Rectangle {
         interactive: false
         delegate: Item {
             width: parent.width
-            height: 30
+            height: 75
             property string videoFile: modelData
             property var shots: toolbar.screenshots
             onShotsChanged: filterScreenshots()
@@ -56,6 +56,7 @@ Rectangle {
                 delegate: Image {
                     width: height
                     height: parent.height
+                    fillMode: Image.PreserveAspectCrop
                     source: "file:" + encodeURIComponent(folderPath + "/" + modelData)
                 }
             }

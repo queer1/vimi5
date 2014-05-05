@@ -157,7 +157,7 @@ QVariant Collection::data(const QModelIndex &item, int role) const
 
     switch(role){
     case Video::NameRole:
-        return m_filteredVideos[row]->name.replace('-', '\n');
+        return m_filteredVideos[row]->name;
     case Video::PathRole:
         return m_filteredVideos[row]->path;
     case Video::CoverRole:
@@ -219,12 +219,12 @@ void Collection::removeBookmark(int row, QString file, int bookmark)
     writeBookmarkCache(row);
 }
 
-void Collection::writeTagCache(int index)
+void Collection::writeTagCache(Video *video)
 {
-    QString filename = m_filteredVideos[index]->path + "/tags.txt";
+    QString filename = video->path + "/tags.txt";
     QFile file(filename + ".tmp");
     if (file.open(QIODevice::Append | QIODevice::Text)) {
-        QByteArray data = m_filteredVideos[index]->tags.join("\n").toUtf8() + "\n";
+        QByteArray data = video->tags.join("\n").toUtf8() + "\n";
         if (file.write(data) == data.size()) {
             QFile::remove(filename);
             file.rename(filename + ".tmp", filename);
@@ -246,7 +246,7 @@ void Collection::addTag(int row, QString tag)
     qSort(m_filteredVideos[row]->tags);
     emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::TagsRole);
     emit tagsUpdated();
-    writeTagCache(row);
+    writeTagCache(m_filteredVideos[row]);
     updateActresses();
 }
 
@@ -255,7 +255,7 @@ void Collection::removeTag(int row, QString tag)
     m_filteredVideos[row]->tags.removeAll(tag);
     emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::TagsRole);
     emit tagsUpdated();
-    writeTagCache(row);
+    writeTagCache(m_filteredVideos[row]);
 }
 
 
@@ -341,18 +341,21 @@ static QString scanForCovers(QString path)
     QString coverPath;
     // Try to either find *front*.jpg, *cover*.jpg or just any plain *.jpg
     dir.setFilter(QDir::Files);
-    if (dir.exists(".vimicover.jpg")) {
-        coverPath = dir.absoluteFilePath(".vimicover.jpg");
-    } else if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0) {
+
+    if (dir.entryInfoList(QStringList("*front*.jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList("*front*.jpg")).first().absoluteFilePath();
     } else if (dir.entryInfoList(QStringList("*cover*.jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList("*cover*.jpg")).first().absoluteFilePath();
     } else if (dir.entryInfoList(QStringList(dir.dirName() + ".jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList(dir.dirName() + ".jpg")).first().absoluteFilePath();
+    } else if (dir.exists(".vimicover.jpg")) {
+        coverPath = dir.absoluteFilePath(".vimicover.jpg");
     } else if (dir.entryInfoList(QStringList("*" + dir.dirName() + "*.jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList("*" + dir.dirName() + "*.jpg")).first().absoluteFilePath();
     } else if (dir.entryInfoList(QStringList("*.jpg")).count() > 0) {
         coverPath = dir.entryInfoList(QStringList("*.jpg")).first().absoluteFilePath();
+    } else if (dir.entryInfoList(QStringList("*.png")).count() > 0) {
+        coverPath = dir.entryInfoList(QStringList("*.png")).first().absoluteFilePath();
     }
 
     return coverPath;
@@ -379,7 +382,7 @@ void Collection::scan(QDir dir)
     // Found movie files
     if (dir.count() > 0) {
 
-        QString name = dir.dirName();
+        QString name = dir.dirName().replace("- ", "\n");
         QString path = dir.path();
         QString cover = scanForCovers(path);
         QStringList files = dir.entryList();
@@ -398,6 +401,7 @@ void Collection::scan(QDir dir)
                 }
             }
         }
+        tags.removeDuplicates();
 
         // Load tag cache
         if (dir.exists("bookmarks.dat")) {
@@ -447,10 +451,9 @@ bool videoContainsTags(const Video &video, const QStringList &tags)
     return true;
 }
 
-const QStringList Collection::allTags() const
+const QStringList Collection::allTags()
 {
-    qDebug() << "Getting all tags...";
-    QMap<QString, int> tagCounts;
+    m_tagCounts.clear();
     foreach(const Video &video, m_videos) {
         if (!videoContainsTags(video, m_filterTags))
             continue;
@@ -458,14 +461,13 @@ const QStringList Collection::allTags() const
         foreach(const QString &tag, video.tags) {
             if (!m_tagFilter.isEmpty() && !tag.contains(m_tagFilter)) continue;
 
-            if (!tagCounts.contains(tag)) tagCounts[tag] = 0;
-            else tagCounts[tag]++;
+            if (!m_tagCounts.contains(tag)) m_tagCounts[tag] = 1;
+            else m_tagCounts[tag]++;
         }
     }
     QMultiMap<int, QString> reverse;
-    foreach(const QString &key, tagCounts.keys()) {
-        //if (Config::instance()->actresses().contains(key)) continue;
-        reverse.insert(tagCounts[key], key + " (" + QString::number(tagCounts[key] + 1) + ")");
+    foreach(const QString &key, m_tagCounts.keys()) {
+        reverse.insert(m_tagCounts[key], key);
     }
 
     QStringList ret = reverse.values();
@@ -515,7 +517,6 @@ void Collection::setFilter(QString text)
 
 void Collection::addFilterTag(QString tag)
 {
-    tag = tag.left(tag.indexOf(" ("));
     m_filterTags.append(tag);
     for (int i=m_filteredVideos.count()-1; i>=0; --i) {
         if (!m_filter.isEmpty() && !m_filteredVideos[i]->name.contains(m_filter))
@@ -535,8 +536,6 @@ void Collection::addFilterTag(QString tag)
 
 void Collection::removeFilterTag(QString tag)
 {
-    tag = tag.left(tag.indexOf(" ("));
-
     m_filterTags.removeAll(tag);
 
     for (int i=m_videos.count()-1; i>=0; --i) {
@@ -637,4 +636,27 @@ void Collection::setRandom(bool random)
     endResetModel();
     m_isRandom = random;
     emit randomChanged();
+}
+
+void Collection::renameTag(QString tag, QString newTag)
+{
+    beginResetModel();
+    for (int i=0; i<m_videos.length(); i++) {
+        if (m_videos[i].tags.contains(tag)) {
+            if (newTag.isEmpty()) {
+                m_videos[i].tags.removeAll(tag);
+            } else {
+                m_videos[i].tags = m_videos[i].tags.replaceInStrings(tag, newTag);
+            }
+            writeTagCache(&m_videos[i]);
+        }
+    }
+    if (m_filterTags.contains(tag)) {
+        removeFilterTag(tag);
+        if (!newTag.isEmpty()) {
+            addFilterTag(newTag);
+        }
+    }
+    endResetModel();
+    emit tagsUpdated();
 }

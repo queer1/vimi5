@@ -29,3 +29,6 @@ In a terminal, run the following in the directory containing the source:
 
 info in control bar
 automatic cumpilation
+tag replacement
+tag synonyms
+import support

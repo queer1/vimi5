@@ -38,6 +38,10 @@ Rectangle {
     Behavior on y { NumberAnimation { duration: 300; }}
     Behavior on opacity { NumberAnimation { duration: 300; }}
 
+    function setPlaybackSpeed(speed) {
+        mediaPlayer.playbackRate = speed
+    }
+
     function hideAllScreenshots() {
         screenshotOverview.opacity = 0
     }
@@ -143,6 +147,7 @@ Rectangle {
     }
     
     VideoOutput {
+        id: videoOutput
         anchors.fill: parent
         source: mediaPlayer
         
@@ -158,6 +163,65 @@ Rectangle {
             wrapMode: TextInput.WordWrap
         }
     }
+/*
+    ShaderEffect {
+        onLogChanged: console.log(log)
+        property variant source: ShaderEffectSource { sourceItem: videoOutput; hideSource: true }
+        property real dividerValue: 1
+        property real bright: 1.1
+        property real contrast: 1.1
+        property real saturation: 1.1
+        anchors.fill: videoOutput
+
+        fragmentShader: "
+uniform sampler2D source;
+uniform lowp float qt_Opacity;
+uniform lowp float bright;
+uniform lowp float contrast;
+uniform lowp float saturation;
+varying vec2 v_TexCoordinate;
+varying vec2 qt_TexCoord0;
+const vec3 W = vec3(0.2125, 0.7154, 0.0721);
+
+vec3 BrightnessContrastSaturation(vec3 color, float brt, float con, float sat)
+{
+    vec3 black = vec3(0., 0., 0.);
+    vec3 middle = vec3(0.5, 0.5, 0.5);
+    float luminance = dot(color, W);
+    vec3 gray = vec3(luminance, luminance, luminance);
+
+    vec3 brtColor = mix(black, color, brt);
+    vec3 conColor = mix(middle, brtColor, con);
+    vec3 satColor = mix(gray, conColor, sat);
+    return satColor;
+}
+
+
+void main()
+{
+     //get the pixel
+     vec2 uv = qt_TexCoord0.xy;
+     vec2 st = v_TexCoordinate.st;
+     vec3 irgb = texture2D(source, uv).rgb;
+
+     //adjust the brightness/contrast/saturation
+     vec3 bcs_result = BrightnessContrastSaturation(irgb, bright, contrast, saturation);
+
+     //add blue
+     vec3 blue_result = vec3(bcs_result.r, bcs_result.g*1.03, bcs_result.b);
+
+    float cr = pow(0.1, 2.0);
+    float pt = pow(uv.x - 0.5, 2.0) + pow(uv.y - 0.5, 2.0);
+    float d = pt - cr;
+    float cf = 1.0;
+    if (d > 0.0)
+        cf = 1.0 - 2.0 * d;
+    vec3 col = cf * blue_result.rgb;
+
+     //gl_FragColor = vec4(after_filter, 1.);
+     gl_FragColor = qt_Opacity * vec4(blue_result, 1.0);
+}"
+    }*/
     
     MouseArea {
         id: videoMouseArea
@@ -262,8 +326,10 @@ Rectangle {
     ControlBar {
         id: controls
         videoName: parent.name
-        anchors.verticalCenter: parent.verticalCenter
+        //anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: seekbar.top
         player: mediaPlayer
         index: parent.index
         file: parent.file

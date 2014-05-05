@@ -133,8 +133,6 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.left: tagList.left
         anchors.right: tagList.right
-        anchors.rightMargin: 10
-        anchors.leftMargin: 10
         height: 24
         color: "black"
         border.color: "white"

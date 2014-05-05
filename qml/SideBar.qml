@@ -28,8 +28,10 @@ Rectangle {
         anchors.bottom: helpButton.top
         anchors.right: scrollbar.left
         anchors.left: parent.left
+        anchors.margins: 5
         model: videoModel.allTags
         delegate: Text {
+            id: tagText
             text: modelData
             color: "white";
             font.pointSize: 8
@@ -47,8 +49,68 @@ Rectangle {
                     parent.selected = !parent.selected
                 }
             }
+
+
+            Text {
+                id: tagCount
+                anchors.left: parent.right
+                color: "gray"
+                text: " (" + videoModel.tagCount(modelData) + ")"
+                font.pointSize: parent.font.pointSize
+            }
+
+            Text {
+                id: showEdit
+                anchors.left: tagCount.right
+                anchors.leftMargin: 5
+                anchors.verticalCenter: parent.verticalCenter
+                color: "gray"
+                text: "[edit]"
+                font.pointSize: parent.font.pointSize
+
+                ClickableArea {
+                    onClicked: {
+                        tagEditRectangle.visible = true
+                        tagEdit.forceActiveFocus()
+                    }
+                }
+            }
+            Rectangle {
+                id: tagEditRectangle
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                width: availableTagsView.width
+                visible: false
+                color: "black"
+                TextInput {
+                    id: tagEdit
+                    anchors.fill: parent
+                    wrapMode: TextInput.WordWrap
+                    text: tagText.text
+                    font.pointSize: tagText.font.pointSize
+                    color: "white"
+                    verticalAlignment: Text.AlignVCenter
+                    onAccepted: {
+                        tagEditRectangle.visible = false
+                        videoModel.renameTag(modelData, text)
+                    }
+                    onActiveFocusChanged: {
+                        if (!activeFocus) {
+                            tagEditRectangle.visible = false
+                            tagEdit.text = modelData
+                        }
+                    }
+
+                    Keys.onReturnPressed: {
+                        tagEditRectangle.visible = false
+                        videoModel.renameTag(modelData, text)
+                    }
+                }
+            }
         }
     }
+
     ScrollBar {
         id: scrollbar
         view: availableTagsView
@@ -122,7 +184,6 @@ Rectangle {
 
         Rectangle {
             id: sizePosition
-         //   color: "black"
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             x: gridView.cellWidth - 100

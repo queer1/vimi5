@@ -22,6 +22,7 @@
 #include <QImage>
 
 extern "C" {
+#define __STDC_CONSTANT_MACROS
 #include <libavutil/imgutils.h>
 #include <libavutil/samplefmt.h>
 #include <libavutil/timestamp.h>
@@ -87,7 +88,7 @@ VideoFrameDumper::~VideoFrameDumper()
 
     avcodec_close(fmt_ctx->streams[video_stream_idx]->codec);
     avformat_close_input(&fmt_ctx);
-    av_frame_free(&frame);
+    //av_frame_free(&frame); //FIXME this crashes
     free(pkt);
     emit screenshotsCreated(m_outputPath);
     deleteLater();
@@ -107,7 +108,7 @@ void VideoFrameDumper::saveFrameToImage(QString outFile)
                                               outWidth, outHeight, PIX_FMT_RGB24,
                                               SWS_BILINEAR, NULL, NULL, NULL);
 
-    AVFrame *avFrame = avcodec_alloc_frame();
+    AVFrame *avFrame = av_frame_alloc();
 
     int numBytes = avpicture_get_size(PIX_FMT_RGB24, video_dec_ctx->width, video_dec_ctx->height);
     quint8 *frameBuffer = reinterpret_cast<quint8*>(av_malloc(numBytes));

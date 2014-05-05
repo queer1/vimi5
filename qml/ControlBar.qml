@@ -4,8 +4,7 @@ import QtMultimedia 5.0
 Rectangle {
     id: controlbar
     color: "black"
-    width: 200
-    height: 450
+    width: 225
     property var player
     property var bookmarks
     property int index
@@ -42,7 +41,7 @@ Rectangle {
         id: titleText
         anchors.right: parent.right
         anchors.left: parent.left
-        height: 50
+        height: 150
         anchors.top: parent.top
         anchors.margins: 5
         color: "white"
@@ -50,6 +49,8 @@ Rectangle {
         font.pointSize: 15
         font.bold: false
         wrapMode: Text.Wrap
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignHCenter
         MouseArea {
             hoverEnabled: true
             anchors.fill: parent
@@ -111,7 +112,7 @@ Rectangle {
 
     Button {
         id: pauseButton
-        anchors.bottom: parent.bottom
+        anchors.bottom: speedButtons.top
         text: (mediaPlayer.playbackState === MediaPlayer.PlayingState) ? "pause" : "play"
         onClicked: {
             if (mediaPlayer.playbackState === MediaPlayer.PlayingState) {
@@ -119,6 +120,66 @@ Rectangle {
             } else {
                 mediaPlayer.play()
             }
+        }
+    }
+
+    Item {
+        id: speedButtons
+        height: 25
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        Text {
+            id: speedLabel
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: 100
+            color: "white"
+            text: "playback speed:"
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+        Button {
+            id: speed1
+            text: mediaPlayer.playbackRate == 1 ? "(1x)" : "1x"
+            width: 25
+            anchors.right: undefined
+            anchors.left: speedLabel.right
+            onClicked: videoPlayer.setPlaybackSpeed(1)
+        }
+        Button {
+            id: speed2
+            text: mediaPlayer.playbackRate == 2 ? "(2x)" : "2x"
+            width: 25
+            anchors.right: undefined
+            anchors.left: speed1.right
+            onClicked: videoPlayer.setPlaybackSpeed(2)
+        }
+        Button {
+            id: speed3
+            text: mediaPlayer.playbackRate == 3 ? "(3x)" : "3x"
+            width: 25
+            anchors.right: undefined
+            anchors.left: speed2.right
+            onClicked: videoPlayer.setPlaybackSpeed(3)
+        }
+        Button {
+            id: speed4
+            text: mediaPlayer.playbackRate == 4 ? "(4x)" : "4x"
+            width: 25
+            anchors.right: undefined
+            anchors.left: speed3.right
+            onClicked: videoPlayer.setPlaybackSpeed(4)
+        }
+        Button {
+            id: speed5
+            text: mediaPlayer.playbackRate == 5 ? "(5x)" : "5x"
+            width: 25
+            anchors.right: undefined
+            anchors.left: speed4.right
+            onClicked: videoPlayer.setPlaybackSpeed(5)
         }
     }
 
