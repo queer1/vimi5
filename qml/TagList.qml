@@ -78,7 +78,8 @@ Rectangle {
 
             Text {
                 id: tag
-                text: modelData;
+                text: modelData
+                clip: true
                 color: "white";
                 styleColor: "black"
                 font.pointSize: 12
@@ -115,6 +116,7 @@ Rectangle {
             model: []
             delegate: Text {
                 text: modelData
+                clip: true
                 color: "white"
                 font.pointSize: 8
                 MouseArea {

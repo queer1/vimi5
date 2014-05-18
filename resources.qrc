@@ -21,5 +21,6 @@
         <file>qml/InputBox.qml</file>
         <file>qml/BusyWidget.qml</file>
         <file>qml/HelpDialog.qml</file>
+        <file>images/icon.png</file>
     </qresource>
 </RCC>

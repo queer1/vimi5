@@ -106,6 +106,7 @@ Rectangle {
         screenshot.screenshots = Qt.binding(function() { return info.screenshots; })
         seekbar.bookmarks = Qt.binding(function() { return info.bookmarks; })
         controls.bookmarks = Qt.binding(function() { return info.bookmarks; })
+        controls.description = Qt.binding(function() { return info.description; })
         controls.cover = "file:/" + encodeURIComponent(info.coverPath)
         toolbar.model = info.files
 
@@ -139,6 +140,7 @@ Rectangle {
         seekbar.bookmarks = []
         controls.bookmarks = []
         controls.cover = ""
+        controls.description = ""
 
         videoModel.setLastFile(gridView.currentIndex, file)
         videoModel.setLastPosition(gridView.currentIndex, mediaPlayer.position)
@@ -237,18 +239,24 @@ void main()
             if (mouse.y > parent.height - seekbar.height){
                 seekbar.opacity = 1
                 screenshot.position = mouse.x
-            } else if (mouse.y < toolbar.height)
-                toolbar.opacity = 1
-            else if (mouse.x < tagList.width)
-                tagList.opacity = 1
-            else if (mouse.x > parent.width - 200)
-                controls.opacity = 1
-            else {
-                controls.opacity = 0
-                tagList.opacity = 0
-                toolbar.opacity = 0
+            } else {
                 seekbar.opacity = 0
             }
+
+            if (mouse.y < toolbar.height)
+                toolbar.opacity = 1
+            else
+                toolbar.opacity = 0
+
+            if (mouse.x < tagList.width)
+                tagList.opacity = 1
+            else
+                tagList.opacity = 0
+
+            if (mouse.x > parent.width - 200)
+                controls.opacity = 1
+            else
+                controls.opacity = 0
         }
         onClicked: {
             if (mouse.x > 200 && mouse.x < width - controls.width && mouse.y < parent.height - seekbar.height && mouse.y > parent.width - toolbar.width) {

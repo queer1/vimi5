@@ -210,8 +210,41 @@ Rectangle {
         helpText: "filter names"
         anchors.top: parent.top
         anchors.left: sideBar.right
-        anchors.right: randomize.left
+        anchors.right: showUntagged.left
         opacity: 1 - videoPlayer.opacity
+    }
+
+
+    Rectangle {
+        id: showUntagged
+        anchors.top: parent.top
+        anchors.right: randomize.left
+        anchors.bottom: nameFilterInput.bottom
+        color: "black"
+        border.color: "white"
+        border.width: 1
+        width: 100
+        ClickableArea {
+            onClicked: videoModel.setShowOnlyUntagged(!videoModel.isShowOnlyUntagged())
+            onEntered: {
+                showUntaggedLabel.color = "black"
+                parent.color = "white"
+            }
+            onExited: {
+                showUntaggedLabel.color = "white"
+                parent.color = "black"
+            }
+        }
+        Text {
+            id: showUntaggedLabel
+            anchors.fill: parent
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            font.bold: videoModel.showOnlyUntagged
+            text: "untagged"
+            color: "white"
+            visible: (height > font.pointSize && width > 10) ? true : false
+        }
     }
 
     Rectangle {

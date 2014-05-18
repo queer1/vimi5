@@ -17,27 +17,40 @@
  */
 
 
-#include <QGuiApplication>
+#include <QApplication>
 #include <QDebug>
 #include <QQuickView>
 #include <QQmlContext>
 #include <QUrl>
+#include <QSystemTrayIcon>
+
+extern "C" {
+#include <libavformat/avformat.h>
+#include <libavutil/log.h>
+
+}
 
 #include "collection.h"
 #include "config.h"
 #include "version.h"
 #include "videoframedumper.h"
+#include "window.h"
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication a(argc, argv);
-    QGuiApplication::setQuitOnLastWindowClosed(true);
+    QApplication a(argc, argv);
+    QApplication::setQuitOnLastWindowClosed(true);
     a.setApplicationName("Vimi");
     a.setOrganizationName("cwk");
 
+    av_register_all();
+    av_log_set_level(AV_LOG_QUIET);
 
-    QQuickView view;
+
+
+    Window view;
     QObject::connect((QObject*)view.engine(), SIGNAL(quit()), &a, SLOT(quit()));
+    view.setIcon(QIcon(":/images/icon.png"));
 
     view.rootContext()->setContextProperty("videoModel", Collection::instance());
     view.rootContext()->setContextProperty("mainWindow", &view);
@@ -48,6 +61,13 @@ int main(int argc, char *argv[])
         view.showFullScreen();
     else
         view.showMaximized();
+
+
+    QSystemTrayIcon icon;
+    icon.setIcon(QIcon(":/images/icon.png"));
+    QObject::connect(&view, SIGNAL(closing(QQuickCloseEvent*)), &a, SLOT(quit()));
+    QObject::connect(&icon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &view, SLOT(toggleVisible()));
+    icon.show();
 
     return a.exec();
 }

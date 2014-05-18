@@ -7,6 +7,7 @@ HEADERS = \
     src/collection.h \
     src/videoframedumper.h \
     src/config.h \
+    src/window.h
 
 QT += quick qml widgets
 

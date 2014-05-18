@@ -54,11 +54,11 @@ private:
     QString m_filename;
     QByteArray m_outputFile;
 
-    AVFormatContext *fmt_ctx;
-    AVCodec *dec;
-    AVFrame *frame;
-    AVPacket *pkt;
-    int video_stream_idx;
+    AVFormatContext *m_formatContext;
+    AVCodec *m_decoder;
+    AVFrame *m_frame;
+    AVPacket *m_packet;
+    int m_videoStreamIndex;
 };
 
 #endif // VIDEOFRAMEDUMPER_H

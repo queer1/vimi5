@@ -25,16 +25,21 @@
 
 #include <algorithm>
 
+extern "C" {
+#define __STDC_CONSTANT_MACROS
+#include <libavformat/avformat.h>
+}
+
 #include "collection.h"
 #include "videoframedumper.h"
 
 QDataStream &operator<<(QDataStream &datastream, const Video &video) {
-    datastream << video.name << video.path << video.cover << video.files << video.tags << video.lastPosition << video.lastFile << video.bookmarks << video.screenshots;
+    datastream << video.name << video.path << video.cover << video.files << video.tags << video.lastPosition << video.lastFile << video.bookmarks << video.screenshots << video.resolution << video.framerate << video.description;
     return datastream;
 }
 
 QDataStream &operator>>(QDataStream &datastream, Video &video) {
-    datastream >> video.name >> video.path >> video.cover >> video.files >> video.tags >> video.lastPosition >> video.lastFile >> video.bookmarks >> video.screenshots;
+    datastream >> video.name >> video.path >> video.cover >> video.files >> video.tags >> video.lastPosition >> video.lastFile >> video.bookmarks >> video.screenshots >> video.resolution >> video.framerate >> video.description;
     return datastream;
 }
 
@@ -88,6 +93,9 @@ QHash<int, QByteArray> Collection::roleNames() const
     roleNames[Video::LastFileRole] = "lastFile";
     roleNames[Video::BookmarksRole] = "bookmarks";
     roleNames[Video::ScreenshotsRole] = "screenshots";
+    roleNames[Video::ResolutionRole] = "resolution";
+    roleNames[Video::FramerateRole] = "framerate";
+    roleNames[Video::DescriptionRole] = "description";
     return roleNames;
 }
 
@@ -174,6 +182,12 @@ QVariant Collection::data(const QModelIndex &item, int role) const
         return m_filteredVideos[row]->bookmarks;
     case Video::ScreenshotsRole:
         return m_filteredVideos[row]->screenshots;
+    case Video::ResolutionRole:
+        return m_filteredVideos[row]->resolution;
+    case Video::FramerateRole:
+        return m_filteredVideos[row]->framerate;
+    case Video::DescriptionRole:
+        return m_filteredVideos[row]->description;
     default:
         qWarning() << "Unknown role" << role;
         return QVariant();
@@ -223,7 +237,7 @@ void Collection::writeTagCache(Video *video)
 {
     QString filename = video->path + "/tags.txt";
     QFile file(filename + ".tmp");
-    if (file.open(QIODevice::Append | QIODevice::Text)) {
+    if (file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
         QByteArray data = video->tags.join("\n").toUtf8() + "\n";
         if (file.write(data) == data.size()) {
             QFile::remove(filename);
@@ -255,6 +269,9 @@ void Collection::removeTag(int row, QString tag)
     m_filteredVideos[row]->tags.removeAll(tag);
     emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::TagsRole);
     emit tagsUpdated();
+    if (m_filterTags.contains(tag)) {
+        removeFilterTag(tag);
+    }
     writeTagCache(m_filteredVideos[row]);
 }
 
@@ -375,71 +392,157 @@ void Collection::scan(QDir dir)
 {
     QGuiApplication::instance()->processEvents();
 
+    // QDir::AllDirs ignores name filter
+    dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::AllDirs | QDir::Executable);
+
+    foreach(const QFileInfo &subdir, dir.entryInfoList()) {
+        scan(QDir(subdir.filePath())); // Recursively scan
+    }
+
     dir.setNameFilters(Config::instance()->movieSuffixes());
     dir.setFilter(QDir::Files);
 
-    ////////////////////
-    // Found movie files
-    if (dir.count() > 0) {
+    // No files
+    if (dir.count() == 0) {
+        return;
+    }
 
-        QString name = dir.dirName().replace("- ", "\n");
-        QString path = dir.path();
-        QString cover = scanForCovers(path);
-        QStringList files = dir.entryList();
-        QStringList tags;
-        QVariantMap bookmarks;
-        QStringList screenshots;
+    m_videos.append(Video());
+    Video &video = m_videos.last();
 
-        // Load tag cache
-        if (dir.exists("tags.txt")) {
-            QFile file(dir.filePath("tags.txt"));
-            if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                while (!file.atEnd()) {
-                    QString tag = QString::fromUtf8(file.readLine().simplified().toLower());
-                    if (!tag.isEmpty())
-                        tags.append(tag); // One tag per line
-                }
+    video.name = dir.dirName().replace("- ", "\n");
+    video.path = dir.path();
+    video.cover = scanForCovers(video.path);
+    video.files = dir.entryList();
+
+    setStatus(tr("Found video:\n")  + video.name);
+
+    // Load description
+    if (dir.exists("description.txt")) {
+        QFile file(dir.filePath("description.txt"));
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            video.description = QString::fromLocal8Bit(file.readAll().trimmed());
+        }
+    }
+
+    // Load tag cache
+    if (dir.exists("tags.txt")) {
+        QFile file(dir.filePath("tags.txt"));
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            while (!file.atEnd()) {
+                QString tag = QString::fromUtf8(file.readLine().simplified().toLower());
+                if (!tag.isEmpty())
+                    video.tags.append(tag); // One tag per line
             }
         }
-        tags.removeDuplicates();
+    }
+    video.tags.removeDuplicates();
+    qSort(video.tags);
 
-        // Load tag cache
-        if (dir.exists("bookmarks.dat")) {
-            QFile file(dir.filePath("bookmarks.dat"));
-            QDataStream in(&file);
-            if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                in >> bookmarks;
-            }
+    // Load bookmarks
+    if (dir.exists("bookmarks.dat")) {
+        QFile file(dir.filePath("bookmarks.dat"));
+        QDataStream in(&file);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            in >> video.bookmarks;
         }
+    }
 
-        screenshots = scanForScreenshots(path);
+    // Search for screenshots
+    video.screenshots = scanForScreenshots(video.path);
 
-        m_videos.append(Video(name, path, cover, files, tags, 0, files.first(), bookmarks, screenshots));
-
-        int i = 0;
-        foreach(Video *video, m_filteredVideos) {
-            if (video->name > m_videos.last().name) {
-                beginInsertRows(QModelIndex(), i, i);
-                m_filteredVideos.insert(i, &m_videos.last());
-                endInsertRows();
-                break;
-            }
-            i++;
-        }
-        if (i >= m_filteredVideos.size()) {
+    int i = 0;
+    foreach(Video *video, m_filteredVideos) {
+        if (video->name > m_videos.last().name) {
             beginInsertRows(QModelIndex(), i, i);
-            m_filteredVideos.append(&m_videos.last());
+            m_filteredVideos.insert(i, &m_videos.last());
             endInsertRows();
+            break;
         }
+        i++;
+    }
+    if (i >= m_filteredVideos.size()) {
+        beginInsertRows(QModelIndex(), i, i);
+        m_filteredVideos.append(&m_videos.last());
+        endInsertRows();
+    }
 
-        setStatus(tr("Found video:\n")  + name);
-    }// else {
-        dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks | QDir::AllDirs | QDir::Executable);
-        // QDir::AllDirs ignores name filter
-        foreach(const QFileInfo &subdir, dir.entryInfoList()) {
-            scan(QDir(subdir.filePath())); // Recursively scan
+    // Check if resolution already available
+    if (dir.exists("resolution.txt")) {
+        QFile file(dir.filePath("resolution.txt"));
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            video.resolution = file.readLine().trimmed().toInt();
+            video.framerate = file.readLine().trimmed().toInt();
+            if (video.resolution && video.framerate) {
+            } else {
+                // Get resolution from file
+                AVFormatContext *formatContext = 0;
+                if (avformat_open_input(&formatContext, dir.entryInfoList().first().absoluteFilePath().toLocal8Bit().constData(), NULL, NULL) < 0) {
+                    qWarning() << "Unable to open input" << dir.absolutePath();
+                    return;
+                }
+                if (avformat_find_stream_info(formatContext, 0) < 0) {
+                    avformat_close_input(&formatContext);
+                    qWarning() << "unable to get stream info";
+                    return;
+                }
+                int videoStreamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+                if (videoStreamIndex < 0) {
+                    avformat_close_input(&formatContext);
+                    qWarning() << "unable to open codec context";
+                    return;
+                }
+                AVCodec *decoder = avcodec_find_decoder(formatContext->streams[videoStreamIndex]->codec->codec_id);
+                if (!decoder) {
+                    avformat_close_input(&formatContext);
+                    qWarning() << "Unable to find decoder!";
+                    return;
+                }
+                if (avcodec_open2(formatContext->streams[videoStreamIndex]->codec, decoder, 0) < 0) {
+                    avcodec_close(formatContext->streams[videoStreamIndex]->codec);
+                    avformat_close_input(&formatContext);
+                    qWarning() << "Unable to initialize codec context";
+                    return;
+                }
+
+                video.resolution = formatContext->streams[videoStreamIndex]->codec->height;
+                video.framerate = int(av_q2d(formatContext->streams[videoStreamIndex]->r_frame_rate) + 0.5);
+
+                QFile file(dir.filePath("resolution.txt"));
+                if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                    file.write(QByteArray::number(video.resolution) + '\n');
+                    file.write(QByteArray::number(video.framerate) + '\n');
+                }
+
+                avcodec_close(formatContext->streams[videoStreamIndex]->codec);
+                avformat_close_input(&formatContext);
+            }
         }
-    //}
+    }
+
+    if (video.resolution > 700) {
+        addTag(m_filteredVideos.indexOf(&video), "hd");
+    }
+    if (video.resolution == 720) {
+        addTag(m_filteredVideos.indexOf(&video), "720p");
+    }
+    if (video.resolution == 1080) {
+        addTag(m_filteredVideos.indexOf(&video), "1080p");
+    }
+
+    if (video.resolution == 1280) {
+        addTag(m_filteredVideos.indexOf(&video), "1280p");
+    }
+    if (video.resolution == 1920 && !video.tags.contains("1920p")) {
+        addTag(m_filteredVideos.indexOf(&video), "1920p");
+    }
+
+    if (video.framerate > 50 && !video.tags.contains("60fps")) {
+        addTag(m_filteredVideos.indexOf(&video), "60fps");
+    }
+
+    qSort(video.tags);
+
 }
 
 
@@ -636,6 +739,25 @@ void Collection::setRandom(bool random)
     endResetModel();
     m_isRandom = random;
     emit randomChanged();
+}
+
+void Collection::setShowOnlyUntagged(bool show)
+{
+    if (show == m_showOnlyUntagged) return;
+
+    beginResetModel();
+
+    m_filteredVideos.clear();
+    if (show) {
+        for (int i = 0; i<m_videos.size(); i++) {
+            if (m_videos[i].tags.isEmpty()) {
+                m_filteredVideos.append(&m_videos[i]);
+            }
+        }
+    } else {
+        updateFilteredVideos();
+    }
+    endResetModel();
 }
 
 void Collection::renameTag(QString tag, QString newTag)

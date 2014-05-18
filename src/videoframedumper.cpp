@@ -30,7 +30,7 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
-VideoFrameDumper::VideoFrameDumper(QUrl path) : fmt_ctx(0)
+VideoFrameDumper::VideoFrameDumper(QUrl path) : m_formatContext(0)
 {
     QFileInfo fileInfo(path.toLocalFile());
     if (!fileInfo.exists()) {
@@ -42,41 +42,37 @@ VideoFrameDumper::VideoFrameDumper(QUrl path) : fmt_ctx(0)
     m_outputFile = fileInfo.absoluteFilePath().toLocal8Bit();
     m_filename = fileInfo.fileName();
 
-    av_register_all();
-
-    if (avformat_open_input(&fmt_ctx, m_outputFile.constData(), NULL, NULL) < 0) {
+    if (avformat_open_input(&m_formatContext, m_outputFile.constData(), NULL, NULL) < 0) {
         qWarning() << "Unable to open input" << m_outputFile;
         return;
     }
 
-    if (avformat_find_stream_info(fmt_ctx, 0) < 0) {
+    if (avformat_find_stream_info(m_formatContext, 0) < 0) {
         qWarning() << "unable to get stream info";
         return;
     }
 
-    video_stream_idx = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-    if (video_stream_idx < 0) {
+    m_videoStreamIndex = av_find_best_stream(m_formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    if (m_videoStreamIndex < 0) {
         qWarning() << "unable to open codec context";
         return;
     }
-    dec = avcodec_find_decoder(fmt_ctx->streams[video_stream_idx]->codec->codec_id);
-    if (!dec) {
+    m_decoder = avcodec_find_decoder(m_formatContext->streams[m_videoStreamIndex]->codec->codec_id);
+    if (!m_decoder) {
         qWarning() << "Unable to find decoder!";
         return;
     }
-    if (avcodec_open2(fmt_ctx->streams[video_stream_idx]->codec, dec, 0) < 0) {
+    if (avcodec_open2(m_formatContext->streams[m_videoStreamIndex]->codec, m_decoder, 0) < 0) {
         qWarning() << "Unable to initialize codec context";
         return;
     }
 
-    //av_dump_format(fmt_ctx, 0, m_filename.constData(), 0);
+    m_frame = av_frame_alloc();
 
-    frame = av_frame_alloc();
-
-    pkt = new AVPacket;
-    av_init_packet(pkt);
-    pkt->data = NULL;
-    pkt->size = 0;
+    m_packet = new AVPacket;
+    av_init_packet(m_packet);
+    m_packet->data = NULL;
+    m_packet->size = 0;
 
     moveToThread(&m_thread);
     m_thread.start();
@@ -84,24 +80,22 @@ VideoFrameDumper::VideoFrameDumper(QUrl path) : fmt_ctx(0)
 
 VideoFrameDumper::~VideoFrameDumper()
 {
-    if (!fmt_ctx) return;
+    if (!m_formatContext) return;
 
-    avcodec_close(fmt_ctx->streams[video_stream_idx]->codec);
-    avformat_close_input(&fmt_ctx);
-    //av_frame_free(&frame); //FIXME this crashes
-    free(pkt);
+    avcodec_close(m_formatContext->streams[m_videoStreamIndex]->codec);
+    avformat_close_input(&m_formatContext);
+    av_frame_free(&m_frame); //FIXME this crashes
+    free(m_packet);
     emit screenshotsCreated(m_outputPath);
     deleteLater();
 }
 
 void VideoFrameDumper::saveFrameToImage(QString outFile)
 {
-    AVCodecContext *video_dec_ctx = fmt_ctx->streams[video_stream_idx]->codec;
+    AVCodecContext *video_dec_ctx = m_formatContext->streams[m_videoStreamIndex]->codec;
 
-    //static SwsContext* scaleContext = 0;
     const int outHeight = video_dec_ctx->height;
     const int outWidth = video_dec_ctx->width;
-    //const int outWidth = 1000;
     static SwsContext* scaleContext=0;
     scaleContext = sws_getCachedContext(scaleContext,
                                               video_dec_ctx->width, video_dec_ctx->height, video_dec_ctx->pix_fmt,
@@ -115,28 +109,23 @@ void VideoFrameDumper::saveFrameToImage(QString outFile)
 
     avpicture_fill((AVPicture*) avFrame, frameBuffer, PIX_FMT_RGB24, outWidth, outHeight);
 
-    sws_scale(scaleContext, frame->data, frame->linesize, 0, video_dec_ctx->height,
+    sws_scale(scaleContext, m_frame->data, m_frame->linesize, 0, video_dec_ctx->height,
               avFrame->data, avFrame->linesize);
-    //sws_freeContext(scaleContext);
 
     QImage image(outWidth, outHeight, QImage::Format_RGB32);
-    //memcpy(image.bits(), &avFrame->data[0][0], image.byteCount());
 
     uint8_t *src = (uint8_t *)(avFrame->data[0]);
-    for (int y = 0; y < outHeight; y++)
-    {
+    for (int y = 0; y < outHeight; y++) {
         QRgb *scanLine = (QRgb *) image.scanLine(y);
-        for (int x = 0; x < outWidth; x++)
-        {
+        for (int x = 0; x < outWidth; x++) {
             scanLine[x] = qRgb(src[3*x], src[3*x+1], src[3*x+2]);
         }
         src += avFrame->linesize[0];
     }
 
-    //QImage image(&avFrame->data[0][0], video_dec_ctx->width, video_dec_ctx->height, QImage::Format_RGB888);
-
-    if (!image.save(outFile))
+    if (!image.save(outFile)) {
         qWarning() << "Unable to save file" << outFile;
+    }
 
     av_free(avFrame);
     av_free(frameBuffer);
@@ -144,29 +133,28 @@ void VideoFrameDumper::saveFrameToImage(QString outFile)
 
 void VideoFrameDumper::seek(qint64 pos)
 {
-    if (!fmt_ctx) return;
-    qDebug() << "SEEKING TO" << pos;
+    if (!m_formatContext) return;
 
     if (pos == -1) {
-        av_seek_frame(fmt_ctx, -1, fmt_ctx->duration / 2, 0);
+        av_seek_frame(m_formatContext, -1, m_formatContext->duration / 2, 0);
     } else {
-        av_seek_frame(fmt_ctx, -1, pos, 0);
+        av_seek_frame(m_formatContext, -1, pos, 0);
     }
-    avcodec_flush_buffers(fmt_ctx->streams[video_stream_idx]->codec);
+    avcodec_flush_buffers(m_formatContext->streams[m_videoStreamIndex]->codec);
 }
 
 void VideoFrameDumper::createSnapshots(int num)
 {
-    if (!fmt_ctx) {
+    if (!m_formatContext) {
         emit error("Error while creating snapshots");
         return;
     }
 
-    int64_t skip_size = (fmt_ctx->duration) / num;
+    int64_t skip_size = (m_formatContext->duration) / num;
     int i = 0;
     int ret;
     while (true) {
-        ret = av_read_frame(fmt_ctx, pkt);
+        ret = av_read_frame(m_formatContext, m_packet);
 
         if (ret == AVERROR(EAGAIN))
             continue;
@@ -174,13 +162,13 @@ void VideoFrameDumper::createSnapshots(int num)
         if (ret < 0)
             break;
 
-        if (pkt->stream_index != video_stream_idx) {
-            av_free_packet(pkt);
+        if (m_packet->stream_index != m_videoStreamIndex) {
+            av_free_packet(m_packet);
             continue;
         }
 
         int got_frame = 0;
-        ret = avcodec_decode_video2(fmt_ctx->streams[video_stream_idx]->codec, frame, &got_frame, pkt);
+        ret = avcodec_decode_video2(m_formatContext->streams[m_videoStreamIndex]->codec, m_frame, &got_frame, m_packet);
         if (ret < 0) {
             char errbuf[1024];
             av_strerror(ret, errbuf, 1024);
@@ -202,10 +190,10 @@ void VideoFrameDumper::createSnapshots(int num)
                 break;
 
 
-            av_seek_frame(fmt_ctx, -1, skip_size*i, 0);
-            avcodec_flush_buffers(fmt_ctx->streams[video_stream_idx]->codec);
+            av_seek_frame(m_formatContext, -1, skip_size*i, 0);
+            avcodec_flush_buffers(m_formatContext->streams[m_videoStreamIndex]->codec);
         }
-        av_free_packet(pkt);
+        av_free_packet(m_packet);
     }
 
     if (ret < 0) {

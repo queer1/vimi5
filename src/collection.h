@@ -39,15 +39,11 @@ public:
         LastPositionRole,
         LastFileRole,
         BookmarksRole,
-        ScreenshotsRole
+        ScreenshotsRole,
+        ResolutionRole,
+        FramerateRole,
+        DescriptionRole
     };
-
-    Video(QString name, QString path, QString cover, QStringList files, QStringList tags, int lastPosition, QString lastFile, QVariantMap bookmarks, QStringList screenshots) :
-        name(name), path(path), cover(cover), files(files), tags(tags), lastPosition(lastPosition), lastFile(lastFile), bookmarks(bookmarks), screenshots(screenshots)
-    {
-        qSort(this->tags);
-        qSort(this->files);
-    }
 
     Video() {}
 
@@ -56,6 +52,7 @@ public:
     friend QDataStream &operator>>(QDataStream &, Video &);
 
     QString name;
+    QString description;
     QString path;
     QString cover;
     QStringList files;
@@ -64,6 +61,9 @@ public:
     QString lastFile;
     QVariantMap bookmarks;
     QStringList screenshots;
+
+    int resolution; // 480, 720, 1080, whatever
+    int framerate;
 
     bool operator==(const Video &other) const { return (path == other.path); }
     bool operator<(const Video &other) const { return (name < other.name); }
@@ -80,6 +80,8 @@ class Collection : public QAbstractListModel
     Q_PROPERTY(bool creatingScreenshots READ isCreatingScreenshots NOTIFY creatingScreenshotsChanged)
     Q_PROPERTY(bool random READ isRandom WRITE setRandom NOTIFY randomChanged)
     Q_PROPERTY(bool empty READ isEmpty() NOTIFY emptyChanged)
+    Q_PROPERTY(bool showOnlyUntagged READ isShowOnlyUntagged() WRITE setShowOnlyUntagged NOTIFY showOnlyUntaggedChanged)
+
 
 
 public:
@@ -129,8 +131,12 @@ public slots:
 
     bool isRescanning() { return m_rescanning; }
     bool isCreatingScreenshots() { return m_creatingScreenshots; }
+
     bool isRandom() { return m_isRandom; }
     void setRandom(bool random);
+
+    bool isShowOnlyUntagged() { return m_showOnlyUntagged; }
+    void setShowOnlyUntagged(bool show);
 
     bool isEmpty() { return m_videos.isEmpty(); }
 
@@ -146,6 +152,7 @@ signals:
     void creatingScreenshotsChanged();
     void randomChanged();
     void emptyChanged();
+    void showOnlyUntaggedChanged();
 
 private slots:
     void setStatus(QString status) { m_status = status; emit statusUpdated(); }
@@ -174,6 +181,7 @@ private:
     bool m_rescanning;
     bool m_creatingScreenshots;
     bool m_isRandom;
+    bool m_showOnlyUntagged;
 
     QMap<QString, int> m_tagCounts;
 };

@@ -56,5 +56,28 @@ Item {
             text: "generate cover"
             onClicked: videoModel.createCover("file:/" + encodeURIComponent(path + "/" + lastFile), -1)
         }
+        Text {
+            visible: resolution > 700
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.margins: 2
+            text: "HD"
+            style: Text.Outline
+            styleColor: "white"
+            font.bold: true
+            renderType: Text.NativeRendering
+        }
+
+        Text {
+            visible: framerate > 50
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.margins: 2
+            text: "60FPS"
+            style: Text.Outline
+            styleColor: "white"
+            font.bold: true
+            renderType: Text.NativeRendering
+        }
     }
 }

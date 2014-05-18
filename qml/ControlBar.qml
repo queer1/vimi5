@@ -12,6 +12,7 @@ Rectangle {
     property string cover
     property string videoName
     property string folderPath
+    property string description
     visible: false
     border.width: 1
     border.color: "white"
@@ -45,9 +46,9 @@ Rectangle {
         anchors.top: parent.top
         anchors.margins: 5
         color: "white"
-        text: parent.videoName + ":"
+        text: parent.videoName
         font.pointSize: 15
-        font.bold: false
+        font.bold: true
         wrapMode: Text.Wrap
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
@@ -70,6 +71,15 @@ Rectangle {
         anchors.margins: 5
         source: parent.cover
         fillMode: Image.PreserveAspectCrop
+        opacity: 0.3
+    }
+
+    Text {
+        anchors.fill: cover
+        color: "white"
+        opacity: 1
+        text: description
+        wrapMode: Text.Wrap
     }
 
     Button {
