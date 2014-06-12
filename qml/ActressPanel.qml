@@ -22,9 +22,10 @@ Rectangle {
         delegate: Image {
             source: config.actressPath + "/" + modelData + ".jpg"
             width: parent.width
+            smooth: true
             fillMode: Image.PreserveAspectFit
             Text {
-                text: modelData
+                text: modelData + " (" + videoModel.tagCount(modelData) + ")"
                 color: "white";
                 styleColor: "black"
                 style: Text.Outline

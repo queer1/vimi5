@@ -241,6 +241,10 @@ void main()
                 screenshot.position = mouse.x
             } else {
                 seekbar.opacity = 0
+                if (mouse.x > parent.width - 200)
+                    controls.opacity = 1
+                else
+                    controls.opacity = 0
             }
 
             if (mouse.y < toolbar.height)
@@ -253,10 +257,6 @@ void main()
             else
                 tagList.opacity = 0
 
-            if (mouse.x > parent.width - 200)
-                controls.opacity = 1
-            else
-                controls.opacity = 0
         }
         onClicked: {
             if (mouse.x > 200 && mouse.x < width - controls.width && mouse.y < parent.height - seekbar.height && mouse.y > parent.width - toolbar.width) {

@@ -30,11 +30,11 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
-VideoFrameDumper::VideoFrameDumper(QUrl path) : m_formatContext(0)
+VideoFrameDumper::VideoFrameDumper(QUrl path) : m_amount(100), m_formatContext(0)
 {
     QFileInfo fileInfo(path.toLocalFile());
     if (!fileInfo.exists()) {
-        qWarning() << "can't open file" << path.toLocalFile();
+        qWarning() << "VFD: can't open file" << path.toLocalFile();
         return;
     }
 
@@ -43,27 +43,27 @@ VideoFrameDumper::VideoFrameDumper(QUrl path) : m_formatContext(0)
     m_filename = fileInfo.fileName();
 
     if (avformat_open_input(&m_formatContext, m_outputFile.constData(), NULL, NULL) < 0) {
-        qWarning() << "Unable to open input" << m_outputFile;
+        qWarning() << "VFD: Unable to open input" << m_outputFile;
         return;
     }
 
     if (avformat_find_stream_info(m_formatContext, 0) < 0) {
-        qWarning() << "unable to get stream info";
+        qWarning() << "VFD: unable to get stream info";
         return;
     }
 
     m_videoStreamIndex = av_find_best_stream(m_formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
     if (m_videoStreamIndex < 0) {
-        qWarning() << "unable to open codec context";
+        qWarning() << "VFD: unable to open codec context";
         return;
     }
     m_decoder = avcodec_find_decoder(m_formatContext->streams[m_videoStreamIndex]->codec->codec_id);
     if (!m_decoder) {
-        qWarning() << "Unable to find decoder!";
+        qWarning() << "VFD: Unable to find decoder!";
         return;
     }
     if (avcodec_open2(m_formatContext->streams[m_videoStreamIndex]->codec, m_decoder, 0) < 0) {
-        qWarning() << "Unable to initialize codec context";
+        qWarning() << "VFD: Unable to initialize codec context";
         return;
     }
 
@@ -74,8 +74,7 @@ VideoFrameDumper::VideoFrameDumper(QUrl path) : m_formatContext(0)
     m_packet->data = NULL;
     m_packet->size = 0;
 
-    moveToThread(&m_thread);
-    m_thread.start();
+    qDebug() << "created VFD:" << path;
 }
 
 VideoFrameDumper::~VideoFrameDumper()
@@ -143,14 +142,15 @@ void VideoFrameDumper::seek(qint64 pos)
     avcodec_flush_buffers(m_formatContext->streams[m_videoStreamIndex]->codec);
 }
 
-void VideoFrameDumper::createSnapshots(int num)
+void VideoFrameDumper::run()
 {
+    qDebug() << "running";
     if (!m_formatContext) {
         emit error("Error while creating snapshots");
         return;
     }
 
-    int64_t skip_size = (m_formatContext->duration) / num;
+    int64_t skip_size = (m_formatContext->duration) / m_amount;
     int i = 0;
     int ret;
     while (true) {
@@ -176,9 +176,15 @@ void VideoFrameDumper::createSnapshots(int num)
             break;
         }
         if (got_frame){
-            if (num == -1) {
-                saveFrameToImage(m_outputPath + "/.vimicover.jpg");
-                emit coverCreated(m_outputPath);
+            if (m_amount == -1) {
+                QString coverPath(m_outputPath + "/.vimicover.jpg");
+                QFileInfo fileInfo(coverPath);
+                int filePostfix = 0;
+                while (fileInfo.exists()) {
+                    fileInfo.setFile(m_outputPath + "/.vimicover" + QString::number(filePostfix) + ".jpg");
+                }
+                saveFrameToImage(coverPath);
+                emit coverCreated(m_outputPath, coverPath);
             } else {
                 saveFrameToImage(m_outputPath + "/.vimiframe_" + QString::number(i*skip_size/1000) + "_" + m_filename + ".jpg");
                 emit statusUpdated("Creating snapshots: " + QString::number(i) + '%');
@@ -186,7 +192,7 @@ void VideoFrameDumper::createSnapshots(int num)
 
 
             i++;
-            if (i>num)
+            if (i>m_amount)
                 break;
 
 
@@ -202,9 +208,7 @@ void VideoFrameDumper::createSnapshots(int num)
         qWarning() << "error reading frame:" << errbuf << "(" << ret << ")";
     }
 
-    if (num > 0) {
+    if (m_amount > 0) {
         emit screenshotsCreated(m_outputPath);
     }
-
-    deleteLater();
 }

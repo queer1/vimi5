@@ -20,6 +20,7 @@
 #include <QStandardPaths>
 #include <QSet>
 #include <QThread>
+#include <QThreadPool>
 #include <QDir>
 #include <QGuiApplication>
 
@@ -60,20 +61,42 @@ Collection::Collection()
 
     updateActresses();
     connect(Config::instance(), SIGNAL(actressPathChanged()), SLOT(updateActresses()));
+
+    QFile synonyms("/home/test/pornstarnames.txt");
+    if (!synonyms.open(QIODevice::ReadOnly)) {
+        return;
+    }
+
+    foreach(const QByteArray &line, synonyms.readAll().split('\n')) {
+        QList<QByteArray> nameAliases = line.split(':');
+        if (nameAliases.length() != 2) continue;
+        foreach(const QByteArray &aliasB, nameAliases[1].split(',')) {
+            QString alias = QString::fromUtf8(aliasB).toLower().trimmed();
+            QString tag = QString::fromUtf8(nameAliases[0]).toLower().trimmed();
+            m_synonyms[alias] = tag;
+        }
+    }
 }
 
 void Collection::updateActresses()
 {
     QDir dir(QUrl(Config::instance()->actressesPath()).toLocalFile());
     QFileInfoList fileList = dir.entryInfoList(QStringList() << "*.jpg" << "*.png", QDir::Files, QDir::Name);
+
     QStringList tags = allTags();
-    for(int i=0; i<tags.length(); i++) tags[i] = tags[i].split(" (")[0];
     QStringList newActressList;
+    QSet<QString> allActresses;
+
     foreach (const QFileInfo &file, fileList) {
-        if (tags.contains(file.baseName())) {
-            newActressList.append(file.baseName());
+        allActresses.insert(file.baseName());
+    }
+
+    foreach (const QString &tag, tags) {
+        if (allActresses.contains(tag)) {
+            newActressList.append(tag);
         }
     }
+
     if (newActressList != m_actresses) {
         m_actresses = newActressList;
         emit actressesChanged();
@@ -142,6 +165,15 @@ void Collection::loadCache()
     QDataStream in(uncompressed);
     in >> m_videos;
     qSort(m_videos);
+
+    foreach(const Video &video, m_videos) {
+        foreach(const QString &tag, video.tags) {
+            if (m_synonyms.contains(tag))
+                qDebug() << video.name << tag;
+
+        }
+    }
+
     updateFilteredVideos();
     endResetModel();
 
@@ -417,6 +449,11 @@ void Collection::scan(QDir dir)
 
     setStatus(tr("Found video:\n")  + video.name);
 
+    // If cover not found, automatically create one
+    if (video.cover.isEmpty()) {
+        createCover(QUrl::fromLocalFile(video.path + "/" + video.files.first()), -1);
+    }
+
     // Load description
     if (dir.exists("description.txt")) {
         QFile file(dir.filePath("description.txt"));
@@ -431,8 +468,9 @@ void Collection::scan(QDir dir)
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             while (!file.atEnd()) {
                 QString tag = QString::fromUtf8(file.readLine().simplified().toLower());
-                if (!tag.isEmpty())
+                if (!tag.isEmpty()) {
                     video.tags.append(tag); // One tag per line
+                }
             }
         }
     }
@@ -673,24 +711,29 @@ bool Collection::filterTagsContains(QString tag) {
     return m_filterTags.contains(tag);
 }
 
-void Collection::createCover(QString file, qint64 position)
+void Collection::createCover(QUrl file, qint64 position)
 {
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
     dumper->seek(position);
-    connect(dumper, SIGNAL(coverCreated(QString)), SLOT(coverCreated(QString)));
+    dumper->setNum(-1);
+    dumper->setAutoDelete(false);
+    connect(dumper, SIGNAL(coverCreated(QString, QString)), SLOT(coverCreated(QString, QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
     connect(dumper, SIGNAL(error(QString)), SLOT(snapshotError()));
-    QMetaObject::invokeMethod(dumper, "createSnapshots", Q_ARG(int, -1));
+    //QMetaObject::invokeMethod(dumper, "createSnapshots");
+    QThreadPool::globalInstance()->start(dumper);
 }
 
 void Collection::createScreenshots(QUrl file)
 {
     setCreatingScreenshots(true);
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
+    dumper->setAutoDelete(false);
     connect(dumper, SIGNAL(screenshotsCreated(QString)), SLOT(screenshotsCreated(QString)));
     connect(dumper, SIGNAL(statusUpdated(QString)), SLOT(setStatus(QString)));
     connect(dumper, SIGNAL(error(QString)), SLOT(snapshotError()));
-    QMetaObject::invokeMethod(dumper, "createSnapshots");
+    //QMetaObject::invokeMethod(dumper, "createSnapshots");
+    QThreadPool::globalInstance()->start(dumper);
 }
 
 void Collection::screenshotsCreated(QString path)
@@ -703,19 +746,21 @@ void Collection::screenshotsCreated(QString path)
             return;
         }
     }
+    sender()->deleteLater();
 }
 
-void Collection::coverCreated(QString path)
+void Collection::coverCreated(QString videoPath, QString coverPath)
 {
     for (int row=0; row<m_filteredVideos.count(); row++) {
-        if (m_filteredVideos[row]->path == path) {
+        if (m_filteredVideos[row]->path == videoPath) {
             m_filteredVideos[row]->cover = QString();
             emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::CoverRole);
-            m_filteredVideos[row]->cover = scanForCovers(path);
+            m_filteredVideos[row]->cover = coverPath;
             emit dataChanged(createIndex(row, 0), createIndex(row, 0), QVector<int>() << Video::CoverRole);
             return;
         }
     }
+    sender()->deleteLater();
 }
 
 void Collection::snapshotError()
@@ -758,6 +803,15 @@ void Collection::setShowOnlyUntagged(bool show)
         updateFilteredVideos();
     }
     endResetModel();
+}
+
+static int diff(QString string1, QString string2)
+{
+    int d[string1.length()+1][string2.length() + 1];
+    int cost = 0;
+    for (int i=0; 0<string1.length(); i++) {
+
+    }
 }
 
 void Collection::renameTag(QString tag, QString newTag)

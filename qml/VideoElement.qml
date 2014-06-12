@@ -3,6 +3,7 @@ import QtQuick 2.0
 Item {
     id: gridItem
     width: gridView.width; height: gridView.height
+
     Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
@@ -29,8 +30,8 @@ Item {
             anchors.margins: 1
 
             source: coverPath == "" ? "/images/defaultcover.png" : "file:/" + encodeURIComponent(coverPath)
-            cache: false
-            onSourceChanged: { cache = false; cache = true; }
+            cache: true
+            //onSourceChanged: { cache = false; cache = true; }
             asynchronous: true
             fillMode: Image.PreserveAspectCrop
             onOpacityChanged: {

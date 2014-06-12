@@ -29,5 +29,5 @@ In a terminal, run the following in the directory containing the source:
 
 info in control bar
 automatic cumpilation
-tag synonyms
+- tag synonyms
 import support

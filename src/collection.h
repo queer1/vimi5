@@ -124,10 +124,10 @@ public slots:
 
     QString getStatus() { return m_status; }
 
-    void createCover(QString file, qint64 position);
+    void createCover(QUrl file, qint64 position);
     void createScreenshots(QUrl file);
     void screenshotsCreated(QString path);
-    void coverCreated(QString path);
+    void coverCreated(QString videoPath, QString coverPath);
 
     bool isRescanning() { return m_rescanning; }
     bool isCreatingScreenshots() { return m_creatingScreenshots; }
@@ -184,6 +184,7 @@ private:
     bool m_showOnlyUntagged;
 
     QMap<QString, int> m_tagCounts;
+    QHash<QString, QString> m_synonyms;
 };
 
 #endif // COLLECTION_H

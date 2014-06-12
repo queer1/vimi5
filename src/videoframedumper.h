@@ -22,26 +22,30 @@
 #include <QObject>
 #include <QThread>
 #include <QUrl>
+#include <QRunnable>
 
 class AVFormatContext;
 class AVCodec;
 class AVFrame;
 class AVPacket;
 
-class VideoFrameDumper : public QObject
+class VideoFrameDumper : public QObject, public QRunnable
 {
     Q_OBJECT
+
 public:
     explicit VideoFrameDumper(QUrl path);
     ~VideoFrameDumper();
 
+    void setNum(int num) { m_amount = num; }
+
 public slots:
-    void createSnapshots(int num=100);
+    void run();
     void seek(qint64 pos);
 
 signals:
     void screenshotsCreated(QString path);
-    void coverCreated(QString path);
+    void coverCreated(QString path, QString coverPath);
     void statusUpdated(QString status);
     void error(QString message);
 
@@ -49,10 +53,10 @@ signals:
 private:
     void saveFrameToImage(QString outFile);
 
-    QThread m_thread;
     QString m_outputPath;
     QString m_filename;
     QByteArray m_outputFile;
+    int m_amount;
 
     AVFormatContext *m_formatContext;
     AVCodec *m_decoder;

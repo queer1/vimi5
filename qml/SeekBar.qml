@@ -16,6 +16,44 @@ Rectangle {
     property string file: ""
     property var bookmarks
     visible: opacity > 0
+    property var shots: toolbar.screenshots
+    property string folderPath: toolbar.folderPath
+    onShotsChanged: filterScreenshots()
+    onWidthChanged: filterScreenshots()
+    function filterScreenshots() {
+        var fileScreenshots = [];
+        var screenshots = shots
+        if (screenshots === undefined) return;
+
+        for (var i=0; i<screenshots.length; i++) {
+            if (screenshots[i].indexOf(file) === -1) continue;
+            fileScreenshots.push(screenshots[i]);
+        }
+        if (fileScreenshots.length == 0) return
+
+        var shotCount = width/height - 1
+        var skipAmount = fileScreenshots.length / shotCount
+        screenshots = []
+        for (var i=0,j=0; i<shotCount; i++) {
+            screenshots.push(fileScreenshots[Math.floor(j)])
+            j+=skipAmount
+        }
+        screenshotsList.model = screenshots
+    }
+
+    ListView {
+        interactive: false
+        anchors.fill: parent
+        id: screenshotsList
+        model: []
+        orientation: ListView.Horizontal
+        delegate: Image {
+            width: height
+            height: parent.height
+            fillMode: Image.PreserveAspectCrop
+            source: "file:" + encodeURIComponent(folderPath + "/" + modelData)
+        }
+    }
 
 
     Rectangle {
@@ -23,8 +61,8 @@ Rectangle {
         id: progressbar
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
-        height: 15
-        color:"white"
+        height: parent.height
+        color:"#55ffffff"
         width: position * parent.width / duration
         Behavior on width { SmoothedAnimation { duration: 100; } }
         border.color: "white"
@@ -86,8 +124,7 @@ Rectangle {
             height: progressbar.height
             y: progressbar.y
             Text {
-                anchors.bottom: parent.top
-                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.centerIn: parent
                 text: "x"
                 color: "red"
                 font.pointSize: 20

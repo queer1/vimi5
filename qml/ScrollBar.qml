@@ -23,11 +23,12 @@ Item {
         height: Math.max(scrollBar.pageSize * (scrollBar.height-2), 30) + 2
         Rectangle {
             id: hl
-            //anchors.centerIn: thumb
-            height: 1
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.centerIn: thumb
+            height: 5
+            /*anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
-            anchors.right: parent.right
+            anchors.right: parent.right*/
+            width:parent.width - 8
             color: "white"
         }
         MouseArea {

@@ -1,5 +1,4 @@
 import QtQuick 2.0
-import QtMultimedia 5.0
 
 Rectangle {
     id: controlbar
@@ -80,6 +79,7 @@ Rectangle {
         opacity: 1
         text: description
         wrapMode: Text.Wrap
+        elide: Text.ElideRight
     }
 
     Button {
