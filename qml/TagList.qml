@@ -51,7 +51,6 @@ Rectangle {
         anchors.bottom: tagSuggestions.top
         anchors.right: parent.right
         anchors.left: parent.left
-        //interactive: false
         boundsBehavior: Flickable.StopAtBounds
 
         anchors.margins: 10

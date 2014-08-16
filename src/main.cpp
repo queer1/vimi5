@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
 
 
-    Window view;
+    /*Window view;
     QObject::connect((QObject*)view.engine(), SIGNAL(quit()), &a, SLOT(quit()));
     view.setIcon(QIcon(":/images/icon.png"));
 
@@ -60,14 +60,15 @@ int main(int argc, char *argv[])
     if (Config::instance()->fullscreen())
         view.showFullScreen();
     else
-        view.showMaximized();
+        view.showMaximized();*/
 
+    Collection::instance()->rescan();
 
-    QSystemTrayIcon icon;
+    /*QSystemTrayIcon icon;
     icon.setIcon(QIcon(":/images/icon.png"));
     QObject::connect(&view, SIGNAL(closing(QQuickCloseEvent*)), &a, SLOT(quit()));
     QObject::connect(&icon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), &view, SLOT(toggleVisible()));
-    icon.show();
+    icon.show();*/
 
     return a.exec();
 }

@@ -20,6 +20,7 @@
 #include <QFileInfo>
 #include <QDebug>
 #include <QImage>
+#include <QMutex>
 
 extern "C" {
 #define __STDC_CONSTANT_MACROS
@@ -42,38 +43,6 @@ VideoFrameDumper::VideoFrameDumper(QUrl path) : m_amount(100), m_formatContext(0
     m_outputFile = fileInfo.absoluteFilePath().toLocal8Bit();
     m_filename = fileInfo.fileName();
 
-    if (avformat_open_input(&m_formatContext, m_outputFile.constData(), NULL, NULL) < 0) {
-        qWarning() << "VFD: Unable to open input" << m_outputFile;
-        return;
-    }
-
-    if (avformat_find_stream_info(m_formatContext, 0) < 0) {
-        qWarning() << "VFD: unable to get stream info";
-        return;
-    }
-
-    m_videoStreamIndex = av_find_best_stream(m_formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-    if (m_videoStreamIndex < 0) {
-        qWarning() << "VFD: unable to open codec context";
-        return;
-    }
-    m_decoder = avcodec_find_decoder(m_formatContext->streams[m_videoStreamIndex]->codec->codec_id);
-    if (!m_decoder) {
-        qWarning() << "VFD: Unable to find decoder!";
-        return;
-    }
-    if (avcodec_open2(m_formatContext->streams[m_videoStreamIndex]->codec, m_decoder, 0) < 0) {
-        qWarning() << "VFD: Unable to initialize codec context";
-        return;
-    }
-
-    m_frame = av_frame_alloc();
-
-    m_packet = new AVPacket;
-    av_init_packet(m_packet);
-    m_packet->data = NULL;
-    m_packet->size = 0;
-
     qDebug() << "created VFD:" << path;
 }
 
@@ -91,11 +60,15 @@ VideoFrameDumper::~VideoFrameDumper()
 
 void VideoFrameDumper::saveFrameToImage(QString outFile)
 {
+    static QMutex swsMutex;
+    swsMutex.lock();
     AVCodecContext *video_dec_ctx = m_formatContext->streams[m_videoStreamIndex]->codec;
 
     const int outHeight = video_dec_ctx->height;
     const int outWidth = video_dec_ctx->width;
     static SwsContext* scaleContext=0;
+
+
     scaleContext = sws_getCachedContext(scaleContext,
                                               video_dec_ctx->width, video_dec_ctx->height, video_dec_ctx->pix_fmt,
                                               outWidth, outHeight, PIX_FMT_RGB24,
@@ -128,6 +101,7 @@ void VideoFrameDumper::saveFrameToImage(QString outFile)
 
     av_free(avFrame);
     av_free(frameBuffer);
+    swsMutex.unlock();
 }
 
 void VideoFrameDumper::seek(qint64 pos)
@@ -144,7 +118,39 @@ void VideoFrameDumper::seek(qint64 pos)
 
 void VideoFrameDumper::run()
 {
-    qDebug() << "running";
+    if (avformat_open_input(&m_formatContext, m_outputFile.constData(), NULL, NULL) < 0) {
+        qWarning() << "VFD: Unable to open input" << m_outputFile;
+        return;
+    }
+
+    if (avformat_find_stream_info(m_formatContext, 0) < 0) {
+        qWarning() << "VFD: unable to get stream info";
+        return;
+    }
+
+    m_videoStreamIndex = av_find_best_stream(m_formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    if (m_videoStreamIndex < 0) {
+        qWarning() << "VFD: unable to open codec context";
+        return;
+    }
+    m_decoder = avcodec_find_decoder(m_formatContext->streams[m_videoStreamIndex]->codec->codec_id);
+    if (!m_decoder) {
+        qWarning() << "VFD: Unable to find decoder!";
+        return;
+    }
+    if (avcodec_open2(m_formatContext->streams[m_videoStreamIndex]->codec, m_decoder, 0) < 0) {
+        qWarning() << "VFD: Unable to initialize codec context";
+        return;
+    }
+
+    m_frame = av_frame_alloc();
+
+    m_packet = new AVPacket;
+    av_init_packet(m_packet);
+    m_packet->data = NULL;
+    m_packet->size = 0;
+
+    qDebug() << "creating for" << m_outputFile;
     if (!m_formatContext) {
         emit error("Error while creating snapshots");
         return;

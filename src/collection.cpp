@@ -489,6 +489,12 @@ void Collection::scan(QDir dir)
     // Search for screenshots
     video.screenshots = scanForScreenshots(video.path);
 
+    if (video.screenshots.isEmpty()) {
+        foreach (QString file, video.files) {
+            createScreenshots(QUrl::fromLocalFile(video.path + '/' + file));
+        }
+    }
+
     int i = 0;
     foreach(Video *video, m_filteredVideos) {
         if (video->name > m_videos.last().name) {
@@ -724,8 +730,11 @@ void Collection::createCover(QUrl file, qint64 position)
     QThreadPool::globalInstance()->start(dumper);
 }
 
+static int toCreate = 0;
+
 void Collection::createScreenshots(QUrl file)
 {
+    toCreate++;
     setCreatingScreenshots(true);
     VideoFrameDumper *dumper = new VideoFrameDumper(file);
     dumper->setAutoDelete(false);
@@ -738,6 +747,7 @@ void Collection::createScreenshots(QUrl file)
 
 void Collection::screenshotsCreated(QString path)
 {
+    qDebug() << "Queued:" << toCreate--;
     setCreatingScreenshots(false);
     for (int row=0; row<m_filteredVideos.count(); row++) {
         if (m_filteredVideos[row]->path == path) {

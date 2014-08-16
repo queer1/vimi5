@@ -239,7 +239,7 @@ Rectangle {
         visible: false
     }
 
-    RadialGradient {
+    /*RadialGradient {
         id: mask
         verticalRadius: screenshot.height - 50
         horizontalRadius: screenshot.width
@@ -249,17 +249,17 @@ Rectangle {
             GradientStop { position: 0.3; color: "white" }
             GradientStop { position: 0.5; color: "transparent" }
         }
-    }
+    }*/
 
 
-    OpacityMask {
+    /*OpacityMask {
         id: screenshotMask
         source: screenshot
         maskSource: mask
         anchors.fill: screenshot
 
         opacity: seekbar.opacity
-    }
+    }*/
 
     SeekBar {
         id: seekbar
